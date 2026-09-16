@@ -1,0 +1,42 @@
+# Automatic Claude review on every PR from a branch in this repo.
+# Claude reads CLAUDE.md + .claude/rules/* from the checkout, so the same
+# rubric the local `code-reviewer` subagent uses applies here.
+#
+# Auth: pick ONE of the two secrets and delete the other line.
+#   - ANTHROPIC_API_KEY          (API billing)
+#   - CLAUDE_CODE_OAUTH_TOKEN    (your Claude subscription; generate with `claude setup-token`)
+#
+# Skipped automatically: drafts, closed PRs, PRs Claude judges trivial, PRs that already have a Claude comment.
+# Note: on a public repo, GitHub withholds secrets from fork PRs, so this only runs for same-repo branches.
+
+name: Claude Code Review
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # Keep this line: the inline-comment MCP server only starts when named in --allowedTools.
+          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment" --max-turns 30'
