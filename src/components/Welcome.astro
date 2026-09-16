@@ -1,114 +1,194 @@
 ---
 import Topbar from "@/components/Topbar.astro";
+
+// 12×12 pixel-art avatar placeholders — swap for real sprites later.
+// Legend: V primary (violet), D chart-3 (dark violet), C accent (cyan),
+// W foreground (light), B background (dark), . transparent
+const PIXEL_FILL: Record<string, string> = {
+  V: "var(--primary)",
+  D: "var(--chart-3)",
+  C: "var(--accent)",
+  W: "var(--foreground)",
+  B: "var(--background)",
+};
+
+interface Advisor {
+  name: string;
+  role: string;
+  score: number;
+  grid: string[];
+}
+
+const advisors: Advisor[] = [
+  {
+    name: "WIZJONER",
+    role: "Widzi szanse, zanim staną się oczywiste",
+    score: 8,
+    grid: [
+      "....CC......",
+      "....CC......",
+      "..VVVVVVVV..",
+      ".VVVVVVVVVV.",
+      ".VVWWVVWWVV.",
+      ".VVWCVVCWVV.",
+      ".VVVVVVVVVV.",
+      ".VVVVVVVVVV.",
+      ".VVBVVVVBVV.",
+      ".VVVBBBBVVV.",
+      "..VVVVVVVV..",
+      "...V....V...",
+    ],
+  },
+  {
+    name: "SCEPTYK",
+    role: "Znajdzie dziurę w każdym planie",
+    score: 4,
+    grid: [
+      "............",
+      "..DDDDDDDD..",
+      ".DDDDDDDDDD.",
+      ".DDWWDDWWDD.",
+      ".DDWCDDCWDD.",
+      ".DDDDDDDDDD.",
+      ".DDDDDDDDDD.",
+      ".DDBBBBBBDD.",
+      ".DDDDDDDDDD.",
+      "..DDDDDDDD..",
+      "...D....D...",
+      "............",
+    ],
+  },
+  {
+    name: "ANALITYK",
+    role: "Liczby przed opiniami",
+    score: 7,
+    grid: [
+      "............",
+      "..VVVVVVVV..",
+      ".VVVVVVVVVV.",
+      ".CCCCVVCCCC.",
+      ".CWWCVVCWWC.",
+      ".CCCCVVCCCC.",
+      ".VVVVVVVVVV.",
+      ".VVVVVVVVVV.",
+      ".VVVBBBBVVV.",
+      "..VVVVVVVV..",
+      "...V....V...",
+      "............",
+    ],
+  },
+  {
+    name: "PRAGMATYK",
+    role: "Co da się zrobić do piątku?",
+    score: 6,
+    grid: [
+      "............",
+      "..WWWWWWWW..",
+      "..WWWWWWWW..",
+      ".VVVVVVVVVV.",
+      ".VVWCVVCWVV.",
+      ".VVVVVVVVVV.",
+      ".VVVVVVVVVV.",
+      ".VVVBBBBVVV.",
+      ".VVVVVVVVVV.",
+      "..VVVVVVVV..",
+      "...V....V...",
+      "............",
+    ],
+  },
+];
+
+const steps = [
+  {
+    nr: "01",
+    title: "Wrzuć problem",
+    desc: "Opisz decyzję, z którą się mierzysz — jedno pytanie, tyle kontekstu, ile chcesz.",
+  },
+  {
+    nr: "02",
+    title: "Eksperci debatują",
+    desc: "Każdy doradca najpierw ocenia niezależnie (liczba przed uzasadnieniem), potem ścierają się ze sobą.",
+  },
+  {
+    nr: "03",
+    title: "Synteza + osie sporu",
+    desc: "Dostajesz rekomendację razem z tym, o co panel wciąż się kłóci — bez udawanej jednomyślności.",
+  },
+];
 ---
 
-<div class="bg-cosmic relative min-h-screen w-full overflow-hidden">
-  <!-- Cosmic orbs -->
-  <div class="pointer-events-none absolute top-1/4 -left-24 h-[350px] w-[350px] rounded-full bg-purple-500/20 blur-[120px]"></div>
-  <div class="pointer-events-none absolute top-2/3 -right-16 h-[250px] w-[250px] rounded-full bg-blue-500/15 blur-[100px]"></div>
-  <div class="pointer-events-none absolute top-0 left-1/2 h-[300px] w-[300px] -translate-x-1/2 rounded-full bg-indigo-400/10 blur-[140px]"></div>
-
-  <!-- Star field -->
-  <div
-    class="pointer-events-none absolute inset-0"
-    style="background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 200px 200px, 150px 150px, 100px 100px; background-position: 0 0, 40px 60px, 80px 30px;"
-  ></div>
-
+<div class="bg-pixel-grid relative min-h-screen w-full bg-background">
   <div class="relative z-10 p-4 sm:p-8">
     <Topbar />
 
-    <!-- Hero section -->
-    <div class="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-24 text-center sm:py-32 lg:py-40">
-      <h1 class="mb-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-5xl leading-tight font-bold text-transparent sm:text-6xl lg:text-7xl">
-        10x Astro Starter
+    <!-- Hero: character select -->
+    <section class="animate-fade-up mx-auto flex max-w-5xl flex-col items-center px-4 pt-16 pb-12 text-center sm:pt-24">
+      <h1 class="font-pixel mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-2xl leading-relaxed text-transparent sm:text-4xl">
+        PANEL EKSPERTÓW
       </h1>
-      <p class="mb-10 max-w-2xl text-lg text-blue-100/70 sm:text-xl">
-        A production-ready starter with authentication, modern tooling, and a cosmic developer experience.
-      </p>
-      <div class="flex flex-col gap-4 sm:flex-row">
-        <a
-          href="/auth/signin"
-          class="inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-purple-500"
-        >
-          Sign In
-        </a>
+      <p class="mb-12 max-w-2xl text-base text-muted-foreground sm:text-lg">Twój problem. Ich debata. Twoja decyzja.</p>
+
+      <ul class="mb-12 grid w-full grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4" aria-label="Przykładowi doradcy">
+        {advisors.map((advisor) => (
+          <li class="pixel-panel flex flex-col items-center p-4 transition-transform duration-150 hover:border-accent motion-safe:hover:-translate-y-1 sm:p-5">
+            <svg
+              viewBox="0 0 12 12"
+              shape-rendering="crispEdges"
+              class="mb-4 h-16 w-16 sm:h-20 sm:w-20"
+              aria-hidden="true"
+            >
+              {advisor.grid.flatMap((row, y) =>
+                Array.from(row).map((px, x) =>
+                  px === "." ? null : <rect x={x} y={y} width="1" height="1" style={`fill: ${PIXEL_FILL[px]}`} />,
+                ),
+              )}
+            </svg>
+            <h2 class="font-pixel mb-2 text-[0.65rem] text-foreground sm:text-xs">{advisor.name}</h2>
+            <p class="mb-3 text-xs text-muted-foreground">{advisor.role}</p>
+            <p class="mt-auto text-xs text-accent">
+              <span aria-hidden="true">
+                {"■".repeat(Math.round(advisor.score / 2))}
+                {"□".repeat(5 - Math.round(advisor.score / 2))}
+              </span>{" "}
+              OCENA {advisor.score}/10
+            </p>
+          </li>
+        ))}
+      </ul>
+
+      <div class="flex flex-col gap-5 sm:flex-row">
         <a
           href="/auth/signup"
-          class="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-white/10"
+          class="pixel-btn font-pixel bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
         >
-          Sign Up
+          <span class="animate-blink" aria-hidden="true">
+            ►
+          </span>
+          ZBIERZ SWÓJ PANEL
+        </a>
+        <a
+          href="/auth/signin"
+          class="pixel-btn font-pixel px-6 py-4 text-xs text-primary transition-colors hover:border-accent hover:text-accent"
+        >
+          ZALOGUJ SIĘ
         </a>
       </div>
-    </div>
+    </section>
 
-    <!-- Feature cards -->
-    <div class="mx-auto grid max-w-4xl grid-cols-1 gap-6 px-4 pb-24 sm:grid-cols-3">
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Authentication Ready</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Built-in Supabase auth with sign in, sign up, and protected routes out of the box.
-        </p>
-      </div>
-
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-          <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Modern Stack</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Astro 7, React 19, Tailwind 4, and TypeScript — the latest tools, ready to go.
-        </p>
-      </div>
-
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Developer Experience</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          ESLint, Prettier, and pre-commit hooks keep your codebase clean from day one.
-        </p>
-      </div>
-    </div>
+    <!-- How it works -->
+    <section class="animate-fade-up mx-auto max-w-5xl px-4 pb-24">
+      <h2 class="font-pixel mb-8 text-center text-sm text-accent sm:text-base">JAK TO DZIAŁA</h2>
+      <ol class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        {steps.map((step) => (
+          <li class="pixel-panel p-6">
+            <p class="font-pixel mb-4 text-lg text-accent" aria-hidden="true">
+              {step.nr}
+            </p>
+            <h3 class="mb-2 font-bold text-foreground">{step.title}</h3>
+            <p class="text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
   </div>
 </div>
