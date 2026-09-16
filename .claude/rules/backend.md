@@ -50,7 +50,6 @@ Do NOT introduce: generic base classes ("BaseService"), DI containers, event bus
 ## 3. API route conventions
 
 - File = resource: `src/pages/api/sessions/index.ts` (GET list, POST create), `src/pages/api/sessions/[id].ts`, `src/pages/api/sessions/[id]/stream.ts`.
-- Export named HTTP methods: `export const POST: APIRoute = async (ctx) => …`. No default export.
 - Order inside a handler, always: (1) auth from `ctx.locals.user` → 401; (2) parse + Zod validate body/params → 400 with field errors; (3) call service; (4) map `Result` to status code; (5) return `Response` via `json()` helper from `@/lib/http`.
 - JSON errors have one shape: `{ error: { code: string, message: string, details?: unknown } }`. Codes are string enums in `@/lib/errors`.
 - Auth form routes (`/api/auth/*`) keep the existing redirect-with-`?error=` style — do not mix the two conventions.
@@ -73,7 +72,7 @@ Do NOT introduce: generic base classes ("BaseService"), DI containers, event bus
 - Structured outputs (scores before rationale — PRD) are enforced: ask for JSON, validate with Zod, retry once with the validation error appended, then fail the round with `LLM_INVALID_OUTPUT`.
 - Log per call: provider, model, persona, prompt version, token counts, latency, `session_id`. Never log prompt/response bodies at `info` level.
 - Timeouts and cancellation are mandatory: `AbortSignal.timeout(ms)` combined with the request signal.
-- Cloudflare Workers constraint: keep each HTTP request's CPU time low and rely on streaming for long LLM work. Multi-round debates that exceed a single request's limits must be split into per-round requests driven by the client (state persisted between rounds) — do not "await the whole debate" in one handler.
+- Cloudflare Workers constraint: a handler never awaits more than one debate round. Each round is its own client-driven request with state persisted between rounds; long LLM work streams — do not "await the whole debate" in one handler.
 
 ## 6. Errors, logging, observability
 
@@ -83,7 +82,6 @@ Do NOT introduce: generic base classes ("BaseService"), DI containers, event bus
 
 ## 7. Security
 
-- Trust nothing from the client: body, params, headers, cookies. Zod at the edge.
 - Authorization is RLS + explicit ownership check in the service (defense in depth) — not one or the other.
 - Secrets: `astro:env/server` only. Never `import.meta.env.*` for secrets, never in client code.
 - CSRF: form-POST auth routes rely on SameSite cookies; API routes accept JSON only (`Content-Type` check) which blocks simple-form CSRF.
