@@ -347,6 +347,6 @@ No data migrations (F-02 owns the schema). The only forward step for consumers: 
 
 #### Manual
 
-- [x] 4.3 Debug route streams tokens live on workerd (`npm run dev`)
-- [x] 4.4 `npm run smoke:advisor` prints four scores with spread > 2 pkt on a representative decision
-- [x] 4.5 Aborting the debug request cancels in-flight OpenRouter calls
+- [x] 4.3 Debug route streams tokens live on workerd (`npm run dev`) — a0a44f2
+- [x] 4.4 `npm run smoke:advisor` prints four scores with spread > 2 pkt on a representative decision — a0a44f2
+- [x] 4.5 Aborting the debug request cancels in-flight OpenRouter calls — a0a44f2
