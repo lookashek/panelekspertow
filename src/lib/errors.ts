@@ -11,6 +11,8 @@ export const ErrorCode = {
   LLM_PROVIDER_ERROR: "LLM_PROVIDER_ERROR",
   NOT_CONFIGURED: "NOT_CONFIGURED",
   VALIDATION_ERROR: "VALIDATION_ERROR",
+  NOT_FOUND: "NOT_FOUND",
+  DB_ERROR: "DB_ERROR",
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -40,5 +42,19 @@ export class ValidationError extends AppError {
   constructor(message: string, cause?: unknown) {
     super(message, ErrorCode.VALIDATION_ERROR, 400, cause);
     this.name = "ValidationError";
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message: string, cause?: unknown) {
+    super(message, ErrorCode.NOT_FOUND, 404, cause);
+    this.name = "NotFoundError";
+  }
+}
+
+export class DbError extends AppError {
+  constructor(message: string, cause?: unknown) {
+    super(message, ErrorCode.DB_ERROR, 500, cause);
+    this.name = "DbError";
   }
 }

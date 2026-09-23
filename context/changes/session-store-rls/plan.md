@@ -228,9 +228,9 @@ First migration in the repo — forward-only and additive from here. S-02 (round
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly from scratch: `supabase db reset`
-- [x] 1.2 Type checking passes: `astro check`
-- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly from scratch: `supabase db reset` — 181072f
+- [x] 1.2 Type checking passes: `astro check` — 181072f
+- [x] 1.3 Linting passes: `npm run lint` — 181072f
 
 #### Manual
 
