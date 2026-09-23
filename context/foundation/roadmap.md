@@ -3,7 +3,7 @@ project: "Panel Ekspertów"
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-22
+updated: 2026-09-23
 prd_version: 2
 main_goal: market-feedback
 top_blocker: time
@@ -85,7 +85,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sekwencjonowany pierwszy, bo bez klienta LLM i person nie da się zbudować gwiazdy przewodniej. Ryzyko: ograniczenia długości streamowanej odpowiedzi na edge runtime Cloudflare (jedyny gotcha z `tech-stack.md`) — mierzone realnie dopiero przy S-01.
-- **Status:** ready
+- **Status:** in-progress
 
 ### F-02: Trwałość sesji + polityka RLS izolacji per użytkownik
 
