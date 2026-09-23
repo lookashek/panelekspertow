@@ -1,7 +1,7 @@
 ---
 change_id: session-store-rls
 title: Trwałość sesji + polityka RLS izolacji per użytkownik (F-02)
-status: implemented
+status: impl_reviewed
 created: 2026-09-23
 updated: 2026-09-23
 archived_at: null

@@ -6,6 +6,7 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { z } from "zod";
 
 import type { AdvisorPersonaId } from "@/lib/advisors/registry";
 import { DbError } from "@/lib/errors";
@@ -16,6 +17,14 @@ import type { AdvisorOpinion } from "@/lib/schemas/advisor";
 import type { AdvisorOpinionRecord, Session } from "@/types/session";
 
 const DEFAULT_LIST_LIMIT = 50;
+
+function parseRow<Schema extends z.ZodType>(schema: Schema, data: unknown): Result<z.infer<Schema>, DbError> {
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    return err(new DbError("Row failed schema validation", parsed.error));
+  }
+  return ok(parsed.data);
+}
 
 interface DbResponse<T> {
   data: T | null;
@@ -46,8 +55,11 @@ export class SessionRepository {
       return err(new DbError("Failed to create session", error));
     }
 
-    const row = SessionRowSchema.parse(data);
-    return ok(toSession(row));
+    const parsed = parseRow(SessionRowSchema, data);
+    if (!parsed.ok) {
+      return parsed;
+    }
+    return ok(toSession(parsed.value));
   }
 
   async saveOpinions(
@@ -70,8 +82,15 @@ export class SessionRepository {
       return err(new DbError("Failed to save advisor opinions", error));
     }
 
-    const parsed = (data ?? []).map((row) => toAdvisorOpinion(AdvisorOpinionRowSchema.parse(row)));
-    return ok(parsed);
+    const records: AdvisorOpinionRecord[] = [];
+    for (const row of data ?? []) {
+      const parsed = parseRow(AdvisorOpinionRowSchema, row);
+      if (!parsed.ok) {
+        return parsed;
+      }
+      records.push(toAdvisorOpinion(parsed.value));
+    }
+    return ok(records);
   }
 
   async listSessions(opts?: { limit?: number }): Promise<Result<Session[], DbError>> {
@@ -86,8 +105,15 @@ export class SessionRepository {
       return err(new DbError("Failed to list sessions", error));
     }
 
-    const parsed = (data ?? []).map((row) => toSession(SessionRowSchema.parse(row)));
-    return ok(parsed);
+    const sessions: Session[] = [];
+    for (const row of data ?? []) {
+      const parsed = parseRow(SessionRowSchema, row);
+      if (!parsed.ok) {
+        return parsed;
+      }
+      sessions.push(toSession(parsed.value));
+    }
+    return ok(sessions);
   }
 
   async getSession(id: string): Promise<Result<Session | null, DbError>> {
@@ -105,6 +131,10 @@ export class SessionRepository {
       return ok(null);
     }
 
-    return ok(toSession(SessionRowSchema.parse(data)));
+    const parsed = parseRow(SessionRowSchema, data);
+    if (!parsed.ok) {
+      return parsed;
+    }
+    return ok(toSession(parsed.value));
   }
 }
