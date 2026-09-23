@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
     "smoke:advisor": "node scripts/advisor-smoke.mjs",
+    "smoke:rls": "node scripts/rls-smoke.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

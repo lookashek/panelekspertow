@@ -112,7 +112,23 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+### Database migrations
+
+Migrations live in `supabase/migrations/` (`YYYYMMDDHHmmss_short_description.sql`, forward-only, never edited after apply). Apply them to your local stack:
+
+```bash
+npx supabase db reset       # fresh database + seed, runs every migration
+# or
+npx supabase migration up   # apply any migrations not yet applied
+```
+
+Every table enables Row Level Security with one policy per operation per role, so a user can only read/write their own rows. Prove the isolation holds (creates two throwaway users against your local Supabase and asserts cross-user access is denied on every operation):
+
+```bash
+SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_KEY=<anon key from CLI output> npm run smoke:rls
+```
+
+Keep `.env` and `.dev.vars` in sync after pulling new migrations — Node/Supabase CLI reads `.env`, Cloudflare local dev reads `.dev.vars`. No secrets are committed by this script.
 
 ### Using a cloud Supabase project instead
 

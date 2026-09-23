@@ -45,6 +45,12 @@ jobs:
           source supabase.env
           printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
           cp .env .dev.vars
+      - name: Apply migrations
+        run: supabase migration up
+      - name: Run RLS isolation smoke test
+        run: |
+          source supabase.env
+          SUPABASE_URL=$API_URL SUPABASE_KEY=$ANON_KEY npm run smoke:rls
       - run: npm run build
       - name: Run smoke test against production preview
         run: |

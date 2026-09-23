@@ -241,9 +241,9 @@ First migration in the repo — forward-only and additive from here. S-02 (round
 
 #### Automated
 
-- [x] 2.1 Unit tests cover create/save/list/get, row→domain mapping, and error→`Result.err` mapping: `npm run test`
-- [x] 2.2 Type checking passes: `astro check`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests cover create/save/list/get, row→domain mapping, and error→`Result.err` mapping: `npm run test` — 4a81583
+- [x] 2.2 Type checking passes: `astro check` — 4a81583
+- [x] 2.3 Linting passes: `npm run lint` — 4a81583
 
 #### Manual
 
@@ -253,8 +253,8 @@ First migration in the repo — forward-only and additive from here. S-02 (round
 
 #### Automated
 
-- [ ] 3.1 `npm run smoke:rls` exits 0 — all cross-access denied, all own-access allowed
-- [ ] 3.2 Full suite, type check, lint, build pass: `npm run test` && `astro check` && `npm run lint` && `npm run build`
+- [x] 3.1 `npm run smoke:rls` exits 0 — all cross-access denied, all own-access allowed
+- [x] 3.2 Full suite, type check, lint, build pass: `npm run test` && `astro check` && `npm run lint` && `npm run build`
 
 #### Manual
 
