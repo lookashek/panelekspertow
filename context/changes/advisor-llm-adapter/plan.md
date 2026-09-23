@@ -304,27 +304,27 @@ No data migrations (F-02 owns the schema). The only forward step for consumers: 
 
 #### Automated
 
-- [x] 1.1 `npm run test` runs and reports zero failures
-- [x] 1.2 Type checking passes: `astro check`
-- [x] 1.3 Linting passes: `npm run lint`
-- [x] 1.4 Build passes with the new env fields: `npm run build`
+- [x] 1.1 `npm run test` runs and reports zero failures — ae77e65
+- [x] 1.2 Type checking passes: `astro check` — ae77e65
+- [x] 1.3 Linting passes: `npm run lint` — ae77e65
+- [x] 1.4 Build passes with the new env fields: `npm run build` — ae77e65
 
 #### Manual
 
-- [x] 1.5 `.dev.vars` and `.env` example document both new env vars; no secret committed
+- [x] 1.5 `.dev.vars` and `.env` example document both new env vars; no secret committed — ae77e65
 
 ### Phase 2: LLM port & OpenRouter adapter
 
 #### Automated
 
-- [ ] 2.1 Unit tests for schema validation, retry-once-then-fail, Result mapping pass
-- [ ] 2.2 Type checking passes: `astro check`
-- [ ] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests for schema validation, retry-once-then-fail, Result mapping pass
+- [x] 2.2 Type checking passes: `astro check`
+- [x] 2.3 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 2.4 Mocked-provider test confirms exactly-once retry then `LLM_INVALID_OUTPUT`
-- [ ] 2.5 Review confirms no vendor `fetch` outside the adapter and cancellation composes both signals
+- [x] 2.4 Mocked-provider test confirms exactly-once retry then `LLM_INVALID_OUTPUT`
+- [x] 2.5 Review confirms no vendor `fetch` outside the adapter and cancellation composes both signals
 
 ### Phase 3: Advisor persona registry & prompts
 
