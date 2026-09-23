@@ -234,8 +234,8 @@ First migration in the repo — forward-only and additive from here. S-02 (round
 
 #### Manual
 
-- [ ] 1.4 Migration filename matches `YYYYMMDDHHmmss_*.sql`; header cites FR-001/FR-006 + isolation guardrail
-- [ ] 1.5 Both tables show RLS enabled with four `authenticated` policies each and no `anon` policy
+- [x] 1.4 Migration filename matches `YYYYMMDDHHmmss_*.sql`; header cites FR-001/FR-006 + isolation guardrail
+- [x] 1.5 Both tables show RLS enabled with four `authenticated` policies each and no `anon` policy
 
 ### Phase 2: Domain types + repository
 
@@ -247,16 +247,16 @@ First migration in the repo — forward-only and additive from here. S-02 (round
 
 #### Manual
 
-- [ ] 2.4 Review confirms no Supabase query outside `session.repository.ts` and every method returns a domain type via `Result`
+- [x] 2.4 Review confirms no Supabase query outside `session.repository.ts` and every method returns a domain type via `Result`
 
 ### Phase 3: RLS isolation proof + verification
 
 #### Automated
 
-- [x] 3.1 `npm run smoke:rls` exits 0 — all cross-access denied, all own-access allowed
-- [x] 3.2 Full suite, type check, lint, build pass: `npm run test` && `astro check` && `npm run lint` && `npm run build`
+- [x] 3.1 `npm run smoke:rls` exits 0 — all cross-access denied, all own-access allowed — 6b94b4e
+- [x] 3.2 Full suite, type check, lint, build pass: `npm run test` && `astro check` && `npm run lint` && `npm run build` — 6b94b4e
 
 #### Manual
 
-- [ ] 3.3 Script output exercises and names every isolation assertion on both tables
-- [ ] 3.4 CI smoke job runs `smoke:rls` green after applying the migration
+- [x] 3.3 Script output exercises and names every isolation assertion on both tables
+- [x] 3.4 CI smoke job runs `smoke:rls` green after applying the migration
