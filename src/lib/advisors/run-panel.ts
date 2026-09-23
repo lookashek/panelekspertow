@@ -74,6 +74,7 @@ interface PersonaTask {
 export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSignal): RunPanelResult {
   const personas = deps.personas ?? ADVISOR_REGISTRY;
   const controller = createSharedController(signal);
+  const activeReaders = new Set<ReadableStreamDefaultReader<StreamChunk>>();
 
   const tasks: PersonaTask[] = personas.map((persona) => {
     const { system, user } = persona.buildPrompt(input);
@@ -102,6 +103,7 @@ export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSi
             return;
           }
 
+          let reader: ReadableStreamDefaultReader<StreamChunk> | undefined;
           try {
             const personaStream = deps.provider.stream({
               model: defaultAdvisorModel(),
@@ -112,7 +114,8 @@ export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSi
               persona: persona.id,
               promptVersion: PROMPT_VERSION,
             });
-            const reader = personaStream.getReader();
+            reader = personaStream.getReader();
+            activeReaders.add(reader);
             for (;;) {
               const { done, value } = await reader.read();
               if (done) break;
@@ -120,10 +123,23 @@ export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSi
             }
           } catch (cause) {
             streamController.enqueue({ personaId: persona.id, chunk: { type: "error", error: toLlmError(cause) } });
+          } finally {
+            if (reader) {
+              activeReaders.delete(reader);
+              reader.releaseLock();
+            }
           }
         }),
       );
       streamController.close();
+    },
+    cancel(reason) {
+      controller.abort(reason);
+      for (const reader of activeReaders) {
+        reader.cancel(reason).catch(() => {
+          // Reader already released or errored — nothing further to clean up.
+        });
+      }
     },
   });
 

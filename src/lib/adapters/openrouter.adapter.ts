@@ -170,6 +170,7 @@ export class OpenRouterAdapter implements LlmProvider {
   stream(req: StreamRequest): ReadableStream<StreamChunk> {
     const apiKey = this.apiKey;
     const decoder = new TextDecoder();
+    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
 
     return new ReadableStream<StreamChunk>({
       async start(controller) {
@@ -205,45 +206,55 @@ export class OpenRouterAdapter implements LlmProvider {
             return;
           }
 
-          const reader = response.body.getReader();
+          reader = response.body.getReader();
           let buffer = "";
 
-          for (;;) {
-            const { done, value } = await reader.read();
-            if (done) break;
+          try {
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) break;
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() ?? "";
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() ?? "";
 
-            for (const line of lines) {
-              const trimmed = line.trim();
-              if (!trimmed.startsWith("data:")) continue;
-              const payload = trimmed.slice("data:".length).trim();
-              if (payload === "[DONE]") {
-                logger.info("openrouter stream done", {
-                  provider: "openrouter",
-                  model: req.model,
-                  persona: req.persona,
-                  promptVersion: req.promptVersion,
-                  tokenCount,
-                  latencyMs: Date.now() - startedAt,
-                });
-                controller.enqueue({ type: "done" });
-                controller.close();
-                return;
-              }
-              try {
-                const parsed = JSON.parse(payload) as OpenRouterStreamDelta;
-                const text = parsed.choices?.[0]?.delta?.content;
-                if (text) {
-                  tokenCount += 1;
-                  controller.enqueue({ type: "token", text });
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith("data:")) continue;
+                const payload = trimmed.slice("data:".length).trim();
+                if (payload === "[DONE]") {
+                  logger.info("openrouter stream done", {
+                    provider: "openrouter",
+                    model: req.model,
+                    persona: req.persona,
+                    promptVersion: req.promptVersion,
+                    tokenCount,
+                    latencyMs: Date.now() - startedAt,
+                  });
+                  controller.enqueue({ type: "done" });
+                  controller.close();
+                  return;
                 }
-              } catch {
-                // Malformed SSE chunk — skip it rather than aborting the whole stream.
+                try {
+                  const parsed = JSON.parse(payload) as OpenRouterStreamDelta;
+                  const text = parsed.choices?.[0]?.delta?.content;
+                  if (text) {
+                    tokenCount += 1;
+                    controller.enqueue({ type: "token", text });
+                  }
+                } catch {
+                  logger.warn("openrouter stream chunk parse failed", {
+                    provider: "openrouter",
+                    model: req.model,
+                    persona: req.persona,
+                    promptVersion: req.promptVersion,
+                    payloadLength: payload.length,
+                  });
+                }
               }
             }
+          } finally {
+            reader.releaseLock();
           }
 
           logger.info("openrouter stream done", {
@@ -270,6 +281,11 @@ export class OpenRouterAdapter implements LlmProvider {
           controller.enqueue({ type: "error", error: new LlmError("OpenRouter stream failed", code, cause) });
           controller.close();
         }
+      },
+      cancel(reason) {
+        reader?.cancel(reason).catch(() => {
+          // Reader already released or errored — nothing further to clean up.
+        });
       },
     });
   }

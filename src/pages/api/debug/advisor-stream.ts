@@ -1,7 +1,8 @@
 /**
  * DEBUG-ONLY proof route (roadmap F-01 risk: does parallel, incrementally-streamed SSE actually
- * work on Cloudflare workerd?). Not part of the production API surface — no auth, no rate
- * limiting, no idempotency. Will be removed and replaced by S-01's real session/stream endpoint.
+ * work on Cloudflare workerd?). Gated on `import.meta.env.DEV` — 404s in production, so it never
+ * ships as a live, unauthenticated, cost-triggering endpoint. Will be removed and replaced by
+ * S-01's real session/stream endpoint.
  *
  * Writes `score` frames as each persona's structured head resolves and `token`/`done`/`error`
  * frames as its rationale streams — never buffers the whole panel before responding, since
@@ -19,6 +20,10 @@ function sseFrame(event: string, data: unknown): string {
 }
 
 export async function POST({ request }: APIContext): Promise<Response> {
+  if (!import.meta.env.DEV) {
+    return new Response(null, { status: 404 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();

@@ -23,16 +23,16 @@ Build the F-01 foundation for Panel Ekspertów: a minimal, provider-agnostic LLM
 
 ## Desired End State
 
-A developer can import `runPanel` (or `createLlmProvider` + a persona from the registry), pass a decision description, and receive four persona opinions produced **in parallel**, each yielding a Zod-validated `{ score, thesis }` **before** a token-streamed rationale. Divergence is real: on a representative decision the four default personas produce scores spanning > 2 points. A throwaway debug SSE route (`/api/_debug/advisor-stream`) demonstrates the streaming path works on the Cloudflare workerd runtime end-to-end. Vitest covers the pure logic (schemas, registry, parseScore, Result mapping, retry) with a mocked provider; a live smoke script exercises one real OpenRouter call when opted in. `npm run lint`, `astro check`, `npm run build`, and `npm run test` all pass.
+A developer can import `runPanel` (or `createLlmProvider` + a persona from the registry), pass a decision description, and receive four persona opinions produced **in parallel**, each yielding a Zod-validated `{ score, thesis }` **before** a token-streamed rationale. Divergence is real: on a representative decision the four default personas produce scores spanning > 2 points. A throwaway debug SSE route (`/api/debug/advisor-stream`) demonstrates the streaming path works on the Cloudflare workerd runtime end-to-end. Vitest covers the pure logic (schemas, registry, parseScore, Result mapping, retry) with a mocked provider; a live smoke script exercises one real OpenRouter call when opted in. `npm run lint`, `astro check`, `npm run build`, and `npm run test` all pass.
 
-**How to verify:** `npm run test` (Vitest units green), `npm run build` + `astro check` clean, and manually hitting `/api/_debug/advisor-stream` with a real key streams tokens and shows a > 2 pkt score spread across personas.
+**How to verify:** `npm run test` (Vitest units green), `npm run build` + `astro check` clean, and manually hitting `/api/debug/advisor-stream` with a real key streams tokens and shows a > 2 pkt score spread across personas.
 
 ## What We're NOT Doing
 
 - No round logic (isolated round one, round two attribution, synthesis) — that is S-01/S-02/S-03.
 - No session persistence, no Supabase tables, no RLS — that is F-02 (`session-store-rls`).
 - No UI, no React components, no advisor avatars — S-01.
-- No real production session/stream endpoint (`src/pages/api/sessions/**`) — the only route here is a clearly-marked `_debug` proof route to be removed/replaced by S-01.
+- No real production session/stream endpoint (`src/pages/api/sessions/**`) — the only route here is a clearly-marked `debug` proof route to be removed/replaced by S-01.
 - No multi-provider adapters beyond OpenRouter (the `LlmProvider` interface makes them possible later; only `OpenRouterAdapter` is implemented now).
 - No rate limiting, no idempotency keys, no cost counters — those attach to the real endpoints in slices.
 - No per-persona model assignment — all personas share one env-overridable default model; divergence comes from prompt + temperature.
@@ -44,7 +44,8 @@ Build bottom-up so each layer is verifiable before the next depends on it: (1) c
 ## Critical Implementation Details
 
 - **Two-phase ordering is the load-bearing contract.** The score/thesis must come from a small, JSON-only `complete()` call that is Zod-validated and retried once on invalid output; only after it resolves does the rationale `stream()` run. Other slices depend on `{score, thesis}` existing before any rationale token. Do not collapse the two into one streamed JSON call.
-- **Cancellation must compose two signals.** Each provider call combines `AbortSignal.timeout(ms)` with the caller's request signal (use `AbortSignal.any([...])`). In `runPanel`, one persona's failure or the caller aborting must cancel the siblings — do not let orphaned OpenRouter requests run on after the client disconnects.
+- **Cancellation must compose two signals.** Each provider call combines `AbortSignal.timeout(ms)` with the caller's request signal (use `AbortSignal.any([...])`). In `runPanel`, the caller aborting must cancel every in-flight persona call — do not let orphaned OpenRouter requests run on after the client disconnects.
+  **Deviation (implemented, accepted 2026-09-23):** a single persona's own `complete()` failure does **not** cancel its siblings — `run-panel.ts`'s `createSharedController` only wires the caller's `signal`, not per-persona failure. Partial results (3 good persona opinions instead of 0) were judged more useful at foundation stage than strict fail-fast cancellation; the extra cost of letting siblings finish on one persona's error is accepted. Revisit if S-01's UI wants all-or-nothing panels instead of partial ones.
 - **Edge-runtime streaming is the flagged risk (roadmap F-01 §Risk).** The debug route exists specifically to measure whether parallel streamed responses hit Cloudflare workerd response limits now rather than at S-01. Use a `TransformStream`/`ReadableStream` and write SSE frames incrementally; never buffer the whole panel before responding.
 
 ## Phase 1: Cross-cutting infra & config
@@ -215,7 +216,7 @@ Encode the four divergent personas as `AdvisorStrategy` entries — each with a 
 
 ### Overview
 
-Add `runPanel` (parallel fan-out over the registry with shared cancellation), a `_debug` SSE route proving edge streaming, and a live smoke script — then confirm divergence and streaming end-to-end.
+Add `runPanel` (parallel fan-out over the registry with shared cancellation), a `debug` SSE route proving edge streaming, and a live smoke script — then confirm divergence and streaming end-to-end.
 
 ### Changes Required:
 
@@ -229,11 +230,13 @@ Add `runPanel` (parallel fan-out over the registry with shared cancellation), a 
 
 #### 2. Debug proof route
 
-**File**: `src/pages/api/_debug/advisor-stream.ts`
+**File**: `src/pages/api/debug/advisor-stream.ts`
+
+**Addendum (2026-09-23):** originally specified as `src/pages/api/_debug/advisor-stream.ts`; Astro treats underscore-prefixed path segments as private folders excluded from routing, so the route compiled but 404'd. Moved to `debug/` (no underscore) in commit `a0a44f2`; non-production status is now marked by the route's header comment plus the `import.meta.env.DEV` gate added during implementation review, not by the file path. See lessons.md "Astro underscore-prefixed route paths are private and won't route".
 
 **Intent**: A clearly-marked throwaway route that runs `runPanel` for a hardcoded/simple posted decision and streams SSE frames, to measure Cloudflare workerd streaming behavior now (roadmap F-01 risk).
 
-**Contract**: POST handler: 503 `NOT_CONFIGURED` when `createLlmProvider()` is null; else returns `new Response(readable, { headers: { "Content-Type": "text/event-stream" } })` writing SSE frames `event: score|token|done|error` with a `personaId` field; handles `ctx.request.signal` abort and closes the writer in `finally`. File name prefix `_debug` marks it non-production; documented as removed/replaced by S-01.
+**Contract**: POST handler: 503 `NOT_CONFIGURED` when `createLlmProvider()` is null; else returns `new Response(readable, { headers: { "Content-Type": "text/event-stream" } })` writing SSE frames `event: score|token|done|error` with a `personaId` field; handles `ctx.request.signal` abort and closes the writer in `finally`. Non-production status is marked by the header comment and an `import.meta.env.DEV` gate (404s in production), not by the file path; documented as removed/replaced by S-01.
 
 #### 3. Live smoke script
 
@@ -252,7 +255,7 @@ Add `runPanel` (parallel fan-out over the registry with shared cancellation), a 
 
 #### Manual Verification:
 
-- With a real key, hitting `/api/_debug/advisor-stream` streams tokens live (not one buffered blob) on `npm run dev` (workerd runtime).
+- With a real key, hitting `/api/debug/advisor-stream` streams tokens live (not one buffered blob) on `npm run dev` (workerd runtime).
 - `npm run smoke:advisor` against a real key prints four persona scores whose spread exceeds 2 points on a representative decision (NFR divergence signal).
 - Aborting the debug request (client disconnect) cancels in-flight OpenRouter calls (no orphaned work in logs).
 
@@ -275,7 +278,7 @@ Add `runPanel` (parallel fan-out over the registry with shared cancellation), a 
 
 ### Manual Testing Steps:
 
-1. Set `OPENROUTER_API_KEY` in `.dev.vars`, run `npm run dev`, POST a decision to `/api/_debug/advisor-stream`, confirm tokens stream live and each persona has a score.
+1. Set `OPENROUTER_API_KEY` in `.dev.vars`, run `npm run dev`, POST a decision to `/api/debug/advisor-stream`, confirm tokens stream live and each persona has a score.
 2. Run `npm run smoke:advisor` and read the score spread (> 2 pkt on a representative decision).
 3. Disconnect mid-stream and confirm in-flight calls cancel.
 
