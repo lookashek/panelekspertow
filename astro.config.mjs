@@ -18,6 +18,12 @@ export default defineConfig({
     schema: {
       SUPABASE_URL: envField.string({ context: "server", access: "secret", optional: true }),
       SUPABASE_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+      OPENROUTER_API_KEY: envField.string({ context: "server", access: "secret", optional: true }),
+      DEFAULT_ADVISOR_MODEL: envField.string({
+        context: "server",
+        access: "public",
+        default: "openai/gpt-4o-mini",
+      }),
     },
   },
 });
