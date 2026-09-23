@@ -1,10 +1,10 @@
 ---
 change_id: advisor-llm-adapter
 title: Adapter LLM (OpenRouter) + rejestr predefiniowanych doradców
-status: impl_reviewed
+status: archived
 created: 2026-09-23
 updated: 2026-09-23
-archived_at: null
+archived_at: 2026-09-23T13:57:47Z
 ---
 
 ## Notes

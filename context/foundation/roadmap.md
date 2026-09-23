@@ -41,7 +41,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 
 | ID    | Change ID               | Outcome (user can …)                                              | Prerequisites | PRD refs                          | Status   |
 | ----- | ----------------------- | ---------------------------------------------------------------- | ------------- | --------------------------------- | -------- |
-| F-01  | advisor-llm-adapter     | (foundation) adapter LLM + rejestr predefiniowanych doradców     | —             | FR-003, FR-009, NFR-rozrzut       | ready    |
+| F-01  | advisor-llm-adapter     | (foundation) adapter LLM + rejestr predefiniowanych doradców     | —             | FR-003, FR-009, NFR-rozrzut       | done    |
 | F-02  | session-store-rls       | (foundation) trwałość sesji + polityka RLS izolacji per użytkownik | —           | FR-001, FR-006, guardrail         | in-progress |
 | S-01  | first-divergent-round   | opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1   | F-01, F-02    | US-01, FR-001, FR-002, FR-003, FR-006, FR-009 | proposed |
 | S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | proposed |
@@ -85,7 +85,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sekwencjonowany pierwszy, bo bez klienta LLM i person nie da się zbudować gwiazdy przewodniej. Ryzyko: ograniczenia długości streamowanej odpowiedzi na edge runtime Cloudflare (jedyny gotcha z `tech-stack.md`) — mierzone realnie dopiero przy S-01.
-- **Status:** in-progress
+- **Status:** done
 
 ### F-02: Trwałość sesji + polityka RLS izolacji per użytkownik
 
@@ -221,4 +221,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
-(Empty on first generation. `/10x-archive` appends entries here.)
+- **F-01: (foundation) w kodzie jest minimalny port do dostawcy LLM (OpenRouter) zdolny do równoległych, streamowanych odpowiedzi oraz rejestr predefiniowanych person doradczych z celowo sprzecznymi profilami (optymista, sceptyk, pragmatyk, analityk). Nie obejmuje żadnej logiki rund ani UI.** — Archived 2026-09-23 → `context/archive/2026-09-23-advisor-llm-adapter/`. Lesson: —.
