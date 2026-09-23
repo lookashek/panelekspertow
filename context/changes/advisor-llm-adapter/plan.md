@@ -317,26 +317,26 @@ No data migrations (F-02 owns the schema). The only forward step for consumers: 
 
 #### Automated
 
-- [x] 2.1 Unit tests for schema validation, retry-once-then-fail, Result mapping pass
-- [x] 2.2 Type checking passes: `astro check`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests for schema validation, retry-once-then-fail, Result mapping pass — 1f776c1
+- [x] 2.2 Type checking passes: `astro check` — 1f776c1
+- [x] 2.3 Linting passes: `npm run lint` — 1f776c1
 
 #### Manual
 
-- [x] 2.4 Mocked-provider test confirms exactly-once retry then `LLM_INVALID_OUTPUT`
-- [x] 2.5 Review confirms no vendor `fetch` outside the adapter and cancellation composes both signals
+- [x] 2.4 Mocked-provider test confirms exactly-once retry then `LLM_INVALID_OUTPUT` — 1f776c1
+- [x] 2.5 Review confirms no vendor `fetch` outside the adapter and cancellation composes both signals — 1f776c1
 
 ### Phase 3: Advisor persona registry & prompts
 
 #### Automated
 
-- [ ] 3.1 Unit tests: all four personas build valid prompts; `parseScore` accepts valid / rejects invalid
-- [ ] 3.2 Registry exports exactly four personas with unique ids and distinct temperatures
-- [ ] 3.3 Type checking + lint pass: `astro check` and `npm run lint`
+- [x] 3.1 Unit tests: all four personas build valid prompts; `parseScore` accepts valid / rejects invalid
+- [x] 3.2 Registry exports exactly four personas with unique ids and distinct temperatures
+- [x] 3.3 Type checking + lint pass: `astro check` and `npm run lint`
 
 #### Manual
 
-- [ ] 3.4 Prompt biases are distinct, universal, and ask for score/thesis JSON before rationale
+- [x] 3.4 Prompt biases are distinct, universal, and ask for score/thesis JSON before rationale
 
 ### Phase 4: Panel orchestrator, proof route & verification
 
