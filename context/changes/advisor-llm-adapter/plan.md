@@ -330,20 +330,20 @@ No data migrations (F-02 owns the schema). The only forward step for consumers: 
 
 #### Automated
 
-- [x] 3.1 Unit tests: all four personas build valid prompts; `parseScore` accepts valid / rejects invalid
-- [x] 3.2 Registry exports exactly four personas with unique ids and distinct temperatures
-- [x] 3.3 Type checking + lint pass: `astro check` and `npm run lint`
+- [x] 3.1 Unit tests: all four personas build valid prompts; `parseScore` accepts valid / rejects invalid — 0e62cf1
+- [x] 3.2 Registry exports exactly four personas with unique ids and distinct temperatures — 0e62cf1
+- [x] 3.3 Type checking + lint pass: `astro check` and `npm run lint` — 0e62cf1
 
 #### Manual
 
-- [x] 3.4 Prompt biases are distinct, universal, and ask for score/thesis JSON before rationale
+- [x] 3.4 Prompt biases are distinct, universal, and ask for score/thesis JSON before rationale — 0e62cf1
 
 ### Phase 4: Panel orchestrator, proof route & verification
 
 #### Automated
 
-- [ ] 4.1 `runPanel` unit test confirms parallel dispatch, per-persona tagging, sibling cancellation
-- [ ] 4.2 Full suite, type check, lint, build pass
+- [x] 4.1 `runPanel` unit test confirms parallel dispatch, per-persona tagging, sibling cancellation
+- [x] 4.2 Full suite, type check, lint, build pass
 
 #### Manual
 
