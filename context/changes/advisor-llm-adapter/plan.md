@@ -342,11 +342,11 @@ No data migrations (F-02 owns the schema). The only forward step for consumers: 
 
 #### Automated
 
-- [x] 4.1 `runPanel` unit test confirms parallel dispatch, per-persona tagging, sibling cancellation
-- [x] 4.2 Full suite, type check, lint, build pass
+- [x] 4.1 `runPanel` unit test confirms parallel dispatch, per-persona tagging, sibling cancellation — ac03276
+- [x] 4.2 Full suite, type check, lint, build pass — ac03276
 
 #### Manual
 
-- [ ] 4.3 Debug route streams tokens live on workerd (`npm run dev`)
-- [ ] 4.4 `npm run smoke:advisor` prints four scores with spread > 2 pkt on a representative decision
-- [ ] 4.5 Aborting the debug request cancels in-flight OpenRouter calls
+- [x] 4.3 Debug route streams tokens live on workerd (`npm run dev`)
+- [x] 4.4 `npm run smoke:advisor` prints four scores with spread > 2 pkt on a representative decision
+- [x] 4.5 Aborting the debug request cancels in-flight OpenRouter calls
