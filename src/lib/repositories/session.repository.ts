@@ -116,6 +116,29 @@ export class SessionRepository {
     return ok(sessions);
   }
 
+  async getOpinions(sessionId: string, roundNumber: number): Promise<Result<AdvisorOpinionRecord[], DbError>> {
+    const { data, error } = (await this.client
+      .from("advisor_opinions")
+      .select()
+      .eq("session_id", sessionId)
+      .eq("round_number", roundNumber)
+      .order("persona_id", { ascending: true })) as DbResponse<unknown[]>;
+
+    if (error) {
+      return err(new DbError("Failed to fetch advisor opinions", error));
+    }
+
+    const records: AdvisorOpinionRecord[] = [];
+    for (const row of data ?? []) {
+      const parsed = parseRow(AdvisorOpinionRowSchema, row);
+      if (!parsed.ok) {
+        return parsed;
+      }
+      records.push(toAdvisorOpinion(parsed.value));
+    }
+    return ok(records);
+  }
+
   async getSession(id: string): Promise<Result<Session | null, DbError>> {
     const { data, error } = (await this.client
       .from("sessions")

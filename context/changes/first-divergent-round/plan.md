@@ -405,9 +405,9 @@ No new migration — `sessions` and `advisor_opinions` from F-02 are sufficient.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm run test`
-- [x] 1.2 Type checking passes: `npx astro check`
-- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.1 Unit tests pass: `npm run test` — 5c0a7b0
+- [x] 1.2 Type checking passes: `npx astro check` — 5c0a7b0
+- [x] 1.3 Linting passes: `npm run lint` — 5c0a7b0
 
 #### Manual
 
@@ -417,9 +417,9 @@ No new migration — `sessions` and `advisor_opinions` from F-02 are sufficient.
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `npm run test`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests pass: `npm run test`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Linting passes: `npm run lint`
 
 #### Manual
 

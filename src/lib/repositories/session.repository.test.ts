@@ -153,6 +153,44 @@ describe("SessionRepository.listSessions", () => {
   });
 });
 
+describe("SessionRepository.getOpinions", () => {
+  it("returns mapped opinion records ordered by persona_id", async () => {
+    const { client, builder } = makeClient({ data: [opinionRow], error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getOpinions("session-1", 1);
+
+    expect(builder.eq).toHaveBeenCalledWith("session_id", "session-1");
+    expect(builder.eq).toHaveBeenCalledWith("round_number", 1);
+    expect(builder.order).toHaveBeenCalledWith("persona_id", { ascending: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual([expect.objectContaining({ id: "opinion-1", personaId: "optymista" })]);
+    }
+  });
+
+  it("returns ok([]) when no opinions exist for the round", async () => {
+    const { client } = makeClient({ data: [], error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getOpinions("session-1", 1);
+
+    expect(result).toEqual({ ok: true, value: [] });
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "select failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getOpinions("session-1", 1);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
 describe("SessionRepository.getSession", () => {
   it("returns the mapped session when found", async () => {
     const { client } = makeClient({ data: sessionRow, error: null });
