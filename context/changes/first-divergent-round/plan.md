@@ -444,9 +444,9 @@ No new migration — `sessions` and `advisor_opinions` from F-02 are sufficient.
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npx astro check`
-- [x] 4.2 Linting passes: `npm run lint`
-- [x] 4.3 Production build passes: `npm run build`
+- [x] 4.1 Type checking passes: `npx astro check` — 5e83c11
+- [x] 4.2 Linting passes: `npm run lint` — 5e83c11
+- [x] 4.3 Production build passes: `npm run build` — 5e83c11
 
 #### Manual
 
@@ -458,9 +458,9 @@ No new migration — `sessions` and `advisor_opinions` from F-02 are sufficient.
 
 #### Automated
 
-- [ ] 5.1 Type checking passes: `npx astro check`
-- [ ] 5.2 Linting passes: `npm run lint`
-- [ ] 5.3 Production build passes: `npm run build`
+- [x] 5.1 Type checking passes: `npx astro check`
+- [x] 5.2 Linting passes: `npm run lint`
+- [x] 5.3 Production build passes: `npm run build`
 
 #### Manual
 

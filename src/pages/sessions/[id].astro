@@ -1,0 +1,65 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { AdvisorPanel } from "@/components/advisor-panel/AdvisorPanel";
+import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
+import { SessionRepository } from "@/lib/repositories/session.repository";
+import { createClient } from "@/lib/supabase";
+
+const { id } = Astro.params;
+const user = Astro.locals.user;
+const sessionId = id ?? "";
+
+let notFound = !id || !user;
+let decision = "";
+let context: string | null = null;
+
+if (id && user) {
+  const client = createClient(Astro.request.headers, Astro.cookies);
+  if (!client) {
+    notFound = true;
+  } else {
+    const repository = new SessionRepository(client);
+    const result = await repository.getSession(id);
+    if (!result.ok || result.value?.userId !== user.id) {
+      notFound = true;
+    } else {
+      decision = result.value.decision;
+      context = result.value.context;
+    }
+  }
+}
+
+if (notFound) {
+  Astro.response.status = 404;
+}
+
+const personas = ADVISOR_REGISTRY.map((persona) => ({ id: persona.id, label: persona.label }));
+---
+
+<Layout title="Panel doradców — Panel Ekspertów">
+  <div class="bg-pixel-grid flex min-h-screen w-full flex-col items-center bg-background p-4 sm:p-8">
+    <div class="mx-auto w-full max-w-5xl pt-12 sm:pt-16">
+      {notFound ? (
+        <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
+          <h1 class="font-pixel mb-4 text-lg text-accent sm:text-xl">NIE ZNALEZIONO SESJI</h1>
+          <p class="mb-6 text-sm text-muted-foreground">Ta sesja nie istnieje albo nie masz do niej dostępu.</p>
+          <a
+            href="/sessions/new"
+            class="pixel-btn font-pixel inline-flex bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
+          >
+            NOWA DECYZJA
+          </a>
+        </div>
+      ) : (
+        <>
+          <div class="pixel-panel mb-8 p-6 sm:p-8">
+            <h1 class="font-pixel mb-4 text-lg text-accent sm:text-xl">TWOJA DECYZJA</h1>
+            <p class="text-sm leading-relaxed text-foreground">{decision}</p>
+            {context && <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{context}</p>}
+          </div>
+          <AdvisorPanel sessionId={sessionId} personas={personas} client:load />
+        </>
+      )}
+    </div>
+  </div>
+</Layout>
