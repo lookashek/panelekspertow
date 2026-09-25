@@ -43,7 +43,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | ----- | ----------------------- | ---------------------------------------------------------------- | ------------- | --------------------------------- | -------- |
 | F-01  | advisor-llm-adapter     | (foundation) adapter LLM + rejestr predefiniowanych doradców     | —             | FR-003, FR-009, NFR-rozrzut       | done    |
 | F-02  | session-store-rls       | (foundation) trwałość sesji + polityka RLS izolacji per użytkownik | —           | FR-001, FR-006, guardrail         | done |
-| S-01  | first-divergent-round   | opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1   | F-01, F-02    | US-01, FR-001, FR-002, FR-003, FR-006, FR-009 | in-progress |
+| S-01  | first-divergent-round   | opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1   | F-01, F-02    | US-01, FR-001, FR-002, FR-003, FR-006, FR-009 | done |
 | S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | proposed |
 | S-03  | session-synthesis       | zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu | S-01          | US-01, FR-005, FR-010             | proposed |
 | S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | proposed |
@@ -115,7 +115,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Kształt onboardingu przed pierwszą sesją, by rejestracja nie odstraszała (PRD Otwarte pytanie #1) — Owner: user. Block: no.
   - Czy izolacja person w rundzie pierwszej realnie daje rozrzut > 2 pkt — Owner: user. Block: no (weryfikowane pomiarem na tym slice).
 - **Risk:** Gwiazda przewodnia i milestone walidacyjny — sekwencjonowana zaraz po fundamentach, bo tu mierzy się Kryterium Primary. Ryzyko: równoległy streaming wielu doradców na edge runtime może dobić limity odpowiedzi (patrz F-01).
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Runda druga — atrybucja zmiany zdania
 
@@ -223,3 +223,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **F-01: (foundation) w kodzie jest minimalny port do dostawcy LLM (OpenRouter) zdolny do równoległych, streamowanych odpowiedzi oraz rejestr predefiniowanych person doradczych z celowo sprzecznymi profilami (optymista, sceptyk, pragmatyk, analityk). Nie obejmuje żadnej logiki rund ani UI.** — Archived 2026-09-23 → `context/archive/2026-09-23-advisor-llm-adapter/`. Lesson: —.
 - **F-02: (foundation) istnieje minimalny schemat trwałości sesji (sesje + opinie doradców, powiązane z użytkownikiem) z włączonym RLS i politykami per-operacja/per-rola, ustanawiający wzorzec izolacji per użytkownik. Nie obejmuje całej domeny danych — tylko tyle, by S-01 mógł zapisać pierwszą sesję.** — Archived 2026-09-23 → `context/archive/2026-09-23-session-store-rls/`. Lesson: —.
+- **S-01: opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1** — Archived 2026-09-25 → `context/archive/2026-09-25-first-divergent-round/`. Lesson: —.
