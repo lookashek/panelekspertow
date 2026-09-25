@@ -21,3 +21,10 @@
 **Rule**: For plain object-shape type declarations, interface is required by the enforced ESLint stylisticTypeChecked rule, regardless of shared.md's general prose preference for type. Reserve type for unions, primitives, mapped/conditional types, and anything needing utility-type composition.
 
 **Applies to**: Any TypeScript file in src/**; also /10x-impl-review and any manual review checking type vs interface usage
+
+## Enforce ownership with RLS AND an explicit service-side check
+
+- **Context**: Any plan/handler/service for an endpoint that loads a user-owned row by id under Supabase RLS (sessions, rounds, opinions) — src/lib/services/**, src/pages/api/**.
+- **Problem**: Plans repeatedly rely on RLS alone ('query returns null when not owned → 404') and omit the service-side ownership check. backend.md §7 mandates BOTH as defense-in-depth; RLS-only degrades silently if a query ever runs with an elevated client or a policy regresses. Surfaced as F5 in the first-divergent-round plan review.
+- **Rule**: For any endpoint that reads a user-owned row by id, enforce ownership with RLS AND an explicit service-side check (compare the loaded row's userId to the caller's id → NotFound). Never rely on RLS alone.
+- **Applies to**: plan, plan-review, implement, impl-review

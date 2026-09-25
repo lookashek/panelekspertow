@@ -2,10 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
 import type { PanelInput } from "@/lib/advisors/registry";
+import type { AdvisorOpinion } from "@/lib/schemas/advisor";
 
 const sampleInput: PanelInput = {
   decision: "Czy powinienem zmienić pracę na ofertę z wyższą pensją, ale mniej stabilną firmą?",
   context: "Mam dwoje dzieci na utrzymaniu i pół roku oszczędności.",
+};
+
+const sampleHead: AdvisorOpinion = {
+  score: 6,
+  thesis: "Warto rozważyć zmianę, ale z zastrzeżeniami.",
+  arguments: ["Wyższa pensja poprawia sytuację finansową.", "Mniejsza stabilność zwiększa ryzyko."],
 };
 
 describe("ADVISOR_REGISTRY", () => {
@@ -33,10 +40,29 @@ describe("ADVISOR_REGISTRY", () => {
     expect(user.length).toBeGreaterThan(0);
   });
 
-  it.each(ADVISOR_REGISTRY)("$id prompt mentions JSON, score and thesis", (persona) => {
+  it.each(ADVISOR_REGISTRY)("$id prompt mentions JSON, score, thesis and arguments", (persona) => {
     const { system } = persona.buildPrompt(sampleInput);
     expect(system).toMatch(/JSON/i);
     expect(system).toMatch(/score/i);
     expect(system).toMatch(/thesis/i);
+    expect(system).toMatch(/arguments/i);
   });
+
+  it.each(ADVISOR_REGISTRY)(
+    "$id builds a non-empty rationale system and user prompt from the resolved head",
+    (persona) => {
+      const { system, user } = persona.buildRationalePrompt(sampleInput, sampleHead);
+      expect(system.length).toBeGreaterThan(0);
+      expect(user.length).toBeGreaterThan(0);
+    },
+  );
+
+  it.each(ADVISOR_REGISTRY)(
+    "$id rationale prompt does not ask for JSON and references the head's thesis",
+    (persona) => {
+      const { system, user } = persona.buildRationalePrompt(sampleInput, sampleHead);
+      expect(system).not.toMatch(/WYŁĄCZNIE obiektem JSON/i);
+      expect(user).toContain(sampleHead.thesis);
+    },
+  );
 });

@@ -1,7 +1,7 @@
 ---
 change_id: first-divergent-round
 title: First divergent round
-status: new
+status: implementing
 created: 2026-09-25
 updated: 2026-09-25
 archived_at: null

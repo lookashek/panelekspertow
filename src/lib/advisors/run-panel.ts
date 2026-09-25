@@ -12,8 +12,8 @@ import { ErrorCode, LlmError } from "@/lib/errors";
 import type { Result } from "@/lib/result";
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
 import type { AdvisorPersonaId, AdvisorStrategy, PanelInput } from "@/lib/advisors/registry";
-import { AdvisorScoreSchema } from "@/lib/schemas/advisor";
-import type { AdvisorScore } from "@/lib/schemas/advisor";
+import { AdvisorOpinionSchema } from "@/lib/schemas/advisor";
+import type { AdvisorOpinion } from "@/lib/schemas/advisor";
 
 const PROMPT_VERSION = "v1";
 
@@ -28,7 +28,7 @@ export interface RunPanelDeps {
 }
 
 export interface RunPanelResult {
-  scores: Promise<Result<AdvisorScore, LlmError>[]>;
+  scores: Promise<Result<AdvisorOpinion, LlmError>[]>;
   stream: ReadableStream<PanelStreamChunk>;
 }
 
@@ -66,9 +66,7 @@ function createSharedController(signal: AbortSignal | undefined): AbortControlle
 
 interface PersonaTask {
   persona: AdvisorStrategy;
-  system: string;
-  user: string;
-  completion: Promise<Result<AdvisorScore, LlmError>>;
+  completion: Promise<Result<AdvisorOpinion, LlmError>>;
 }
 
 export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSignal): RunPanelResult {
@@ -78,17 +76,17 @@ export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSi
 
   const tasks: PersonaTask[] = personas.map((persona) => {
     const { system, user } = persona.buildPrompt(input);
-    const completion = deps.provider.complete<AdvisorScore>({
+    const completion = deps.provider.complete<AdvisorOpinion>({
       model: defaultAdvisorModel(),
       system,
       user,
-      schema: AdvisorScoreSchema,
+      schema: AdvisorOpinionSchema,
       signal: controller.signal,
       temperature: persona.temperature,
       persona: persona.id,
       promptVersion: PROMPT_VERSION,
     });
-    return { persona, system, user, completion };
+    return { persona, completion };
   });
 
   const scores = Promise.all(tasks.map((task) => task.completion));
@@ -96,7 +94,7 @@ export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSi
   const stream = new ReadableStream<PanelStreamChunk>({
     async start(streamController) {
       await Promise.all(
-        tasks.map(async ({ persona, system, user, completion }) => {
+        tasks.map(async ({ persona, completion }) => {
           const result = await completion;
           if (!result.ok) {
             streamController.enqueue({ personaId: persona.id, chunk: { type: "error", error: result.error } });
@@ -105,6 +103,7 @@ export function runPanel(deps: RunPanelDeps, input: PanelInput, signal?: AbortSi
 
           let reader: ReadableStreamDefaultReader<StreamChunk> | undefined;
           try {
+            const { system, user } = persona.buildRationalePrompt(input, result.value);
             const personaStream = deps.provider.stream({
               model: defaultAdvisorModel(),
               system,

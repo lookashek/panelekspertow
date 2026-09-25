@@ -11,9 +11,10 @@ import { ErrorCode, LlmError } from "@/lib/errors";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
+import type { AdvisorStrategy } from "@/lib/advisors/registry";
 import { runPanel } from "@/lib/advisors/run-panel";
 import type { PanelStreamChunk } from "@/lib/advisors/run-panel";
-import type { AdvisorScore } from "@/lib/schemas/advisor";
+import type { AdvisorOpinion } from "@/lib/schemas/advisor";
 
 function makeTokenStream(text: string): ReadableStream<StreamChunk> {
   return new ReadableStream<StreamChunk>({
@@ -26,7 +27,7 @@ function makeTokenStream(text: string): ReadableStream<StreamChunk> {
 }
 
 function makeProvider(overrides: {
-  complete: (req: CompleteRequest<AdvisorScore>) => Promise<Result<AdvisorScore, LlmError>>;
+  complete: (req: CompleteRequest<AdvisorOpinion>) => Promise<Result<AdvisorOpinion, LlmError>>;
   stream: (req: StreamRequest) => ReadableStream<StreamChunk>;
 }): LlmProvider {
   return overrides as unknown as LlmProvider;
@@ -45,7 +46,7 @@ async function collect(stream: ReadableStream<PanelStreamChunk>): Promise<PanelS
 
 describe("runPanel", () => {
   it("dispatches complete() to every persona in parallel", async () => {
-    const completeMock = vi.fn().mockResolvedValue(ok({ score: 5, thesis: "t" }));
+    const completeMock = vi.fn().mockResolvedValue(ok({ score: 5, thesis: "t", arguments: ["a"] }));
     const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
     const provider = makeProvider({ complete: completeMock, stream: streamMock });
 
@@ -59,7 +60,7 @@ describe("runPanel", () => {
   });
 
   it("tags every merged stream chunk with the originating personaId", async () => {
-    const completeMock = vi.fn().mockResolvedValue(ok({ score: 5, thesis: "t" }));
+    const completeMock = vi.fn().mockResolvedValue(ok({ score: 5, thesis: "t", arguments: ["a"] }));
     const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
     const provider = makeProvider({ complete: completeMock, stream: streamMock });
 
@@ -80,7 +81,7 @@ describe("runPanel", () => {
     const completeMock = vi
       .fn()
       .mockImplementationOnce(() => Promise.resolve(err(new LlmError("bad output", ErrorCode.LLM_INVALID_OUTPUT))))
-      .mockResolvedValue(ok({ score: 5, thesis: "t" }));
+      .mockResolvedValue(ok({ score: 5, thesis: "t", arguments: ["a"] }));
     const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
     const provider = makeProvider({ complete: completeMock, stream: streamMock });
 
@@ -102,9 +103,9 @@ describe("runPanel", () => {
   it("propagates a caller abort into the signal passed to every provider call", async () => {
     const controller = new AbortController();
     const receivedCompleteSignals: (AbortSignal | undefined)[] = [];
-    const completeMock = vi.fn().mockImplementation((req: CompleteRequest<AdvisorScore>) => {
+    const completeMock = vi.fn().mockImplementation((req: CompleteRequest<AdvisorOpinion>) => {
       receivedCompleteSignals.push(req.signal);
-      return Promise.resolve(ok({ score: 5, thesis: "t" }));
+      return Promise.resolve(ok({ score: 5, thesis: "t", arguments: ["a"] }));
     });
     const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
     const provider = makeProvider({ complete: completeMock, stream: streamMock });
@@ -117,5 +118,32 @@ describe("runPanel", () => {
     for (const signal of receivedCompleteSignals) {
       expect(signal?.aborted).toBe(true);
     }
+  });
+
+  it("streams from the rationale prompt built from the resolved head, not the head prompt", async () => {
+    const head: AdvisorOpinion = { score: 7, thesis: "head thesis", arguments: ["head argument"] };
+    const rationalePrompt = { system: "rationale-system", user: "rationale-user" };
+    const buildRationalePrompt = vi.fn().mockReturnValue(rationalePrompt);
+    const testPersona: AdvisorStrategy = {
+      id: "optymista",
+      label: "Optymista",
+      buildPrompt: () => ({ system: "head-system", user: "head-user" }),
+      buildRationalePrompt,
+      temperature: 0.9,
+      parseScore: (raw) => ok(raw as AdvisorOpinion),
+    };
+    const completeMock = vi.fn().mockResolvedValue(ok(head));
+    const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
+    const provider = makeProvider({ complete: completeMock, stream: streamMock });
+
+    const input = { decision: "Should I do X?" };
+    const { stream } = runPanel({ provider, personas: [testPersona] }, input);
+    await collect(stream);
+
+    expect(buildRationalePrompt).toHaveBeenCalledWith(input, head);
+    expect(streamMock).toHaveBeenCalledTimes(1);
+    const streamCall = streamMock.mock.calls[0]?.[0] as StreamRequest;
+    expect(streamCall.system).toBe(rationalePrompt.system);
+    expect(streamCall.user).toBe(rationalePrompt.user);
   });
 });

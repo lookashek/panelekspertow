@@ -5,23 +5,31 @@
  * and any future caller select a stable panel composition from `ADVISOR_REGISTRY`.
  */
 
-import { z } from "zod";
-
 import type { LlmError } from "@/lib/errors";
 import { parseScore } from "@/lib/advisors/parse-score";
-import { buildPrompt as buildOptymistaPrompt } from "@/lib/prompts/advisor-optymista.v1";
-import { buildPrompt as buildSceptykPrompt } from "@/lib/prompts/advisor-sceptyk.v1";
-import { buildPrompt as buildPragmatykPrompt } from "@/lib/prompts/advisor-pragmatyk.v1";
-import { buildPrompt as buildAnalitykPrompt } from "@/lib/prompts/advisor-analityk.v1";
+import {
+  buildPrompt as buildOptymistaPrompt,
+  buildRationalePrompt as buildOptymistaRationalePrompt,
+} from "@/lib/prompts/advisor-optymista.v1";
+import {
+  buildPrompt as buildSceptykPrompt,
+  buildRationalePrompt as buildSceptykRationalePrompt,
+} from "@/lib/prompts/advisor-sceptyk.v1";
+import {
+  buildPrompt as buildPragmatykPrompt,
+  buildRationalePrompt as buildPragmatykRationalePrompt,
+} from "@/lib/prompts/advisor-pragmatyk.v1";
+import {
+  buildPrompt as buildAnalitykPrompt,
+  buildRationalePrompt as buildAnalitykRationalePrompt,
+} from "@/lib/prompts/advisor-analityk.v1";
 import type { Result } from "@/lib/result";
-import type { AdvisorScore } from "@/lib/schemas/advisor";
+import type { AdvisorOpinion, AdvisorScore } from "@/lib/schemas/advisor";
+import { PanelInputSchema } from "@/lib/schemas/panel";
+import type { PanelInput } from "@/lib/schemas/panel";
 
-export const PanelInputSchema = z.object({
-  decision: z.string().min(1),
-  context: z.string().optional(),
-});
-
-export type PanelInput = z.infer<typeof PanelInputSchema>;
+export { PanelInputSchema };
+export type { PanelInput };
 
 export type AdvisorPersonaId = "optymista" | "sceptyk" | "pragmatyk" | "analityk";
 
@@ -29,6 +37,7 @@ export interface AdvisorStrategy {
   id: AdvisorPersonaId;
   label: string;
   buildPrompt(input: PanelInput): { system: string; user: string };
+  buildRationalePrompt(input: PanelInput, head: AdvisorOpinion): { system: string; user: string };
   temperature: number;
   parseScore(raw: unknown): Result<AdvisorScore, LlmError>;
 }
@@ -43,6 +52,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     id: "optymista",
     label: "Optymista",
     buildPrompt: buildOptymistaPrompt,
+    buildRationalePrompt: buildOptymistaRationalePrompt,
     temperature: 0.9,
     parseScore,
   },
@@ -50,6 +60,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     id: "sceptyk",
     label: "Sceptyk",
     buildPrompt: buildSceptykPrompt,
+    buildRationalePrompt: buildSceptykRationalePrompt,
     temperature: 0.7,
     parseScore,
   },
@@ -57,6 +68,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     id: "pragmatyk",
     label: "Pragmatyk",
     buildPrompt: buildPragmatykPrompt,
+    buildRationalePrompt: buildPragmatykRationalePrompt,
     temperature: 0.5,
     parseScore,
   },
@@ -64,6 +76,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     id: "analityk",
     label: "Analityk",
     buildPrompt: buildAnalitykPrompt,
+    buildRationalePrompt: buildAnalitykRationalePrompt,
     temperature: 0.3,
     parseScore,
   },
