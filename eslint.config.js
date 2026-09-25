@@ -71,7 +71,7 @@ const astroConfig = defineConfig({
 });
 
 const scriptsConfig = defineConfig({
-  files: ["scripts/**/*.mjs", ".claude/**/*.mjs"],
+  files: ["scripts/**/*.mjs", ".claude/hooks/**/*.mjs"],
   extends: [tseslint.configs.disableTypeChecked],
   languageOptions: { globals: { console: true, process: true, fetch: true, URLSearchParams: true } },
   rules: { "no-console": "off" },
@@ -79,6 +79,8 @@ const scriptsConfig = defineConfig({
 
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
+  // 10x-cli toolkit-managed, re-synced by the course tool - not project code, don't lint it.
+  { ignores: [".claude/skills/**"] },
   baseConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
