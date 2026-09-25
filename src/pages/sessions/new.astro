@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { DecisionForm } from "@/components/decision-form/DecisionForm";
+---
+
+<Layout title="Nowa decyzja — Panel Ekspertów">
+  <div class="bg-pixel-grid flex min-h-screen w-full flex-col items-center bg-background p-4 sm:p-8">
+    <div class="mx-auto w-full max-w-xl pt-12 sm:pt-20">
+      <h1 class="font-pixel mb-8 text-center text-lg text-accent sm:text-xl">NOWA DECYZJA</h1>
+      <div class="pixel-panel p-6 sm:p-8">
+        <DecisionForm client:load />
+      </div>
+    </div>
+  </div>
+</Layout>

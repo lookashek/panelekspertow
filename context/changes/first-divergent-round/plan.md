@@ -429,9 +429,9 @@ No new migration — `sessions` and `advisor_opinions` from F-02 are sufficient.
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npx astro check`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 Production build passes: `npm run build`
+- [x] 3.1 Type checking passes: `npx astro check` — 5a1e7fb
+- [x] 3.2 Linting passes: `npm run lint` — 5a1e7fb
+- [x] 3.3 Production build passes: `npm run build` — 5a1e7fb
 - [ ] 3.4 Auth-flow smoke test passes: `npm run smoke` — not runnable in this sandbox (no local Supabase/Docker); needs manual run
 
 #### Manual
@@ -444,9 +444,9 @@ No new migration — `sessions` and `advisor_opinions` from F-02 are sufficient.
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npx astro check`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Production build passes: `npm run build`
+- [x] 4.1 Type checking passes: `npx astro check`
+- [x] 4.2 Linting passes: `npm run lint`
+- [x] 4.3 Production build passes: `npm run build`
 
 #### Manual
 
