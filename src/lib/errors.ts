@@ -13,6 +13,7 @@ export const ErrorCode = {
   VALIDATION_ERROR: "VALIDATION_ERROR",
   NOT_FOUND: "NOT_FOUND",
   DB_ERROR: "DB_ERROR",
+  UNAUTHORIZED: "UNAUTHORIZED",
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -56,5 +57,12 @@ export class DbError extends AppError {
   constructor(message: string, cause?: unknown) {
     super(message, ErrorCode.DB_ERROR, 500, cause);
     this.name = "DbError";
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message: string, cause?: unknown) {
+    super(message, ErrorCode.UNAUTHORIZED, 401, cause);
+    this.name = "UnauthorizedError";
   }
 }

@@ -29,6 +29,7 @@ export type PanelRunEvent =
 
 export interface PanelRunView {
   events: AsyncIterable<PanelRunEvent>;
+  persistTail?: Promise<void>;
 }
 
 export interface SessionServiceDeps {
@@ -154,9 +155,9 @@ export class SessionService {
       undefined,
     );
 
-    void this.persistAndLogSpread(sessionId, scores, personas);
+    const persistTail = this.persistAndLogSpread(sessionId, scores, personas);
 
-    return ok({ events: buildLiveEvents(scores, stream, personas) });
+    return ok({ events: buildLiveEvents(scores, stream, personas), persistTail });
   }
 
   private async persistAndLogSpread(
