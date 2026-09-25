@@ -44,7 +44,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | F-01  | advisor-llm-adapter     | (foundation) adapter LLM + rejestr predefiniowanych doradców     | —             | FR-003, FR-009, NFR-rozrzut       | done    |
 | F-02  | session-store-rls       | (foundation) trwałość sesji + polityka RLS izolacji per użytkownik | —           | FR-001, FR-006, guardrail         | done |
 | S-01  | first-divergent-round   | opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1   | F-01, F-02    | US-01, FR-001, FR-002, FR-003, FR-006, FR-009 | done |
-| S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | proposed |
+| S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | planning |
 | S-03  | session-synthesis       | zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu | S-01          | US-01, FR-005, FR-010             | proposed |
 | S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | proposed |
 | S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | proposed |
@@ -128,7 +128,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Jakość atrybucji ("teatr atrybucji" — model rytualnie wskazuje autora bez merytorycznej zmiany zdania); wymaga kontroli w prototypie rundy drugiej (PRD Otwarte pytanie #2) — Owner: user. Block: no (rozstrzygane przez zbudowanie i ocenę prototypu; warunkuje wiarygodność Kryterium Secondary).
 - **Risk:** Sekwencjonowana zaraz po gwiazdie, bo atrybucja to drugie najbardziej ryzykowne założenie (cel `market-feedback` każe wyciągać ryzyko wcześnie). Ryzyko: pusta, teatralna atrybucja podważa Kryterium Secondary.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-03: Synteza na zakończenie sesji
 
