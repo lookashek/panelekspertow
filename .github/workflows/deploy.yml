@@ -2,6 +2,11 @@
 #   - push to main  -> production deploy (wrangler deploy)
 #   - pull_request   -> preview version (wrangler versions upload), URL posted as a PR comment
 #
+# Build and deploy must run in the same job/workspace: @astrojs/cloudflare writes a
+# `.wrangler/deploy/config.json` redirect next to `dist/` during `astro build` that `wrangler
+# deploy` needs to find the generated entry-point. Splitting build/deploy across jobs (even via
+# an artifact carrying `dist/`) breaks that redirect - don't reintroduce a separate build job.
+#
 # Requires repo secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
 # SUPABASE_URL, SUPABASE_KEY (build-time only - env vars declared optional in astro.config.mjs).
 # Runtime secrets (SUPABASE_URL, SUPABASE_KEY, OPENROUTER_API_KEY) live on the Worker itself via
@@ -20,28 +25,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-          retention-days: 1
-
   deploy-production:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -53,10 +38,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
+      - run: npm run build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -65,7 +50,6 @@ jobs:
 
   deploy-preview:
     if: github.event_name == 'pull_request'
-    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -77,10 +61,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
+      - run: npm run build
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       - uses: cloudflare/wrangler-action@v3
         id: deploy
         with:
