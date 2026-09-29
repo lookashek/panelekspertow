@@ -380,9 +380,9 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [x] 5.1 Linting passes: `npm run lint`
-- [x] 5.2 Type checking passes: `npm run build`
-- [x] 5.3 Component/hook unit tests pass (if runner covers them): dispute axes always shown, risk weight label text, error state shows retry — N/A, no React component test runner in this repo; covered by manual verification
+- [x] 5.1 Linting passes: `npm run lint` — 7652501
+- [x] 5.2 Type checking passes: `npm run build` — 7652501
+- [x] 5.3 Component/hook unit tests pass (if runner covers them): dispute axes always shown, risk weight label text, error state shows retry — N/A, no React component test runner in this repo; covered by manual verification — 7652501
 
 #### Manual
 
