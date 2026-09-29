@@ -551,22 +551,22 @@ session is ever deleted. No backfill required.
 
 #### Automated
 
-- [x] 4.1 Service unit tests pass (ownership, unavailable, rate-limit/cap, head precedence, persist ordering): `npm run test`
-- [x] 4.2 Type checking passes: `npx astro check`
-- [x] 4.3 Linting passes: `npm run lint`
+- [x] 4.1 Service unit tests pass (ownership, unavailable, rate-limit/cap, head precedence, persist ordering): `npm run test` — 312aaea
+- [x] 4.2 Type checking passes: `npx astro check` — 312aaea
+- [x] 4.3 Linting passes: `npm run lint` — 312aaea
 
 ### Phase 5: API route (POST-SSE)
 
 #### Automated
 
-- [ ] 5.1 Type checking passes: `npx astro check`
-- [ ] 5.2 Linting passes: `npm run lint`
-- [ ] 5.3 Production build passes: `npm run build`
+- [x] 5.1 Type checking passes: `npx astro check`
+- [x] 5.2 Linting passes: `npm run lint`
+- [x] 5.3 Production build passes: `npm run build`
 
 #### Manual
 
-- [ ] 5.4 POST with valid cookie streams `token` frames then `done`; 401/400/404/429 as specified
-- [ ] 5.5 `npm run smoke` passes against a running server
+- [x] 5.4 POST with valid cookie streams `token` frames then `done`; 401/400/404/429 as specified
+- [x] 5.5 `npm run smoke` passes against a running server
 
 ### Phase 6: UI — expander, hook, SSR replay
 
