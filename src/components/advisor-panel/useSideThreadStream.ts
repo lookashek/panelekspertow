@@ -18,6 +18,7 @@ export interface SideThreadState {
   messages: SideThreadViewMessage[];
   status: SideThreadStatus;
   error?: string;
+  errorCode?: string;
   send: (text: string) => void;
 }
 
@@ -65,6 +66,7 @@ export function useSideThreadStream(
   const [messages, setMessages] = useState<SideThreadViewMessage[]>(initialMessages);
   const [status, setStatus] = useState<SideThreadStatus>("idle");
   const [error, setError] = useState<string | undefined>(undefined);
+  const [errorCode, setErrorCode] = useState<string | undefined>(undefined);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -77,6 +79,7 @@ export function useSideThreadStream(
     setMessages((prev) => [...prev, { role: "user", content: text }, { role: "advisor", content: "" }]);
     setStatus("streaming");
     setError(undefined);
+    setErrorCode(undefined);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -101,16 +104,19 @@ export function useSideThreadStream(
 
         if (!response.ok || !response.body) {
           let message = "Nie udało się wysłać dopytania.";
+          let code: string | undefined;
           try {
-            const body = (await response.json()) as { error?: { message?: string } };
+            const body = (await response.json()) as { error?: { code?: string; message?: string } };
             if (body.error?.message) {
               message = body.error.message;
             }
+            code = body.error?.code;
           } catch {
             // non-JSON error body — fall back to the default message
           }
           setStatus("error");
           setError(message);
+          setErrorCode(code);
           return;
         }
 
@@ -136,6 +142,7 @@ export function useSideThreadStream(
               const data = JSON.parse(frame.data) as ErrorFrameData;
               setStatus("error");
               setError(data.message);
+              setErrorCode(data.code);
             }
           }
         }
@@ -149,5 +156,5 @@ export function useSideThreadStream(
     })();
   };
 
-  return { messages, status, error, send };
+  return { messages, status, error, errorCode, send };
 }

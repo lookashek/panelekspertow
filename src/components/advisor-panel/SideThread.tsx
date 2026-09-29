@@ -16,11 +16,11 @@ interface SideThreadProps {
 }
 
 export function SideThread({ sessionId, personaId, label, initialMessages }: SideThreadProps) {
-  const { messages, status, error, send } = useSideThreadStream(sessionId, personaId, initialMessages);
+  const { messages, status, error, errorCode, send } = useSideThreadStream(sessionId, personaId, initialMessages);
   const [draft, setDraft] = useState("");
   const textareaId = `side-thread-input-${personaId}`;
 
-  const disabled = status === "streaming";
+  const disabled = status === "streaming" || errorCode === "RATE_LIMITED";
 
   const handleSend = () => {
     const trimmed = draft.trim();

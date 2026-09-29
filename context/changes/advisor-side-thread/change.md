@@ -1,7 +1,7 @@
 ---
 change_id: advisor-side-thread
 title: Advisor side thread
-status: implemented
+status: impl_reviewed
 created: 2026-09-25
 updated: 2026-09-29
 archived_at: null
