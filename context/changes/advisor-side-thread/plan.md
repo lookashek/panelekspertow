@@ -572,14 +572,14 @@ session is ever deleted. No backfill required.
 
 #### Automated
 
-- [x] 6.1 Type checking passes: `npx astro check`
-- [x] 6.2 Linting passes (no new `console.*`): `npm run lint`
-- [x] 6.3 Production build passes: `npm run build`
+- [x] 6.1 Type checking passes: `npx astro check` — b859e81
+- [x] 6.2 Linting passes (no new `console.*`): `npm run lint` — b859e81
+- [x] 6.3 Production build passes: `npm run build` — b859e81
 
 #### Manual
 
-- [x] 6.4 "Dopytaj" streams an in-character multi-turn answer on an eligible persona
-- [x] 6.5 Reload restores every thread; ineligible personas show no affordance
-- [x] 6.6 Side thread during a live round-two stream neither blocks nor disturbs the debate
-- [x] 6.7 Keyboard + screen-reader pass; 375px/1280px layout; reduced-motion honored; AA contrast
-- [x] 6.8 Round-two card shows no side-thread affordance (opt-in prop respected)
+- [x] 6.4 "Dopytaj" streams an in-character multi-turn answer on an eligible persona — b859e81
+- [x] 6.5 Reload restores every thread; ineligible personas show no affordance — b859e81
+- [x] 6.6 Side thread during a live round-two stream neither blocks nor disturbs the debate — b859e81
+- [x] 6.7 Keyboard + screen-reader pass; 375px/1280px layout; reduced-motion honored; AA contrast — b859e81
+- [x] 6.8 Round-two card shows no side-thread affordance (opt-in prop respected) — b859e81
