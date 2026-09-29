@@ -33,7 +33,7 @@
   - Tradeoff: None meaningful — this only changes behavior in the previously-unhandled "silently closed without a terminal frame" case.
   - Confidence: HIGH — the control-flow gap is unambiguous by reading the loop; the fix is a direct, narrow patch.
   - Blind spot: Haven't reproduced an actual mid-stream Worker eviction in a live environment — this is a code-reading finding, not one confirmed by a repro test.
-- **Decision**: PENDING
+- **Decision**: SKIPPED
 
 ### F2 — Composer doesn't stay disabled once the per-thread message cap is hit
 
@@ -47,7 +47,7 @@
   - Tradeoff: Slightly widens the hook's public return shape; minor, additive change.
   - Confidence: HIGH — the fix is mechanical and the existing test suite covers the service-side enforcement, so this is purely a client-side presentation fix with no risk to the actual guardrail.
   - Blind spot: None significant.
-- **Decision**: PENDING
+- **Decision**: FIXED (commit a8034f5 — `useSideThreadStream` surfaces `errorCode`; `SideThread` disables the composer when `errorCode === "RATE_LIMITED"`)
 
 ### F3 — Side-thread count queries rely on RLS alone, no explicit `user_id` filter
 
@@ -57,7 +57,7 @@
 - **Location**: src/lib/repositories/session.repository.ts:321-348 (`countSideThreadUserMessages`, `countRecentSideThreadMessagesByUser`)
 - **Detail**: Neither new count method filters explicitly by `user_id` — both rely entirely on RLS to scope rows to the caller. `backend.md` §7 and `context/foundation/lessons.md` ("Enforce ownership with RLS AND an explicit service-side check") call for defense-in-depth. That said, this exactly matches the existing convention already used by `getOpinions` and other pre-existing queries in this same file — it is not a new deviation introduced by this change, and the service layer's `askSideThread` does perform an explicit session-ownership check before ever reaching these counters. Recorded as an observation, not a blocking finding, since fixing it here alone would be inconsistent with the rest of the file.
 - **Fix**: No action required for this change. If the team decides to tighten this project-wide, it should be a separate pass across the whole repository file, not a one-off patch to just the two new methods.
-- **Decision**: PENDING
+- **Decision**: SKIPPED
 
 ## Notes on findings investigated and not included
 
