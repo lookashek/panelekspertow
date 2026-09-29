@@ -4,7 +4,7 @@ import * as analityk from "@/lib/prompts/advisor-analityk.v1";
 import * as optymista from "@/lib/prompts/advisor-optymista.v1";
 import * as pragmatyk from "@/lib/prompts/advisor-pragmatyk.v1";
 import * as sceptyk from "@/lib/prompts/advisor-sceptyk.v1";
-import type { PanelInput } from "@/lib/advisors/registry";
+import type { PanelInput, SideThreadTurn } from "@/lib/advisors/registry";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 
 const personas = [
@@ -45,6 +45,44 @@ const sampleRoundTwoHead: AdvisorRoundTwoOpinion = {
     quotedPeerArgument: "Nie znamy kosztów przeprowadzki.",
   },
 };
+
+const sampleHistory: SideThreadTurn[] = [
+  { role: "user", content: "Czy ta ocena zmieni się, jeśli partner/ka się zgodzi?" },
+  { role: "advisor", content: "To by zmieniło część kalkulacji, ale nie całość." },
+];
+
+const sampleQuestion = "A co, jeśli dostanę podwyżkę zamiast przeprowadzki?";
+
+describe.each(personas)("advisor-$name.v1 side-thread builder", ({ voice, module }) => {
+  it("buildSideThreadPrompt returns non-empty system and user grounded in the persona's own head", () => {
+    const { system, user } = module.buildSideThreadPrompt(sampleInput, sampleHead, sampleHistory, sampleQuestion);
+
+    expect(system.length).toBeGreaterThan(0);
+    expect(user.length).toBeGreaterThan(0);
+    expect(system).toContain(voice);
+    expect(user).toContain(sampleInput.decision);
+    expect(user).toContain(String(sampleHead.score));
+    expect(user).toContain(sampleHead.thesis);
+    for (const argument of sampleHead.arguments) {
+      expect(user).toContain(argument);
+    }
+    for (const turn of sampleHistory) {
+      expect(user).toContain(turn.content);
+    }
+    expect(user).toContain(sampleQuestion);
+  });
+
+  it("buildSideThreadPrompt never asks for a JSON response or a new score", () => {
+    const { system, user } = module.buildSideThreadPrompt(sampleInput, sampleHead, sampleHistory, sampleQuestion);
+
+    // The prompt may explicitly instruct "no JSON" (which contains the word) — what must never
+    // appear is an instruction asking the model to *produce* structured JSON output.
+    expect(system).not.toMatch(/w formacie JSON|jako JSON|zwróć JSON|w JSON\b/i);
+    expect(user).not.toMatch(/w formacie JSON|jako JSON|zwróć JSON|w JSON\b/i);
+    expect(system).not.toContain('{"score"');
+    expect(user).not.toContain('{"score"');
+  });
+});
 
 describe.each(personas)("advisor-$name.v1 round-two builders", ({ voice, module }) => {
   it("buildRoundTwoPrompt keeps the persona's voice and embeds the persona-id enum", () => {

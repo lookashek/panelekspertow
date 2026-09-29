@@ -131,6 +131,7 @@ describe("runPanel", () => {
       buildRationalePrompt,
       buildRoundTwoPrompt: () => ({ system: "round-two-system", user: "round-two-user" }),
       buildRoundTwoRationalePrompt: () => ({ system: "round-two-rationale-system", user: "round-two-rationale-user" }),
+      buildSideThreadPrompt: () => ({ system: "side-thread-system", user: "side-thread-user" }),
       temperature: 0.9,
       parseScore: (raw) => ok(raw as AdvisorOpinion),
     };
@@ -170,6 +171,7 @@ function makeRoundTwoPersona(id: AdvisorPersonaId, label: string): RoundTwoPerso
     buildRationalePrompt: () => ({ system: "rationale-system", user: "rationale-user" }),
     buildRoundTwoPrompt,
     buildRoundTwoRationalePrompt,
+    buildSideThreadPrompt: () => ({ system: "side-thread-system", user: "side-thread-user" }),
     temperature: 0.5,
     parseScore: (raw) => ok(raw as AdvisorOpinion),
   };

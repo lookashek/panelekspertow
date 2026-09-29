@@ -12,24 +12,28 @@ import {
   buildRationalePrompt as buildOptymistaRationalePrompt,
   buildRoundTwoPrompt as buildOptymistaRoundTwoPrompt,
   buildRoundTwoRationalePrompt as buildOptymistaRoundTwoRationalePrompt,
+  buildSideThreadPrompt as buildOptymistaSideThreadPrompt,
 } from "@/lib/prompts/advisor-optymista.v1";
 import {
   buildPrompt as buildSceptykPrompt,
   buildRationalePrompt as buildSceptykRationalePrompt,
   buildRoundTwoPrompt as buildSceptykRoundTwoPrompt,
   buildRoundTwoRationalePrompt as buildSceptykRoundTwoRationalePrompt,
+  buildSideThreadPrompt as buildSceptykSideThreadPrompt,
 } from "@/lib/prompts/advisor-sceptyk.v1";
 import {
   buildPrompt as buildPragmatykPrompt,
   buildRationalePrompt as buildPragmatykRationalePrompt,
   buildRoundTwoPrompt as buildPragmatykRoundTwoPrompt,
   buildRoundTwoRationalePrompt as buildPragmatykRoundTwoRationalePrompt,
+  buildSideThreadPrompt as buildPragmatykSideThreadPrompt,
 } from "@/lib/prompts/advisor-pragmatyk.v1";
 import {
   buildPrompt as buildAnalitykPrompt,
   buildRationalePrompt as buildAnalitykRationalePrompt,
   buildRoundTwoPrompt as buildAnalitykRoundTwoPrompt,
   buildRoundTwoRationalePrompt as buildAnalitykRoundTwoRationalePrompt,
+  buildSideThreadPrompt as buildAnalitykSideThreadPrompt,
 } from "@/lib/prompts/advisor-analityk.v1";
 import type { Result } from "@/lib/result";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion, AdvisorScore } from "@/lib/schemas/advisor";
@@ -53,6 +57,16 @@ export interface RoundOnePeer {
   head: AdvisorOpinion;
 }
 
+/**
+ * A single prior turn in an advisor side thread — the user's follow-up or the advisor's reply —
+ * kept in chronological order so a persona's side-thread prompt can carry the conversation forward
+ * without re-opening its round score.
+ */
+export interface SideThreadTurn {
+  role: "user" | "advisor";
+  content: string;
+}
+
 export interface AdvisorStrategy {
   id: AdvisorPersonaId;
   label: string;
@@ -68,6 +82,12 @@ export interface AdvisorStrategy {
     selfHead: AdvisorOpinion,
     roundTwoHead: AdvisorRoundTwoOpinion,
     peers: RoundOnePeer[],
+  ): { system: string; user: string };
+  buildSideThreadPrompt(
+    input: PanelInput,
+    ownHead: AdvisorOpinion,
+    history: SideThreadTurn[],
+    question: string,
   ): { system: string; user: string };
   temperature: number;
   parseScore(raw: unknown): Result<AdvisorScore, LlmError>;
@@ -86,6 +106,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     buildRationalePrompt: buildOptymistaRationalePrompt,
     buildRoundTwoPrompt: buildOptymistaRoundTwoPrompt,
     buildRoundTwoRationalePrompt: buildOptymistaRoundTwoRationalePrompt,
+    buildSideThreadPrompt: buildOptymistaSideThreadPrompt,
     temperature: 0.9,
     parseScore,
   },
@@ -96,6 +117,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     buildRationalePrompt: buildSceptykRationalePrompt,
     buildRoundTwoPrompt: buildSceptykRoundTwoPrompt,
     buildRoundTwoRationalePrompt: buildSceptykRoundTwoRationalePrompt,
+    buildSideThreadPrompt: buildSceptykSideThreadPrompt,
     temperature: 0.7,
     parseScore,
   },
@@ -106,6 +128,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     buildRationalePrompt: buildPragmatykRationalePrompt,
     buildRoundTwoPrompt: buildPragmatykRoundTwoPrompt,
     buildRoundTwoRationalePrompt: buildPragmatykRoundTwoRationalePrompt,
+    buildSideThreadPrompt: buildPragmatykSideThreadPrompt,
     temperature: 0.5,
     parseScore,
   },
@@ -116,6 +139,7 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     buildRationalePrompt: buildAnalitykRationalePrompt,
     buildRoundTwoPrompt: buildAnalitykRoundTwoPrompt,
     buildRoundTwoRationalePrompt: buildAnalitykRoundTwoRationalePrompt,
+    buildSideThreadPrompt: buildAnalitykSideThreadPrompt,
     temperature: 0.3,
     parseScore,
   },

@@ -6,7 +6,7 @@
  * rationale expanding on the already-decided head.
  */
 
-import type { PanelInput, RoundOnePeer } from "@/lib/advisors/registry";
+import type { PanelInput, RoundOnePeer, SideThreadTurn } from "@/lib/advisors/registry";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 
 export function buildPrompt(input: PanelInput): { system: string; user: string } {
@@ -138,6 +138,44 @@ Stanowiska pozostałych doradców z pierwszej rundy:
 ${peerBlocks}
 
 Rozwiń teraz to zaktualizowane stanowisko w pełniejsze, płynne uzasadnienie prozą, pozostając w roli SCEPTYKA i nie zmieniając oceny ani tezy.`;
+
+  return { system, user };
+}
+
+function formatHistoryTurn(turn: SideThreadTurn): string {
+  return `${turn.role === "user" ? "Użytkownik" : "Ty"}: ${turn.content}`;
+}
+
+export function buildSideThreadPrompt(
+  input: PanelInput,
+  ownHead: AdvisorOpinion,
+  history: SideThreadTurn[],
+  question: string,
+): { system: string; user: string } {
+  const system = `Jesteś jednym z czterech doradców w symulowanym panelu ekspertów oceniającym decyzje użytkownika. Grasz rolę SCEPTYKA.
+
+Twoja soczewka poznawcza: aktywnie szukasz powodów, dla których decyzja mogłaby się nie udać lub dla których warto jej odmówić. Kwestionujesz założenia stojące za decyzją, a downside i tryby porażki (failure modes) ważysz mocniej niż potencjalne korzyści.
+
+Twoja rola jest uniwersalna — oceniasz dowolną decyzję lub problem opisany przez użytkownika, niezależnie od dziedziny (biznes, kariera, relacje, finanse osobiste, itd.), nie tylko wąską kategorię tematów.
+
+To jest symulowana opinia doradcy, nie rzeczywista porada eksperta ani fakt — traktuj ją jako punkt widzenia do rozważenia, nie ostateczny werdykt.
+
+To jest WĄTEK POBOCZNY, nie kolejna runda debaty. Już przedstawiłeś swoją ocenę (score), tezę i argumenty — teraz odpowiadasz użytkownikowi na jego pytanie doprecyzowujące, pozostając w pełni w charakterze SCEPTYKA i zakorzeniony w swoim wcześniej wyrażonym stanowisku. NIE otwierasz ponownie oceny (score) — nie zmieniasz jej ani nie podajesz nowej. Odpowiedz zwykłym tekstem, płynną prozą — bez JSON, bez formatowania markdown, bez list punktowanych.`;
+
+  const contextLine = input.context ? `\n\nDodatkowy kontekst: ${input.context}` : "";
+  const argumentsList = ownHead.arguments.map((argument) => `- ${argument}`).join("\n");
+  const historyBlock =
+    history.length > 0 ? `\n\nDotychczasowa rozmowa w tym wątku:\n${history.map(formatHistoryTurn).join("\n")}` : "";
+  const user = `Decyzja/problem do oceny: ${input.decision}${contextLine}
+
+Twoja wcześniej ustalona ocena: ${ownHead.score}/10
+Twoja teza: ${ownHead.thesis}
+Twoje argumenty:
+${argumentsList}${historyBlock}
+
+Użytkownik: ${question}
+
+Odpowiedz na to pytanie w charakterze SCEPTYKA, prozą, nie zmieniając swojej oceny ani tezy.`;
 
   return { system, user };
 }

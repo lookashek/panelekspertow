@@ -531,21 +531,21 @@ session is ever deleted. No backfill required.
 
 #### Automated
 
-- [x] 2.1 Repository unit tests pass (save + ordered read + both counts): `npm run test`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Repository unit tests pass (save + ordered read + both counts): `npm run test` — ef77b05
+- [x] 2.2 Type checking passes: `npx astro check` — ef77b05
+- [x] 2.3 Linting passes: `npm run lint` — ef77b05
 
 ### Phase 3: Prompt surface
 
 #### Automated
 
-- [ ] 3.1 Prompt unit tests pass (decision + own head + history + question, no JSON ask): `npm run test`
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 Prompt unit tests pass (decision + own head + history + question, no JSON ask): `npm run test`
+- [x] 3.2 Type checking passes: `npx astro check`
+- [x] 3.3 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 3.4 Spot-read one persona's generated side-thread prompt reads in-character and asks for no score
+- [x] 3.4 Spot-read one persona's generated side-thread prompt reads in-character and asks for no score
 
 ### Phase 4: Service method & errors
 
