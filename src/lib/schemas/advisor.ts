@@ -18,3 +18,23 @@ export const AdvisorOpinionSchema = AdvisorScoreSchema.extend({
 });
 
 export type AdvisorOpinion = z.infer<typeof AdvisorOpinionSchema>;
+
+/**
+ * Persona ids duplicated locally rather than imported from `@/lib/advisors/registry` — this file
+ * is shared with the client bundle (see `schemas/panel.ts:1` for the same rationale), and the
+ * registry pulls in persona prompts + `parseScore`, which must not ship to the browser.
+ */
+const ROUND_TWO_PERSONA_IDS = ["optymista", "sceptyk", "pragmatyk", "analityk"] as const;
+
+export const AdvisorAttributionSchema = z.object({
+  convincedByPersonaId: z.enum(ROUND_TWO_PERSONA_IDS),
+  quotedPeerArgument: z.string().min(1),
+});
+
+export type AdvisorAttribution = z.infer<typeof AdvisorAttributionSchema>;
+
+export const AdvisorRoundTwoOpinionSchema = AdvisorOpinionSchema.extend({
+  attribution: AdvisorAttributionSchema.nullable(),
+});
+
+export type AdvisorRoundTwoOpinion = z.infer<typeof AdvisorRoundTwoOpinionSchema>;

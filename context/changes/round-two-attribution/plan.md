@@ -577,10 +577,10 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly against a local Supabase: `npx supabase db reset`
-- [ ] 1.2 Schema unit tests pass (round-two schema accepts valid + null attribution; rejects self/blank quote): `npm run test -- advisor session`
-- [ ] 1.3 Type checking passes: `npx astro check`
-- [ ] 1.4 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly against a local Supabase: `npx supabase db reset`
+- [x] 1.2 Schema unit tests pass (round-two schema accepts valid + null attribution; rejects self/blank quote): `npm run test -- advisor session`
+- [x] 1.3 Type checking passes: `npx astro check`
+- [x] 1.4 Linting passes: `npm run lint`
 
 #### Manual
 

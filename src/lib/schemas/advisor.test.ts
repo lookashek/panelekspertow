@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { AdvisorOpinionSchema, AdvisorScoreSchema } from "@/lib/schemas/advisor";
+import {
+  AdvisorAttributionSchema,
+  AdvisorOpinionSchema,
+  AdvisorRoundTwoOpinionSchema,
+  AdvisorScoreSchema,
+} from "@/lib/schemas/advisor";
 
 describe("AdvisorScoreSchema", () => {
   it("accepts a valid score and non-empty thesis", () => {
@@ -54,6 +59,66 @@ describe("AdvisorOpinionSchema", () => {
       thesis: "Teza.",
       arguments: ["Argument jeden."],
     });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("AdvisorAttributionSchema", () => {
+  it("accepts a valid attribution", () => {
+    const result = AdvisorAttributionSchema.safeParse({
+      convincedByPersonaId: "sceptyk",
+      quotedPeerArgument: "Ten argument mnie przekonał.",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an unknown persona id", () => {
+    const result = AdvisorAttributionSchema.safeParse({
+      convincedByPersonaId: "unknown",
+      quotedPeerArgument: "Argument.",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a blank quoted argument", () => {
+    const result = AdvisorAttributionSchema.safeParse({
+      convincedByPersonaId: "sceptyk",
+      quotedPeerArgument: "",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("AdvisorRoundTwoOpinionSchema", () => {
+  const baseOpinion = {
+    score: 8,
+    thesis: "Teza.",
+    arguments: ["Argument jeden."],
+  };
+
+  it("accepts a round-two opinion with a valid attribution", () => {
+    const result = AdvisorRoundTwoOpinionSchema.safeParse({
+      ...baseOpinion,
+      attribution: { convincedByPersonaId: "pragmatyk", quotedPeerArgument: "Cytat peera." },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a round-two opinion with a null attribution (score unchanged)", () => {
+    const result = AdvisorRoundTwoOpinionSchema.safeParse({ ...baseOpinion, attribution: null });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a round-two opinion with a blank quoted argument", () => {
+    const result = AdvisorRoundTwoOpinionSchema.safeParse({
+      ...baseOpinion,
+      attribution: { convincedByPersonaId: "pragmatyk", quotedPeerArgument: "" },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a round-two opinion missing the attribution key", () => {
+    const result = AdvisorRoundTwoOpinionSchema.safeParse(baseOpinion);
     expect(result.success).toBe(false);
   });
 });

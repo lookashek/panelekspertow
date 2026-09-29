@@ -22,6 +22,19 @@ const validOpinionRow = {
   thesis: "Go for it",
   arguments: ["arg 1", "arg 2"],
   created_at: "2026-09-23T12:00:00.000Z",
+  previous_score: null,
+  attributed_persona_id: null,
+  attribution_quote: null,
+};
+
+const validRoundTwoOpinionRow = {
+  ...validOpinionRow,
+  id: "opinion-2",
+  round_number: 2,
+  score: 9,
+  previous_score: 6,
+  attributed_persona_id: "sceptyk" as const,
+  attribution_quote: "Ten argument mnie przekonał.",
 };
 
 describe("SessionRowSchema", () => {
@@ -59,6 +72,20 @@ describe("AdvisorOpinionRowSchema", () => {
     const row = { ...validOpinionRow, arguments: [1, 2] };
     expect(() => AdvisorOpinionRowSchema.parse(row)).toThrow();
   });
+
+  it("accepts a valid round-two row with attribution", () => {
+    expect(AdvisorOpinionRowSchema.parse(validRoundTwoOpinionRow)).toEqual(validRoundTwoOpinionRow);
+  });
+
+  it("rejects an unknown attributed_persona_id", () => {
+    const row = { ...validRoundTwoOpinionRow, attributed_persona_id: "unknown" };
+    expect(() => AdvisorOpinionRowSchema.parse(row)).toThrow();
+  });
+
+  it("rejects an out-of-range previous_score", () => {
+    const row = { ...validRoundTwoOpinionRow, previous_score: 11 };
+    expect(() => AdvisorOpinionRowSchema.parse(row)).toThrow();
+  });
 });
 
 describe("toSession", () => {
@@ -92,6 +119,26 @@ describe("toAdvisorOpinion", () => {
       thesis: "Go for it",
       arguments: ["arg 1", "arg 2"],
       createdAt: "2026-09-23T12:00:00.000Z",
+      previousScore: null,
+      attributedPersonaId: null,
+      attributionQuote: null,
+    });
+  });
+
+  it("maps round-two attribution columns to camelCase", () => {
+    expect(toAdvisorOpinion(validRoundTwoOpinionRow)).toEqual({
+      id: "opinion-2",
+      sessionId: "session-1",
+      userId: "user-1",
+      personaId: "optymista",
+      roundNumber: 2,
+      score: 9,
+      thesis: "Go for it",
+      arguments: ["arg 1", "arg 2"],
+      createdAt: "2026-09-23T12:00:00.000Z",
+      previousScore: 6,
+      attributedPersonaId: "sceptyk",
+      attributionQuote: "Ten argument mnie przekonał.",
     });
   });
 });

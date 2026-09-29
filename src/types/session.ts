@@ -27,4 +27,7 @@ export interface AdvisorOpinionRecord {
   thesis: string;
   arguments: string[];
   createdAt: string;
+  previousScore: number | null;
+  attributedPersonaId: AdvisorPersonaId | null;
+  attributionQuote: string | null;
 }

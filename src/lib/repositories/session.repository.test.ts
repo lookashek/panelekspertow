@@ -55,6 +55,9 @@ const opinionRow = {
   thesis: "Go for it",
   arguments: ["arg 1"],
   created_at: "2026-09-23T12:00:00.000Z",
+  previous_score: null,
+  attributed_persona_id: null,
+  attribution_quote: null,
 };
 
 describe("SessionRepository.createSession", () => {

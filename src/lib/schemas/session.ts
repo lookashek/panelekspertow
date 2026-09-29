@@ -34,6 +34,9 @@ export const AdvisorOpinionRowSchema = z.object({
   thesis: z.string(),
   arguments: z.array(z.string()),
   created_at: z.string(),
+  previous_score: z.number().int().min(1).max(10).nullable(),
+  attributed_persona_id: z.enum(PERSONA_IDS).nullable(),
+  attribution_quote: z.string().nullable(),
 });
 
 export type AdvisorOpinionRow = z.infer<typeof AdvisorOpinionRowSchema>;
@@ -61,5 +64,8 @@ export function toAdvisorOpinion(row: AdvisorOpinionRow): AdvisorOpinionRecord {
     thesis: row.thesis,
     arguments: row.arguments,
     createdAt: row.created_at,
+    previousScore: row.previous_score,
+    attributedPersonaId: row.attributed_persona_id,
+    attributionQuote: row.attribution_quote,
   };
 }

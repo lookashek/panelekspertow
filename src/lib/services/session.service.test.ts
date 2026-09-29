@@ -66,6 +66,9 @@ function makeOpinionRecord(personaId: string, overrides: Partial<AdvisorOpinionR
     thesis: `${personaId} thesis`,
     arguments: [`${personaId} argument`],
     createdAt: "2026-09-23T12:00:00.000Z",
+    previousScore: null,
+    attributedPersonaId: null,
+    attributionQuote: null,
     ...overrides,
   };
 }
