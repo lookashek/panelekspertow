@@ -1,10 +1,10 @@
 ---
 change_id: round-two-attribution
 title: Round two attribution
-status: impl_reviewed
+status: archived
 created: 2026-09-25
 updated: 2026-09-29
-archived_at: null
+archived_at: 2026-09-29T09:35:49Z
 ---
 
 ## Notes

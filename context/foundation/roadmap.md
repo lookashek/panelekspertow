@@ -4,6 +4,7 @@ version: 1
 status: draft
 created: 2026-09-22
 updated: 2026-09-29
+
 prd_version: 2
 main_goal: market-feedback
 top_blocker: time
@@ -44,8 +45,8 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | F-01  | advisor-llm-adapter     | (foundation) adapter LLM + rejestr predefiniowanych doradców     | —             | FR-003, FR-009, NFR-rozrzut       | done    |
 | F-02  | session-store-rls       | (foundation) trwałość sesji + polityka RLS izolacji per użytkownik | —           | FR-001, FR-006, guardrail         | done |
 | S-01  | first-divergent-round   | opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1   | F-01, F-02    | US-01, FR-001, FR-002, FR-003, FR-006, FR-009 | done |
-| S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | in-progress |
-| S-03  | session-synthesis       | zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu | S-01          | US-01, FR-005, FR-010             | proposed |
+| S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | done |
+| S-03  | session-synthesis       | zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu | S-01          | US-01, FR-005, FR-010             | in-progress |
 | S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | proposed |
 | S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | proposed |
 | S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | proposed |
@@ -128,7 +129,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Jakość atrybucji ("teatr atrybucji" — model rytualnie wskazuje autora bez merytorycznej zmiany zdania); wymaga kontroli w prototypie rundy drugiej (PRD Otwarte pytanie #2) — Owner: user. Block: no (rozstrzygane przez zbudowanie i ocenę prototypu; warunkuje wiarygodność Kryterium Secondary).
 - **Risk:** Sekwencjonowana zaraz po gwiazdie, bo atrybucja to drugie najbardziej ryzykowne założenie (cel `market-feedback` każe wyciągać ryzyko wcześnie). Ryzyko: pusta, teatralna atrybucja podważa Kryterium Secondary.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: Synteza na zakończenie sesji
 
@@ -141,7 +142,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Ryzyko, że synteza przemyci uśrednioną odpowiedź zamiast pokazać spór — Owner: user. Block: no (wymóg: obowiązkowa co najmniej jedna oś sporu).
 - **Risk:** Zależy od opinii rundy pierwszej (oś sporu istnieje już po rundzie 1), więc prereq to tylko S-01; z S-02 daje bogatszą syntezę, stąd `Parallel with: S-02`. Ryzyko: wygładzenie sporu przeczy sednu produktu.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-04: Wątek poboczny z wybraną personą
 
@@ -224,3 +225,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-01: (foundation) w kodzie jest minimalny port do dostawcy LLM (OpenRouter) zdolny do równoległych, streamowanych odpowiedzi oraz rejestr predefiniowanych person doradczych z celowo sprzecznymi profilami (optymista, sceptyk, pragmatyk, analityk). Nie obejmuje żadnej logiki rund ani UI.** — Archived 2026-09-23 → `context/archive/2026-09-23-advisor-llm-adapter/`. Lesson: —.
 - **F-02: (foundation) istnieje minimalny schemat trwałości sesji (sesje + opinie doradców, powiązane z użytkownikiem) z włączonym RLS i politykami per-operacja/per-rola, ustanawiający wzorzec izolacji per użytkownik. Nie obejmuje całej domeny danych — tylko tyle, by S-01 mógł zapisać pierwszą sesję.** — Archived 2026-09-23 → `context/archive/2026-09-23-session-store-rls/`. Lesson: —.
 - **S-01: opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1** — Archived 2026-09-25 → `context/archive/2026-09-25-first-divergent-round/`. Lesson: —.
+- **S-02: użytkownik uruchamia rundę drugą, w której persony odnoszą się do stanowisk pozostałych, a każda zmiana oceny wymaga wskazania autora przekonującego argumentu.** — Archived 2026-09-29 → `context/archive/2026-09-25-round-two-attribution/`. Lesson: —.
