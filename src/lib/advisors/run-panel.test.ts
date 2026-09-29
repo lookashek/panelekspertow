@@ -11,10 +11,10 @@ import { ErrorCode, LlmError } from "@/lib/errors";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
-import type { AdvisorStrategy } from "@/lib/advisors/registry";
-import { runPanel } from "@/lib/advisors/run-panel";
+import type { AdvisorPersonaId, AdvisorStrategy, RoundOnePeer } from "@/lib/advisors/registry";
+import { runPanel, runSecondRoundPanel } from "@/lib/advisors/run-panel";
 import type { PanelStreamChunk } from "@/lib/advisors/run-panel";
-import type { AdvisorOpinion } from "@/lib/schemas/advisor";
+import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 
 function makeTokenStream(text: string): ReadableStream<StreamChunk> {
   return new ReadableStream<StreamChunk>({
@@ -147,5 +147,155 @@ describe("runPanel", () => {
     const streamCall = streamMock.mock.calls[0]?.[0] as StreamRequest;
     expect(streamCall.system).toBe(rationalePrompt.system);
     expect(streamCall.user).toBe(rationalePrompt.user);
+  });
+});
+
+interface RoundTwoPersonaFixture {
+  persona: AdvisorStrategy;
+  buildRoundTwoPrompt: ReturnType<typeof vi.fn>;
+  buildRoundTwoRationalePrompt: ReturnType<typeof vi.fn>;
+}
+
+function makeRoundTwoPersona(id: AdvisorPersonaId, label: string): RoundTwoPersonaFixture {
+  const buildRoundTwoPrompt = vi
+    .fn()
+    .mockReturnValue({ system: `${id}-round-two-system`, user: `${id}-round-two-user` });
+  const buildRoundTwoRationalePrompt = vi
+    .fn()
+    .mockReturnValue({ system: `${id}-round-two-rationale-system`, user: `${id}-round-two-rationale-user` });
+  const persona: AdvisorStrategy = {
+    id,
+    label,
+    buildPrompt: () => ({ system: "head-system", user: "head-user" }),
+    buildRationalePrompt: () => ({ system: "rationale-system", user: "rationale-user" }),
+    buildRoundTwoPrompt,
+    buildRoundTwoRationalePrompt,
+    temperature: 0.5,
+    parseScore: (raw) => ok(raw as AdvisorOpinion),
+  };
+  return { persona, buildRoundTwoPrompt, buildRoundTwoRationalePrompt };
+}
+
+describe("runSecondRoundPanel", () => {
+  it("only runs personas present in priorHeads", async () => {
+    const optymista = makeRoundTwoPersona("optymista", "Optymista");
+    const sceptyk = makeRoundTwoPersona("sceptyk", "Sceptyk");
+    const pragmatyk = makeRoundTwoPersona("pragmatyk", "Pragmatyk");
+    const personas = [optymista.persona, sceptyk.persona, pragmatyk.persona];
+    const priorHeads = new Map<AdvisorPersonaId, AdvisorOpinion>([
+      ["optymista", { score: 5, thesis: "t1", arguments: ["a1"] }],
+      ["sceptyk", { score: 3, thesis: "t2", arguments: ["a2"] }],
+    ]);
+    const roundTwoHead: AdvisorRoundTwoOpinion = { score: 6, thesis: "t", arguments: ["a"], attribution: null };
+    const completeMock = vi.fn().mockResolvedValue(ok(roundTwoHead));
+    const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
+    const provider = makeProvider({ complete: completeMock, stream: streamMock });
+
+    const { scores, stream } = runSecondRoundPanel({ provider, personas }, { decision: "Should I do X?" }, priorHeads);
+    await collect(stream);
+    const results = await scores;
+
+    expect(completeMock).toHaveBeenCalledTimes(2);
+    expect(results).toHaveLength(2);
+    expect(pragmatyk.buildRoundTwoPrompt).not.toHaveBeenCalled();
+  });
+
+  it("passes peer round-one heads to each builder, excluding self", async () => {
+    const optymista = makeRoundTwoPersona("optymista", "Optymista");
+    const sceptyk = makeRoundTwoPersona("sceptyk", "Sceptyk");
+    const pragmatyk = makeRoundTwoPersona("pragmatyk", "Pragmatyk");
+    const personas = [optymista.persona, sceptyk.persona, pragmatyk.persona];
+    const optymistaHead: AdvisorOpinion = { score: 5, thesis: "t1", arguments: ["a1"] };
+    const sceptykHead: AdvisorOpinion = { score: 3, thesis: "t2", arguments: ["a2"] };
+    const pragmatykHead: AdvisorOpinion = { score: 7, thesis: "t3", arguments: ["a3"] };
+    const priorHeads = new Map<AdvisorPersonaId, AdvisorOpinion>([
+      ["optymista", optymistaHead],
+      ["sceptyk", sceptykHead],
+      ["pragmatyk", pragmatykHead],
+    ]);
+    const roundTwoHead: AdvisorRoundTwoOpinion = { score: 6, thesis: "t", arguments: ["a"], attribution: null };
+    const completeMock = vi.fn().mockResolvedValue(ok(roundTwoHead));
+    const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
+    const provider = makeProvider({ complete: completeMock, stream: streamMock });
+    const input = { decision: "Should I do X?" };
+
+    const { stream } = runSecondRoundPanel({ provider, personas }, input, priorHeads);
+    await collect(stream);
+
+    const optymistaPeers = optymista.buildRoundTwoPrompt.mock.calls[0]?.[2] as RoundOnePeer[];
+    expect(optymistaPeers).toHaveLength(2);
+    expect(optymistaPeers.map((peer) => peer.label).sort()).toEqual(["Pragmatyk", "Sceptyk"]);
+    expect(optymistaPeers.find((peer) => peer.label === "Sceptyk")?.head).toEqual(sceptykHead);
+    expect(optymistaPeers.find((peer) => peer.label === "Pragmatyk")?.head).toEqual(pragmatykHead);
+    expect(optymista.buildRoundTwoPrompt).toHaveBeenCalledWith(input, optymistaHead, expect.anything());
+
+    const rationalePeers = optymista.buildRoundTwoRationalePrompt.mock.calls[0]?.[3] as RoundOnePeer[];
+    expect(rationalePeers.map((peer) => peer.label).sort()).toEqual(["Pragmatyk", "Sceptyk"]);
+    expect(optymista.buildRoundTwoRationalePrompt).toHaveBeenCalledWith(
+      input,
+      optymistaHead,
+      roundTwoHead,
+      expect.anything(),
+    );
+  });
+
+  it("does not abort siblings when one persona's complete() fails", async () => {
+    const optymista = makeRoundTwoPersona("optymista", "Optymista");
+    const sceptyk = makeRoundTwoPersona("sceptyk", "Sceptyk");
+    const personas = [optymista.persona, sceptyk.persona];
+    const priorHeads = new Map<AdvisorPersonaId, AdvisorOpinion>([
+      ["optymista", { score: 5, thesis: "t1", arguments: ["a1"] }],
+      ["sceptyk", { score: 3, thesis: "t2", arguments: ["a2"] }],
+    ]);
+    const roundTwoHead: AdvisorRoundTwoOpinion = { score: 6, thesis: "t", arguments: ["a"], attribution: null };
+    const completeMock = vi
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve(err(new LlmError("bad output", ErrorCode.LLM_INVALID_OUTPUT))))
+      .mockResolvedValue(ok(roundTwoHead));
+    const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
+    const provider = makeProvider({ complete: completeMock, stream: streamMock });
+
+    const { scores, stream } = runSecondRoundPanel({ provider, personas }, { decision: "Should I do X?" }, priorHeads);
+    const chunks = await collect(stream);
+    const results = await scores;
+
+    expect(results[0]?.ok).toBe(false);
+    expect(results[1]?.ok).toBe(true);
+    const errorChunks = chunks.filter((chunk) => chunk.chunk.type === "error");
+    expect(errorChunks).toHaveLength(1);
+    expect(streamMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates a caller abort into the signal passed to every provider call", async () => {
+    const optymista = makeRoundTwoPersona("optymista", "Optymista");
+    const sceptyk = makeRoundTwoPersona("sceptyk", "Sceptyk");
+    const personas = [optymista.persona, sceptyk.persona];
+    const priorHeads = new Map<AdvisorPersonaId, AdvisorOpinion>([
+      ["optymista", { score: 5, thesis: "t1", arguments: ["a1"] }],
+      ["sceptyk", { score: 3, thesis: "t2", arguments: ["a2"] }],
+    ]);
+    const controller = new AbortController();
+    const receivedCompleteSignals: (AbortSignal | undefined)[] = [];
+    const roundTwoHead: AdvisorRoundTwoOpinion = { score: 6, thesis: "t", arguments: ["a"], attribution: null };
+    const completeMock = vi.fn().mockImplementation((req: CompleteRequest<AdvisorRoundTwoOpinion>) => {
+      receivedCompleteSignals.push(req.signal);
+      return Promise.resolve(ok(roundTwoHead));
+    });
+    const streamMock = vi.fn().mockImplementation(() => makeTokenStream("hi"));
+    const provider = makeProvider({ complete: completeMock, stream: streamMock });
+
+    controller.abort();
+    const { stream } = runSecondRoundPanel(
+      { provider, personas },
+      { decision: "Should I do X?" },
+      priorHeads,
+      controller.signal,
+    );
+    await collect(stream);
+
+    expect(receivedCompleteSignals).toHaveLength(2);
+    for (const signal of receivedCompleteSignals) {
+      expect(signal?.aborted).toBe(true);
+    }
   });
 });

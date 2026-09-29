@@ -590,9 +590,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [x] 2.1 Registry/prompt unit tests pass (both round-two builders per persona; peer labels + conditional-attribution instruction present): `npm run test -- registry prompts`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Registry/prompt unit tests pass (both round-two builders per persona; peer labels + conditional-attribution instruction present): `npm run test -- registry prompts` — 854b294
+- [x] 2.2 Type checking passes: `npx astro check` — 854b294
+- [x] 2.3 Linting passes: `npm run lint` — 854b294
 
 #### Manual
 
@@ -602,9 +602,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [ ] 3.1 Fan-out unit tests pass (only `priorHeads` personas run; peer self-exclusion; partial failure; abort cancels all): `npm run test -- run-panel`
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 Fan-out unit tests pass (only `priorHeads` personas run; peer self-exclusion; partial failure; abort cancels all): `npm run test -- run-panel`
+- [x] 3.2 Type checking passes: `npx astro check`
+- [x] 3.3 Linting passes: `npm run lint`
 
 #### Manual
 
