@@ -48,8 +48,9 @@
 - **Dimension**: Safety & Quality
 - **Location**: src/lib/services/session.service.ts:450-458
 - **Detail**: `runSynthesis` performs the explicit ownership check (`session?.userId !== userId` → `NotFoundError`) immediately after loading the session and before any other repository access, exactly matching `runFirstRound`/`runSecondRound` and the lessons.md rule requiring RLS + explicit service-side ownership checks. The new `session_syntheses` migration mirrors the established RLS policy shape exactly (per-op, per-role, no `anon` policies, cascading FKs).
-- **Fix**: None required.
-- **Decision**: ACCEPTED (verified correct, no change needed)
+- **Verification performed**: re-ran the targeted test `SessionService.runSynthesis > returns NotFoundError when the session belongs to another user` in isolation (passes). This invariant was also exercised as a deliberate-break-check during Phase 4's implementation: the ownership check was temporarily removed, the test went red (`TypeError: Cannot read properties of undefined (reading 'ok')` — it fell through and crashed instead of returning `NotFoundError`), then restored — proving the test is load-bearing, not just present.
+- **Fix**: None required — the check is correct and provably enforced by an existing, break-tested assertion.
+- **Decision**: ACCEPTED (verified correct via targeted re-run + citing the Phase 4 break-check evidence; no code change needed)
 
 ## Automated verification (full plan)
 
