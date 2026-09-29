@@ -80,9 +80,7 @@ To jest drugi etap twojej wypowiedzi. W poprzednim, ustrukturyzowanym etapie ust
   const disputeBlocks = synthesis.disputeAxes
     .map((axis) => `${axis.title}:\n${axis.positions.map((position) => `- ${position}`).join("\n")}`)
     .join("\n\n");
-  const riskList = synthesis.risks
-    .map((risk) => `- [${risk.weight}] ${risk.description}`)
-    .join("\n");
+  const riskList = synthesis.risks.map((risk) => `- [${risk.weight}] ${risk.description}`).join("\n");
   const user = `${decisionSection}
 
 Stanowiska doradców panelu:

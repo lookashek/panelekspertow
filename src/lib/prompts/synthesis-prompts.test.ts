@@ -34,10 +34,7 @@ const sampleSynthesis: Synthesis = {
   disputeAxes: [
     {
       title: "Kariera vs. relacja",
-      positions: [
-        "Rozwój zawodowy powinien mieć priorytet.",
-        "Stabilność relacji jest ważniejsza niż awans.",
-      ],
+      positions: ["Rozwój zawodowy powinien mieć priorytet.", "Stabilność relacji jest ważniejsza niż awans."],
     },
   ],
   risks: [{ description: "Rozpad relacji przy przeprowadzce bez zgody partnera.", weight: "high" }],
