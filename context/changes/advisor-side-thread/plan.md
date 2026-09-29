@@ -559,27 +559,27 @@ session is ever deleted. No backfill required.
 
 #### Automated
 
-- [x] 5.1 Type checking passes: `npx astro check`
-- [x] 5.2 Linting passes: `npm run lint`
-- [x] 5.3 Production build passes: `npm run build`
+- [x] 5.1 Type checking passes: `npx astro check` — 1b928c5
+- [x] 5.2 Linting passes: `npm run lint` — 1b928c5
+- [x] 5.3 Production build passes: `npm run build` — 1b928c5
 
 #### Manual
 
-- [x] 5.4 POST with valid cookie streams `token` frames then `done`; 401/400/404/429 as specified
-- [x] 5.5 `npm run smoke` passes against a running server
+- [x] 5.4 POST with valid cookie streams `token` frames then `done`; 401/400/404/429 as specified — 1b928c5
+- [x] 5.5 `npm run smoke` passes against a running server — 1b928c5
 
 ### Phase 6: UI — expander, hook, SSR replay
 
 #### Automated
 
-- [ ] 6.1 Type checking passes: `npx astro check`
-- [ ] 6.2 Linting passes (no new `console.*`): `npm run lint`
-- [ ] 6.3 Production build passes: `npm run build`
+- [x] 6.1 Type checking passes: `npx astro check`
+- [x] 6.2 Linting passes (no new `console.*`): `npm run lint`
+- [x] 6.3 Production build passes: `npm run build`
 
 #### Manual
 
-- [ ] 6.4 "Dopytaj" streams an in-character multi-turn answer on an eligible persona
-- [ ] 6.5 Reload restores every thread; ineligible personas show no affordance
-- [ ] 6.6 Side thread during a live round-two stream neither blocks nor disturbs the debate
-- [ ] 6.7 Keyboard + screen-reader pass; 375px/1280px layout; reduced-motion honored; AA contrast
-- [ ] 6.8 Round-two card shows no side-thread affordance (opt-in prop respected)
+- [x] 6.4 "Dopytaj" streams an in-character multi-turn answer on an eligible persona
+- [x] 6.5 Reload restores every thread; ineligible personas show no affordance
+- [x] 6.6 Side thread during a live round-two stream neither blocks nor disturbs the debate
+- [x] 6.7 Keyboard + screen-reader pass; 375px/1280px layout; reduced-motion honored; AA contrast
+- [x] 6.8 Round-two card shows no side-thread affordance (opt-in prop respected)

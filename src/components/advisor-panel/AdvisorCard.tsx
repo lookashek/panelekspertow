@@ -1,4 +1,8 @@
+import { useState } from "react";
+
+import { SideThread } from "@/components/advisor-panel/SideThread";
 import type { PersonaViewState } from "@/components/advisor-panel/usePanelStream";
+import { cn } from "@/lib/utils";
 
 interface AdvisorCardProps {
   personaId: string;
@@ -6,6 +10,10 @@ interface AdvisorCardProps {
   state: PersonaViewState;
   /** Display label for `state.attributedPersonaId`, looked up by the caller (round two only). */
   attributedPersonaLabel?: string;
+  /** Opt-in side-thread affordance (Dopytaj) — round one only; omitted entirely by RoundTwoPanel. */
+  sessionId?: string;
+  sideThreadEnabled?: boolean;
+  initialMessages?: { role: "user" | "advisor"; content: string }[];
 }
 
 function scoreGlyph(score: number): string {
@@ -28,7 +36,17 @@ function scoreDelta(score: number, previousScore: number | undefined): { text: s
   return { text: `${previousScore} → ${score}`, glyph };
 }
 
-export function AdvisorCard({ personaId, label, state, attributedPersonaLabel }: AdvisorCardProps) {
+export function AdvisorCard({
+  personaId,
+  label,
+  state,
+  attributedPersonaLabel,
+  sessionId,
+  sideThreadEnabled,
+  initialMessages,
+}: AdvisorCardProps) {
+  const [threadOpen, setThreadOpen] = useState(false);
+
   return (
     <article
       className="pixel-panel flex flex-col gap-3 p-4 sm:p-5"
@@ -97,6 +115,33 @@ export function AdvisorCard({ personaId, label, state, attributedPersonaLabel }:
       )}
 
       {state.status === "done" && <p className="text-muted-foreground text-xs">Gotowe.</p>}
+
+      {sideThreadEnabled && sessionId && (
+        <div className="border-primary/40 mt-2 border-t-2 pt-3">
+          <button
+            type="button"
+            onClick={() => {
+              setThreadOpen((open) => !open);
+            }}
+            aria-expanded={threadOpen}
+            className={cn(
+              "pixel-btn font-pixel bg-secondary text-secondary-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground px-4 py-2 text-[10px] transition-colors",
+            )}
+          >
+            {threadOpen ? "ZWIŃ" : "DOPYTAJ"}
+          </button>
+          {threadOpen && (
+            <div className="mt-3">
+              <SideThread
+                sessionId={sessionId}
+                personaId={personaId}
+                label={label}
+                initialMessages={initialMessages ?? []}
+              />
+            </div>
+          )}
+        </div>
+      )}
     </article>
   );
 }

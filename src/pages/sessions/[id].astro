@@ -19,6 +19,8 @@ let hasRoundTwo = false;
 let roundTwoPersonas: { id: string; label: string }[] = [];
 let synthesisAvailable = false;
 let hasSynthesis = false;
+let sideThreadEligible: string[] = [];
+let initialThreads: Record<string, { role: "user" | "advisor"; content: string }[]> = {};
 
 if (id && user) {
   const client = createClient(Astro.request.headers, Astro.cookies);
@@ -48,6 +50,15 @@ if (id && user) {
       synthesisAvailable = roundOneRecords.length > 0;
       const synthesisResult = await repository.getSynthesis(id);
       hasSynthesis = synthesisResult.ok && synthesisResult.value !== null;
+
+      sideThreadEligible = roundOneRecords.map((record) => record.personaId);
+      const sideThreadResult = await repository.getSideThreadMessagesForSession(id);
+      if (sideThreadResult.ok) {
+        for (const message of sideThreadResult.value) {
+          const bucket = (initialThreads[message.personaId] ??= []);
+          bucket.push({ role: message.role, content: message.content });
+        }
+      }
     }
   }
 }
@@ -80,7 +91,12 @@ const personas = ADVISOR_REGISTRY.map((persona) => ({ id: persona.id, label: per
             <p class="text-sm leading-relaxed text-foreground">{decision}</p>
             {context && <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{context}</p>}
           </div>
-          <AdvisorPanel sessionId={sessionId} personas={personas} client:load />
+          <AdvisorPanel
+            sessionId={sessionId}
+            personas={personas}
+            sideThread={{ eligible: sideThreadEligible, initialThreads }}
+            client:load
+          />
           <RoundTwoPanel
             sessionId={sessionId}
             personas={roundTwoPersonas}
