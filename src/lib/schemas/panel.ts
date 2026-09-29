@@ -14,3 +14,19 @@ export const PanelInputSchema = z.object({
 });
 
 export type PanelInput = z.infer<typeof PanelInputSchema>;
+
+/**
+ * Persona ids duplicated locally rather than imported from `@/lib/advisors/registry` — this file
+ * is shared with the client bundle (see `schemas/advisor.ts` for the same rationale), and the
+ * registry pulls in persona prompts + `parseScore`, which must not ship to the browser.
+ */
+const SIDE_THREAD_PERSONA_IDS = ["optymista", "sceptyk", "pragmatyk", "analityk"] as const;
+
+export const MAX_SIDE_THREAD_INPUT_CHARS = 2000;
+
+export const SideThreadAskSchema = z.object({
+  personaId: z.enum(SIDE_THREAD_PERSONA_IDS),
+  message: z.string().min(1).max(MAX_SIDE_THREAD_INPUT_CHARS),
+});
+
+export type SideThreadAsk = z.infer<typeof SideThreadAskSchema>;

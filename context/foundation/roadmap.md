@@ -47,7 +47,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | S-01  | first-divergent-round   | opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1   | F-01, F-02    | US-01, FR-001, FR-002, FR-003, FR-006, FR-009 | done |
 | S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | done |
 | S-03  | session-synthesis       | zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu | S-01          | US-01, FR-005, FR-010             | done |
-| S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | planning |
+| S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | in-progress |
 | S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | proposed |
 | S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | proposed |
 
@@ -155,7 +155,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Brak historyjki Given/When/Then dla FR-007 (PRD Otwarte pytanie #4) — Owner: user. Block: no (treść FR + Business Logic wystarcza do planowania; scenariusz do doprecyzowania w `/10x-plan`).
 - **Risk:** Świadome rozszerzenie zakresu ponad budżet (override przy Otwartym pytaniu #5) — osobny model danych i UI. Sekwencjonowany po core loop, bo nie warunkuje walidacji; kandydat do parkowania, jeśli budżet 3 tyg. napnie się mocniej.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-05: Historia sesji — lista i powrót
 

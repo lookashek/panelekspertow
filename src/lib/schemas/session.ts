@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import type { AdvisorPersonaId } from "@/lib/advisors/registry";
 import { SynthesisSchema } from "@/lib/schemas/synthesis";
-import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis, SideThreadMessage } from "@/types/session";
 
 const PERSONA_IDS = ["optymista", "sceptyk", "pragmatyk", "analityk"] as const satisfies readonly AdvisorPersonaId[];
 
@@ -89,6 +89,30 @@ export function toSessionSynthesis(row: SessionSynthesisRow): SessionSynthesis {
     userId: row.user_id,
     content: row.content,
     narrative: row.narrative,
+    createdAt: row.created_at,
+  };
+}
+
+export const SideThreadMessageRowSchema = z.object({
+  id: z.string(),
+  session_id: z.string(),
+  user_id: z.string(),
+  persona_id: z.enum(PERSONA_IDS),
+  role: z.enum(["user", "advisor"]),
+  content: z.string(),
+  created_at: z.string(),
+});
+
+export type SideThreadMessageRow = z.infer<typeof SideThreadMessageRowSchema>;
+
+export function toSideThreadMessage(row: SideThreadMessageRow): SideThreadMessage {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    userId: row.user_id,
+    personaId: row.persona_id,
+    role: row.role,
+    content: row.content,
     createdAt: row.created_at,
   };
 }

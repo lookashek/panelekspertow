@@ -41,3 +41,13 @@ export interface SessionSynthesis {
   narrative: string;
   createdAt: string;
 }
+
+export interface SideThreadMessage {
+  id: string;
+  sessionId: string;
+  userId: string;
+  personaId: AdvisorPersonaId;
+  role: "user" | "advisor";
+  content: string;
+  createdAt: string;
+}

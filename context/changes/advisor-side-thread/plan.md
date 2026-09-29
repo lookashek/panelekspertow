@@ -517,15 +517,15 @@ session is ever deleted. No backfill required.
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly on a fresh DB: `npx supabase db reset`
-- [ ] 1.2 Type checking passes: `npx astro check`
-- [ ] 1.3 Linting passes: `npm run lint`
-- [ ] 1.4 Schema unit tests pass: `npm run test`
+- [x] 1.1 Migration applies cleanly on a fresh DB: `npx supabase db reset`
+- [x] 1.2 Type checking passes: `npx astro check`
+- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.4 Schema unit tests pass: `npm run test`
 
 #### Manual
 
-- [ ] 1.5 `advisor_side_thread_messages` exists with RLS + select/insert policies for `authenticated`
-- [ ] 1.6 Row inserted as one user is not visible to another (RLS isolation)
+- [x] 1.5 `advisor_side_thread_messages` exists with RLS + select/insert policies for `authenticated`
+- [x] 1.6 Row inserted as one user is not visible to another (RLS isolation)
 
 ### Phase 2: Repository methods
 
