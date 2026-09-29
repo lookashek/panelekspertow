@@ -38,8 +38,8 @@
 - **Dimension**: Safety & Quality
 - **Location**: src/lib/services/session.service.ts (`runSynthesis`, `persistSynthesis`)
 - **Detail**: `runSynthesis` uses `stream.tee()` to split the prose `ReadableStream` between the live SSE event generator and the persist-tail's narrative accumulator. Traced end-to-end: the underlying `run-synthesis.ts` stream's `start()` callback enqueues either a single error chunk (head failure) or the full drained rationale (head success) before either tee branch is read, so an abandoned branch (e.g. `persistStream` when `persistSynthesis` returns early on head failure) holds only a small already-buffered/closed queue — no backpressure stall, no unbounded growth, no deadlock. Both branches are fully drained on the success path.
-- **Fix**: None required.
-- **Decision**: ACCEPTED (verified correct, no change needed)
+- **Fix attempted and reverted**: Tried adding an explicit `await stream.cancel()` on the abandoned `persistStream` branch in the head-failure early-return, to deterministically release it instead of relying on GC. This **hung the "live: head failure" test indefinitely** (5s timeout) — cancelling one tee branch while the other is also unread interacts with the Web Streams tee algorithm in a way that doesn't resolve cleanly here. Reverted; confirmed all 18 service tests pass again with the revert. This is concrete evidence that the original "no action needed" call was correct — the seemingly-safe hardening was actually a regression.
+- **Decision**: ACCEPTED (verified correct; a proposed fix was attempted, found to break the test suite, and reverted)
 
 ### F3 — Ownership-check ordering in `runSynthesis`
 
