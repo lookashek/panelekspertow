@@ -1,9 +1,9 @@
 ---
 change_id: resume-session-round
 title: Resume session round
-status: new
+status: planned
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-29
 archived_at: null
 ---
 

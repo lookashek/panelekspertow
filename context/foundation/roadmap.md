@@ -48,8 +48,8 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | S-02  | round-two-attribution   | uruchomić rundę 2, gdzie zmiana oceny wskazuje autora argumentu   | S-01          | US-01, FR-004, FR-010             | done |
 | S-03  | session-synthesis       | zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu | S-01          | US-01, FR-005, FR-010             | done |
 | S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | in-progress |
-| S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | proposed |
-| S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | proposed |
+| S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | done |
+| S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | planning |
 
 ## Streams
 
@@ -167,7 +167,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Mały slice reużywający trwałości i RLS z F-02. Sekwencjonowany po S-01, bo bez zapisanych sesji nie ma czego listować. Ryzyko niskie.
-- **Status:** proposed
+- **Status:** done
 
 ### S-06: Powrót do sesji, nowy kontekst, kolejna runda
 
@@ -181,7 +181,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Brak historyjki Given/When/Then dla FR-008 (PRD Otwarte pytanie #4) — Owner: user. Block: no.
   - Kontrola kosztu wielu rund: limit rund, cache, krótsze odpowiedzi w dalszych rundach (przeciwdziałania z briefu) — Owner: user. Block: no.
 - **Risk:** Zależy od historii (S-05) i mechaniki kolejnej rundy (S-02). Sekwencjonowany na końcu, bo domyka pętlę powrotów. Ryzyko: bez limitu rund funkcja jest nieopłacalna (ryzyko wprost z briefu).
-- **Status:** proposed
+- **Status:** planning
 
 ## Backlog Handoff
 
@@ -227,3 +227,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: opisać decyzję i zobaczyć rozbieżne, streamowane opinie rundy 1** — Archived 2026-09-25 → `context/archive/2026-09-25-first-divergent-round/`. Lesson: —.
 - **S-02: użytkownik uruchamia rundę drugą, w której persony odnoszą się do stanowisk pozostałych, a każda zmiana oceny wymaga wskazania autora przekonującego argumentu.** — Archived 2026-09-29 → `context/archive/2026-09-25-round-two-attribution/`. Lesson: —.
 - **S-03: zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu** — Archived 2026-09-29 → `context/archive/2026-09-25-session-synthesis/`. Lesson: —.
+- **S-05: zobaczyć listę zapisanych sesji i wrócić do wybranej** — Archived 2026-09-29 → `context/archive/2026-09-25-session-history/`. Lesson: —.
