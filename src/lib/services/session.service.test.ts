@@ -7,17 +7,30 @@ vi.mock("@/lib/adapters/create-llm-provider", () => ({
 }));
 
 import type { CompleteRequest, LlmProvider, StreamChunk, StreamRequest } from "@/lib/adapters/llm-provider";
-import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
-import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError, SynthesisUnavailableError } from "@/lib/errors";
+import { ADVISOR_REGISTRY, MAX_SIDE_THREAD_MESSAGES, SIDE_THREAD_RATE_MAX } from "@/lib/advisors/registry";
+import {
+  ErrorCode,
+  LlmError,
+  NotFoundError,
+  RateLimitError,
+  RoundTwoUnavailableError,
+  SideThreadUnavailableError,
+  SynthesisUnavailableError,
+} from "@/lib/errors";
 import type { Logger } from "@/lib/logger";
-import type { SaveOpinionInput, SaveSynthesisInput, SessionRepository } from "@/lib/repositories/session.repository";
+import type {
+  SaveOpinionInput,
+  SaveSideThreadMessageInput,
+  SaveSynthesisInput,
+  SessionRepository,
+} from "@/lib/repositories/session.repository";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 import type { Synthesis } from "@/lib/schemas/synthesis";
 import { SessionService } from "@/lib/services/session.service";
-import type { PanelRunEvent, SynthesisRunEvent } from "@/lib/services/session.service";
-import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
+import type { PanelRunEvent, SideThreadRunEvent, SynthesisRunEvent } from "@/lib/services/session.service";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis, SideThreadMessage } from "@/types/session";
 
 function makeTokenStream(text: string): ReadableStream<StreamChunk> {
   return new ReadableStream<StreamChunk>({
@@ -132,6 +145,24 @@ interface RepoMock {
   getSynthesis: ReturnType<typeof vi.fn>;
   saveSynthesis: ReturnType<typeof vi.fn>;
   completeSession: ReturnType<typeof vi.fn>;
+  saveSideThreadMessage: ReturnType<typeof vi.fn>;
+  getSideThreadMessagesForSession: ReturnType<typeof vi.fn>;
+  getSideThreadMessages: ReturnType<typeof vi.fn>;
+  countSideThreadUserMessages: ReturnType<typeof vi.fn>;
+  countRecentSideThreadMessagesByUser: ReturnType<typeof vi.fn>;
+}
+
+function makeSideThreadMessage(overrides: Partial<SideThreadMessage> = {}): SideThreadMessage {
+  return {
+    id: "side-thread-1",
+    sessionId: "session-1",
+    userId: "user-1",
+    personaId: "optymista",
+    role: "user",
+    content: "content",
+    createdAt: "2026-09-23T12:00:00.000Z",
+    ...overrides,
+  };
 }
 
 function makeRepository(overrides: Partial<RepoMock> = {}): { repository: SessionRepository; mock: RepoMock } {
@@ -144,6 +175,11 @@ function makeRepository(overrides: Partial<RepoMock> = {}): { repository: Sessio
     getSynthesis: vi.fn().mockResolvedValue(ok(null)),
     saveSynthesis: vi.fn().mockResolvedValue(ok(makeSessionSynthesis())),
     completeSession: vi.fn().mockResolvedValue(ok(undefined)),
+    saveSideThreadMessage: vi.fn().mockResolvedValue(ok(makeSideThreadMessage())),
+    getSideThreadMessagesForSession: vi.fn().mockResolvedValue(ok([])),
+    getSideThreadMessages: vi.fn().mockResolvedValue(ok([])),
+    countSideThreadUserMessages: vi.fn().mockResolvedValue(ok(0)),
+    countRecentSideThreadMessagesByUser: vi.fn().mockResolvedValue(ok(0)),
     ...overrides,
   };
   return { repository: mock as unknown as SessionRepository, mock };
@@ -163,6 +199,26 @@ async function collectSynthesisEvents(events: AsyncIterable<SynthesisRunEvent>):
     out.push(event);
   }
   return out;
+}
+
+async function collectSideThreadEvents(events: AsyncIterable<SideThreadRunEvent>): Promise<SideThreadRunEvent[]> {
+  const out: SideThreadRunEvent[] = [];
+  for await (const event of events) {
+    out.push(event);
+  }
+  return out;
+}
+
+function makeSideThreadProvider(
+  overrides: {
+    complete?: (req: CompleteRequest<never>) => Promise<Result<never, LlmError>>;
+    stream?: (req: StreamRequest) => ReadableStream<StreamChunk>;
+  } = {},
+): LlmProvider {
+  return {
+    complete: overrides.complete ?? vi.fn(),
+    stream: overrides.stream ?? (() => makeTokenStream("answer")),
+  };
 }
 
 describe("SessionService.createSession", () => {
@@ -719,5 +775,157 @@ describe("SessionService.runSynthesis", () => {
 
     expect(mock.saveSynthesis).not.toHaveBeenCalled();
     expect(mock.completeSession).not.toHaveBeenCalled();
+  });
+});
+
+describe("SessionService.askSideThread", () => {
+  const personaId = ADVISOR_REGISTRY[0].id;
+
+  it("returns NotFoundError when the session belongs to another user", async () => {
+    const session = makeSession({ userId: "someone-else" });
+    const { repository, mock } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(session)) });
+    const provider = makeSideThreadProvider();
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "question?");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NotFoundError);
+    }
+    expect(mock.getOpinions).not.toHaveBeenCalled();
+  });
+
+  it("returns NotFoundError when the session does not exist", async () => {
+    const { repository } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(null)) });
+    const provider = makeSideThreadProvider();
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "question?");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NotFoundError);
+    }
+  });
+
+  it("returns SideThreadUnavailableError when the persona has no round-one or round-two opinion", async () => {
+    const session = makeSession();
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: vi.fn().mockResolvedValue(ok([])),
+    });
+    const provider = makeSideThreadProvider();
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "question?");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(SideThreadUnavailableError);
+    }
+    expect(mock.saveSideThreadMessage).not.toHaveBeenCalled();
+  });
+
+  it("head precedence: uses the round-two head when both round one and round two exist", async () => {
+    const session = makeSession();
+    const roundOneRecord = makeOpinionRecord(personaId, { score: 5, thesis: "round one thesis" });
+    const roundTwoRecord = makeOpinionRecord(personaId, { roundNumber: 2, score: 9, thesis: "round two thesis" });
+    const streamMock = vi.fn().mockReturnValue(makeTokenStream("answer"));
+    const provider = makeSideThreadProvider({ stream: streamMock });
+    const { repository } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: [roundOneRecord], 2: [roundTwoRecord] }),
+    });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "question?");
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    await collectSideThreadEvents(result.value.events);
+    await result.value.persistTail;
+
+    expect(streamMock).toHaveBeenCalledTimes(1);
+    const request = streamMock.mock.calls[0][0] as StreamRequest;
+    expect(request.user).toContain("round two thesis");
+    expect(request.user).not.toContain("round one thesis");
+  });
+
+  it("rate-limit rejection when the rolling window count is at the per-user max", async () => {
+    const session = makeSession();
+    const roundOneRecord = makeOpinionRecord(personaId, { score: 5 });
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: [roundOneRecord], 2: [] }),
+      countRecentSideThreadMessagesByUser: vi.fn().mockResolvedValue(ok(SIDE_THREAD_RATE_MAX)),
+    });
+    const provider = makeSideThreadProvider();
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "question?");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(RateLimitError);
+    }
+    expect(mock.saveSideThreadMessage).not.toHaveBeenCalled();
+  });
+
+  it("per-thread cap rejection when the thread's user-message count is at the max", async () => {
+    const session = makeSession();
+    const roundOneRecord = makeOpinionRecord(personaId, { score: 5 });
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: [roundOneRecord], 2: [] }),
+      countSideThreadUserMessages: vi.fn().mockResolvedValue(ok(MAX_SIDE_THREAD_MESSAGES)),
+    });
+    const provider = makeSideThreadProvider();
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "question?");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(RateLimitError);
+    }
+    expect(mock.saveSideThreadMessage).not.toHaveBeenCalled();
+  });
+
+  it("persists the user message before streaming, then persists the advisor message once persistTail resolves", async () => {
+    const session = makeSession();
+    const roundOneRecord = makeOpinionRecord(personaId, { score: 5 });
+    let userMessageSavedBeforeStream = false;
+    const streamMock = vi.fn().mockImplementation(() => {
+      userMessageSavedBeforeStream = saveSideThreadMessage.mock.calls.length === 1;
+      return makeTokenStream("full answer");
+    });
+    const saveSideThreadMessage = vi.fn().mockResolvedValue(ok(makeSideThreadMessage()));
+    const provider = makeSideThreadProvider({ stream: streamMock });
+    const { repository } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: [roundOneRecord], 2: [] }),
+      saveSideThreadMessage,
+    });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.askSideThread("session-1", "user-1", personaId, "what about risk?");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(saveSideThreadMessage).toHaveBeenCalledTimes(1);
+    const [, firstSaveInput] = saveSideThreadMessage.mock.calls[0] as [string, SaveSideThreadMessageInput];
+    expect(firstSaveInput).toEqual({ personaId, role: "user", content: "what about risk?" });
+
+    const events = await collectSideThreadEvents(result.value.events);
+    await result.value.persistTail;
+
+    expect(userMessageSavedBeforeStream).toBe(true);
+    expect(events.some((e) => e.kind === "token" && e.text === "full answer")).toBe(true);
+    expect(events.at(-1)).toEqual({ kind: "done" });
+
+    expect(saveSideThreadMessage).toHaveBeenCalledTimes(2);
+    const [, secondSaveInput] = saveSideThreadMessage.mock.calls[1] as [string, SaveSideThreadMessageInput];
+    expect(secondSaveInput).toEqual({ personaId, role: "advisor", content: "full answer" });
   });
 });

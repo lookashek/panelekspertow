@@ -52,6 +52,15 @@ export type AdvisorPersonaId = "optymista" | "sceptyk" | "pragmatyk" | "analityk
  */
 export const MIN_ROUND_TWO_PARTICIPANTS = 2;
 
+/**
+ * Side-thread cost guardrails (`.claude/rules/backend.md` §7) — per-thread message cap and a
+ * rolling per-user rate window, enforced by `SessionService.askSideThread` via DB counters
+ * (`SessionRepository.countSideThreadUserMessages` / `countRecentSideThreadMessagesByUser`).
+ */
+export const MAX_SIDE_THREAD_MESSAGES = 20;
+export const SIDE_THREAD_RATE_WINDOW_MS = 60000;
+export const SIDE_THREAD_RATE_MAX = 10;
+
 export interface RoundOnePeer {
   label: string;
   head: AdvisorOpinion;

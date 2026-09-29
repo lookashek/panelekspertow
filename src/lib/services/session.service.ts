@@ -5,12 +5,27 @@
  * here; HTTP concerns (auth, SSE framing, abort wiring) belong to the API route (later phase).
  */
 
-import type { AdvisorPersonaId, AdvisorStrategy } from "@/lib/advisors/registry";
-import { ADVISOR_REGISTRY, MIN_ROUND_TWO_PARTICIPANTS } from "@/lib/advisors/registry";
+import { defaultAdvisorModel } from "@/lib/adapters/create-llm-provider";
+import type { AdvisorPersonaId, AdvisorStrategy, SideThreadTurn } from "@/lib/advisors/registry";
+import {
+  ADVISOR_REGISTRY,
+  MAX_SIDE_THREAD_MESSAGES,
+  MIN_ROUND_TWO_PARTICIPANTS,
+  SIDE_THREAD_RATE_MAX,
+  SIDE_THREAD_RATE_WINDOW_MS,
+} from "@/lib/advisors/registry";
 import { runPanel, runSecondRoundPanel } from "@/lib/advisors/run-panel";
 import type { PanelStreamChunk } from "@/lib/advisors/run-panel";
 import { runSynthesis as runSynthesizer } from "@/lib/advisors/run-synthesis";
-import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError, SynthesisUnavailableError } from "@/lib/errors";
+import {
+  ErrorCode,
+  LlmError,
+  NotFoundError,
+  RateLimitError,
+  RoundTwoUnavailableError,
+  SideThreadUnavailableError,
+  SynthesisUnavailableError,
+} from "@/lib/errors";
 import { createLogger } from "@/lib/logger";
 import type { Logger } from "@/lib/logger";
 import type { SynthesisInput, SynthesisPersonaHead } from "@/lib/prompts/synthesis.v1";
@@ -22,6 +37,8 @@ import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advis
 import type { PanelInput } from "@/lib/schemas/panel";
 import type { Synthesis } from "@/lib/schemas/synthesis";
 import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
+
+const SIDE_THREAD_PROMPT_VERSION = "v1";
 
 export type PanelRunEvent =
   | {
@@ -341,6 +358,38 @@ async function* buildReplaySynthesisEvents(persisted: SessionSynthesis): AsyncGe
   yield { kind: "done" };
 }
 
+/**
+ * Side-thread event union — analogue of `SynthesisRunEvent` for a single persona's free-text reply
+ * (no `score`/`synthesis` head event: a side thread never reopens the score, it only streams prose).
+ */
+export type SideThreadRunEvent =
+  { kind: "token"; text: string } | { kind: "done" } | { kind: "error"; code: string; message: string };
+
+export interface SideThreadRunView {
+  events: AsyncIterable<SideThreadRunEvent>;
+  persistTail?: Promise<void>;
+}
+
+/**
+ * Side-thread live path: there is no head to resolve (`buildSideThreadPrompt` skips straight to
+ * `stream()`, unlike the two-phase complete-then-stream flows above), so this only ever drains the
+ * one prose stream into `token`/`done`/`error` events.
+ */
+async function* buildLiveSideThreadEvents(stream: ReadableStream<StreamChunk>): AsyncGenerator<SideThreadRunEvent> {
+  const reader = stream.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value.type === "token") {
+      yield { kind: "token", text: value.text };
+    } else if (value.type === "done") {
+      yield { kind: "done" };
+    } else {
+      yield { kind: "error", code: value.error.code, message: value.error.message };
+    }
+  }
+}
+
 export class SessionService {
   private readonly repository: SessionRepository;
   private readonly provider: LlmProvider;
@@ -512,6 +561,145 @@ export class SessionService {
     const persistTail = this.persistSynthesis(sessionId, synthesis, persistStream);
 
     return ok({ events: buildLiveSynthesisEvents(synthesis, eventStream), persistTail });
+  }
+
+  /**
+   * Side-thread use case (`.claude/rules/backend.md` §7 rate limiting): ownership check, head
+   * resolution (round two, falling back to round one), cost guards, then persist-the-question
+   * before streaming so a question is never lost even if the stream never starts (plan Phase 4).
+   */
+  async askSideThread(
+    sessionId: string,
+    userId: string,
+    personaId: AdvisorPersonaId,
+    message: string,
+  ): Promise<Result<SideThreadRunView>> {
+    const sessionResult = await this.repository.getSession(sessionId);
+    if (!sessionResult.ok) {
+      return sessionResult;
+    }
+    const session = sessionResult.value;
+    if (session?.userId !== userId) {
+      return err(new NotFoundError("Session not found"));
+    }
+
+    const persona: AdvisorStrategy | undefined = ADVISOR_REGISTRY.find((candidate) => candidate.id === personaId);
+    if (!persona) {
+      return err(new SideThreadUnavailableError("Unknown advisor persona"));
+    }
+
+    const roundTwoResult = await this.repository.getOpinions(sessionId, 2);
+    if (!roundTwoResult.ok) {
+      return roundTwoResult;
+    }
+    const roundTwoRecord = roundTwoResult.value.find((record) => record.personaId === personaId);
+
+    let ownHead: AdvisorOpinion | undefined = roundTwoRecord
+      ? { score: roundTwoRecord.score, thesis: roundTwoRecord.thesis, arguments: roundTwoRecord.arguments }
+      : undefined;
+
+    if (!ownHead) {
+      const roundOneResult = await this.repository.getOpinions(sessionId, 1);
+      if (!roundOneResult.ok) {
+        return roundOneResult;
+      }
+      const roundOneRecord = roundOneResult.value.find((record) => record.personaId === personaId);
+      if (roundOneRecord) {
+        ownHead = { score: roundOneRecord.score, thesis: roundOneRecord.thesis, arguments: roundOneRecord.arguments };
+      }
+    }
+
+    if (!ownHead) {
+      return err(new SideThreadUnavailableError("This advisor has not published an opinion for this session yet"));
+    }
+
+    const rateWindowStartIso = new Date(Date.now() - SIDE_THREAD_RATE_WINDOW_MS).toISOString();
+    const rateCountResult = await this.repository.countRecentSideThreadMessagesByUser(rateWindowStartIso);
+    if (!rateCountResult.ok) {
+      return rateCountResult;
+    }
+    if (rateCountResult.value >= SIDE_THREAD_RATE_MAX) {
+      return err(new RateLimitError("Too many side-thread messages sent recently, please slow down"));
+    }
+
+    const threadCountResult = await this.repository.countSideThreadUserMessages(sessionId, personaId);
+    if (!threadCountResult.ok) {
+      return threadCountResult;
+    }
+    if (threadCountResult.value >= MAX_SIDE_THREAD_MESSAGES) {
+      return err(new RateLimitError("This side thread has reached its message limit"));
+    }
+
+    const historyResult = await this.repository.getSideThreadMessages(sessionId, personaId);
+    if (!historyResult.ok) {
+      return historyResult;
+    }
+    const history: SideThreadTurn[] = historyResult.value.map((turn) => ({
+      role: turn.role,
+      content: turn.content,
+    }));
+
+    const saveUserMessageResult = await this.repository.saveSideThreadMessage(sessionId, {
+      personaId,
+      role: "user",
+      content: message,
+    });
+    if (!saveUserMessageResult.ok) {
+      return saveUserMessageResult;
+    }
+
+    const panelInput: PanelInput = { decision: session.decision, context: session.context ?? undefined };
+    const { system, user } = persona.buildSideThreadPrompt(panelInput, ownHead, history, message);
+    const stream = this.provider.stream({
+      model: defaultAdvisorModel(),
+      system,
+      user,
+      temperature: persona.temperature,
+      persona: persona.id,
+      promptVersion: SIDE_THREAD_PROMPT_VERSION,
+    });
+    // Same rationale as `runSynthesis`'s tee: the live events and the persist tail each need their
+    // own independent read of the one prose stream.
+    const [eventStream, persistStream] = stream.tee();
+
+    const persistTail = this.persistSideThreadAnswer(sessionId, personaId, persistStream);
+
+    return ok({ events: buildLiveSideThreadEvents(eventStream), persistTail });
+  }
+
+  private async persistSideThreadAnswer(
+    sessionId: string,
+    personaId: AdvisorPersonaId,
+    stream: ReadableStream<StreamChunk>,
+  ): Promise<void> {
+    let accumulated = "";
+    const reader = stream.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value.type === "token") {
+        accumulated += value.text;
+      } else if (value.type === "error") {
+        this.logger.error("side thread stream failed", { sessionId, personaId, message: value.error.message });
+      }
+    }
+
+    if (!accumulated) {
+      return;
+    }
+
+    const saveResult = await this.repository.saveSideThreadMessage(sessionId, {
+      personaId,
+      role: "advisor",
+      content: accumulated,
+    });
+    if (!saveResult.ok) {
+      this.logger.error("failed to persist side thread advisor message", {
+        sessionId,
+        personaId,
+        message: saveResult.error.message,
+      });
+    }
   }
 
   private async persistRoundTwoAndLogMetrics(

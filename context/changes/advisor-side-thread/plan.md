@@ -539,21 +539,21 @@ session is ever deleted. No backfill required.
 
 #### Automated
 
-- [x] 3.1 Prompt unit tests pass (decision + own head + history + question, no JSON ask): `npm run test`
-- [x] 3.2 Type checking passes: `npx astro check`
-- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 Prompt unit tests pass (decision + own head + history + question, no JSON ask): `npm run test` — e06485e
+- [x] 3.2 Type checking passes: `npx astro check` — e06485e
+- [x] 3.3 Linting passes: `npm run lint` — e06485e
 
 #### Manual
 
-- [x] 3.4 Spot-read one persona's generated side-thread prompt reads in-character and asks for no score
+- [x] 3.4 Spot-read one persona's generated side-thread prompt reads in-character and asks for no score — e06485e
 
 ### Phase 4: Service method & errors
 
 #### Automated
 
-- [ ] 4.1 Service unit tests pass (ownership, unavailable, rate-limit/cap, head precedence, persist ordering): `npm run test`
-- [ ] 4.2 Type checking passes: `npx astro check`
-- [ ] 4.3 Linting passes: `npm run lint`
+- [x] 4.1 Service unit tests pass (ownership, unavailable, rate-limit/cap, head precedence, persist ordering): `npm run test`
+- [x] 4.2 Type checking passes: `npx astro check`
+- [x] 4.3 Linting passes: `npm run lint`
 
 ### Phase 5: API route (POST-SSE)
 
