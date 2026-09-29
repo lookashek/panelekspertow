@@ -1,10 +1,10 @@
 ---
 change_id: session-history
 title: Session history
-status: implemented
+status: archived
 created: 2026-09-25
 updated: 2026-09-29
-archived_at: null
+archived_at: 2026-09-29T16:08:41Z
 ---
 
 ## Notes
