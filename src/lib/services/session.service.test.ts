@@ -9,6 +9,7 @@ vi.mock("@/lib/adapters/create-llm-provider", () => ({
 import type { CompleteRequest, LlmProvider, StreamChunk, StreamRequest } from "@/lib/adapters/llm-provider";
 import { ADVISOR_REGISTRY, MAX_SIDE_THREAD_MESSAGES, SIDE_THREAD_RATE_MAX } from "@/lib/advisors/registry";
 import {
+  DbError,
   ErrorCode,
   LlmError,
   NotFoundError,
@@ -232,6 +233,33 @@ describe("SessionService.createSession", () => {
 
     expect(mock.createSession).toHaveBeenCalledWith({ decision: "Should I do X?", context: "ctx" });
     expect(result).toEqual(ok(session));
+  });
+});
+
+describe("SessionService.listSessions", () => {
+  it("returns the repository's ok result, and works with a provider-less (read-only) service", async () => {
+    const sessions = [makeSession({ id: "session-1" }), makeSession({ id: "session-2" })];
+    const { repository, mock } = makeRepository({ listSessions: vi.fn().mockResolvedValue(ok(sessions)) });
+    const service = new SessionService({ repository });
+
+    const result = await service.listSessions({ limit: 10 });
+
+    expect(mock.listSessions).toHaveBeenCalledWith({ limit: 10 });
+    expect(result).toEqual(ok(sessions));
+  });
+
+  it("propagates a repository error Result unchanged", async () => {
+    const dbError = new DbError("Failed to list sessions", new Error("boom"));
+    const { repository, mock } = makeRepository({ listSessions: vi.fn().mockResolvedValue(err(dbError)) });
+    const service = new SessionService({ repository });
+
+    const result = await service.listSessions();
+
+    expect(mock.listSessions).toHaveBeenCalledWith(undefined);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe(dbError);
+    }
   });
 });
 

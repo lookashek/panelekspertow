@@ -18,6 +18,7 @@ import { runPanel, runSecondRoundPanel } from "@/lib/advisors/run-panel";
 import type { PanelStreamChunk } from "@/lib/advisors/run-panel";
 import { runSynthesis as runSynthesizer } from "@/lib/advisors/run-synthesis";
 import {
+  AppError,
   ErrorCode,
   LlmError,
   NotFoundError,
@@ -129,7 +130,7 @@ export interface PanelRunView {
 
 export interface SessionServiceDeps {
   repository: SessionRepository;
-  provider: LlmProvider;
+  provider?: LlmProvider;
   logger?: Logger;
 }
 
@@ -392,7 +393,7 @@ async function* buildLiveSideThreadEvents(stream: ReadableStream<StreamChunk>): 
 
 export class SessionService {
   private readonly repository: SessionRepository;
-  private readonly provider: LlmProvider;
+  private readonly provider: LlmProvider | undefined;
   private readonly logger: Logger;
 
   constructor(deps: SessionServiceDeps) {
@@ -405,7 +406,21 @@ export class SessionService {
     return this.repository.createSession({ decision: input.decision, context: input.context });
   }
 
+  /**
+   * RLS-scoped list use case: the repository query already filters to the caller's own sessions
+   * (Postgres RLS on `sessions`), so this needs no ownership arg and no per-row check — see plan
+   * Phase 1 "Key Discoveries".
+   */
+  async listSessions(opts?: { limit?: number }): Promise<Result<Session[]>> {
+    return this.repository.listSessions(opts);
+  }
+
   async runFirstRound(sessionId: string, userId: string): Promise<Result<PanelRunView>> {
+    if (!this.provider) {
+      return err(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
+    }
+    const provider = this.provider;
+
     const sessionResult = await this.repository.getSession(sessionId);
     if (!sessionResult.ok) {
       return sessionResult;
@@ -427,7 +442,7 @@ export class SessionService {
     }
 
     const { scores, stream } = runPanel(
-      { provider: this.provider, personas },
+      { provider, personas },
       { decision: session.decision, context: session.context ?? undefined },
       undefined,
     );
@@ -438,6 +453,11 @@ export class SessionService {
   }
 
   async runSecondRound(sessionId: string, userId: string): Promise<Result<PanelRunView>> {
+    if (!this.provider) {
+      return err(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
+    }
+    const provider = this.provider;
+
     const sessionResult = await this.repository.getSession(sessionId);
     if (!sessionResult.ok) {
       return sessionResult;
@@ -482,7 +502,7 @@ export class SessionService {
     }
 
     const { scores, stream } = runSecondRoundPanel(
-      { provider: this.provider, personas: participants },
+      { provider, personas: participants },
       { decision: session.decision, context: session.context ?? undefined },
       priorHeads,
       undefined,
@@ -497,6 +517,11 @@ export class SessionService {
   }
 
   async runSynthesis(sessionId: string, userId: string): Promise<Result<SynthesisRunView>> {
+    if (!this.provider) {
+      return err(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
+    }
+    const provider = this.provider;
+
     const sessionResult = await this.repository.getSession(sessionId);
     if (!sessionResult.ok) {
       return sessionResult;
@@ -552,7 +577,7 @@ export class SessionService {
       personaHeads,
     };
 
-    const { synthesis, stream } = runSynthesizer({ provider: this.provider }, synthesisInput, undefined);
+    const { synthesis, stream } = runSynthesizer({ provider }, synthesisInput, undefined);
     // `stream` has exactly one consumer per branch; `persistSynthesis` (narrative accumulation for
     // the persist tail) and `buildLiveSynthesisEvents` (the live SSE events) each need their own
     // independent read of the same prose stream, so tee it rather than sharing one reader.
@@ -574,6 +599,11 @@ export class SessionService {
     personaId: AdvisorPersonaId,
     message: string,
   ): Promise<Result<SideThreadRunView>> {
+    if (!this.provider) {
+      return err(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
+    }
+    const provider = this.provider;
+
     const sessionResult = await this.repository.getSession(sessionId);
     if (!sessionResult.ok) {
       return sessionResult;
@@ -650,7 +680,7 @@ export class SessionService {
 
     const panelInput: PanelInput = { decision: session.decision, context: session.context ?? undefined };
     const { system, user } = persona.buildSideThreadPrompt(panelInput, ownHead, history, message);
-    const stream = this.provider.stream({
+    const stream = provider.stream({
       model: defaultAdvisorModel(),
       system,
       user,
