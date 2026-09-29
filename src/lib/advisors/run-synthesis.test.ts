@@ -115,7 +115,7 @@ describe("runSynthesis", () => {
     expect(result).toEqual(failure);
     expect(chunks).toHaveLength(1);
     expect(chunks[0]?.type).toBe("error");
-    if (chunks[0]?.type === "error") {
+    if (chunks[0]?.type === "error" && !failure.ok) {
       expect(chunks[0].error).toBe(failure.error);
     }
     expect(streamMock).not.toHaveBeenCalled();
