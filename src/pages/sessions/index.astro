@@ -1,0 +1,47 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SessionList from "@/components/session-history/SessionList.astro";
+import { SessionRepository } from "@/lib/repositories/session.repository";
+import { SessionService } from "@/lib/services/session.service";
+import { createClient } from "@/lib/supabase";
+import type { Session } from "@/types/session";
+
+const client = createClient(Astro.request.headers, Astro.cookies);
+
+let notConfigured = false;
+let errorMessage: string | null = null;
+let sessions: Session[] = [];
+
+if (!client) {
+  notConfigured = true;
+} else {
+  const service = new SessionService({ repository: new SessionRepository(client) });
+  const result = await service.listSessions();
+  if (result.ok) {
+    sessions = result.value;
+  } else {
+    errorMessage = result.error.message;
+  }
+}
+---
+
+<Layout title="Historia sesji — Panel Ekspertów">
+  <div class="bg-pixel-grid flex min-h-screen w-full flex-col items-center bg-background p-4 sm:p-8">
+    <div class="mx-auto w-full max-w-3xl pt-12 sm:pt-16">
+      <h1 class="font-pixel mb-8 text-center text-lg text-accent sm:text-xl">HISTORIA SESJI</h1>
+      {
+        notConfigured ? (
+          <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
+            <p class="text-sm text-muted-foreground">Usługa nie jest skonfigurowana. Spróbuj ponownie później.</p>
+          </div>
+        ) : errorMessage ? (
+          <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
+            <p class="text-sm text-muted-foreground">Nie udało się wczytać historii sesji: {errorMessage}</p>
+          </div>
+        ) : (
+          <SessionList sessions={sessions} />
+        )
+      }
+    </div>
+  </div>
+</Layout>

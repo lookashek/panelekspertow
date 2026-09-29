@@ -1,0 +1,58 @@
+---
+import { formatSessionDate, cn } from "@/lib/utils";
+import type { Session } from "@/types/session";
+
+interface Props {
+  sessions: Session[];
+}
+
+const { sessions } = Astro.props;
+
+const STATUS_LABEL: Record<Session["status"], string> = {
+  active: "AKTYWNA",
+  completed: "ZAKOŃCZONA",
+};
+
+const STATUS_CLASS: Record<Session["status"], string> = {
+  active: "border-accent text-accent",
+  completed: "border-muted-foreground text-muted-foreground",
+};
+---
+
+{
+  sessions.length === 0 ? (
+    <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
+      <p class="mb-6 text-sm text-muted-foreground">Nie masz jeszcze żadnych sesji.</p>
+      <a
+        href="/sessions/new"
+        class="pixel-btn font-pixel inline-flex bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
+      >
+        NOWA DECYZJA
+      </a>
+    </div>
+  ) : (
+    <ul class="flex flex-col gap-4">
+      {sessions.map((session) => (
+        <li>
+          <a
+            href={`/sessions/${session.id}`}
+            class="pixel-panel flex flex-col gap-3 p-4 transition-colors hover:border-accent sm:flex-row sm:items-center sm:justify-between sm:p-6"
+          >
+            <div class="min-w-0 flex-1">
+              <p class="line-clamp-2 text-sm leading-relaxed text-foreground">{session.decision}</p>
+              <p class="mt-2 text-xs text-muted-foreground">{formatSessionDate(session.createdAt)}</p>
+            </div>
+            <span
+              class={cn(
+                "font-pixel inline-flex w-fit shrink-0 border-2 px-2 py-1 text-[0.6rem]",
+                STATUS_CLASS[session.status],
+              )}
+            >
+              {STATUS_LABEL[session.status]}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}

@@ -14,12 +14,20 @@ const { user } = Astro.locals;
         Welcome, <span class="font-semibold text-white">{user?.email}</span>
       </p>
       <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
-      <a
-        href="/sessions/new"
-        class="pixel-btn font-pixel mt-6 inline-flex bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
-      >
-        NOWA DECYZJA
-      </a>
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-4">
+        <a
+          href="/sessions/new"
+          class="pixel-btn font-pixel inline-flex bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
+        >
+          NOWA DECYZJA
+        </a>
+        <a
+          href="/sessions"
+          class="pixel-btn font-pixel inline-flex bg-background px-6 py-4 text-xs text-foreground transition-colors hover:border-accent hover:text-accent"
+        >
+          MOJE SESJE
+        </a>
+      </div>
     </div>
   </div>
 </Layout>

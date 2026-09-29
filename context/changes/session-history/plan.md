@@ -208,23 +208,23 @@ None — no schema changes; reuses the existing `sessions` table and RLS policie
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm run test`
-- [x] 1.2 Type checking passes: `npx astro check`
-- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.1 Unit tests pass: `npm run test` — fc8b922
+- [x] 1.2 Type checking passes: `npx astro check` — fc8b922
+- [x] 1.3 Linting passes: `npm run lint` — fc8b922
 
 ### Phase 2: History UI — page, list component, navigation
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npx astro check`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Production build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Production build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 2.4 `/sessions` lists the user's sessions newest-first with decision, Polish date, and correct status badge
-- [ ] 2.5 Clicking a row opens that session at `/sessions/[id]`
-- [ ] 2.6 A user with zero sessions sees the empty panel + working "Nowa decyzja" CTA
-- [ ] 2.7 A second account sees only its own sessions (isolation)
-- [ ] 2.8 "Historia" appears in the Topbar and the dashboard link works
-- [ ] 2.9 Renders at 375px and 1280px with AA-contrast accents and keyboard-navigable rows
+- [x] 2.4 `/sessions` lists the user's sessions newest-first with decision, Polish date, and correct status badge
+- [x] 2.5 Clicking a row opens that session at `/sessions/[id]`
+- [x] 2.6 A user with zero sessions sees the empty panel + working "Nowa decyzja" CTA
+- [x] 2.7 A second account sees only its own sessions (isolation)
+- [x] 2.8 "Historia" appears in the Topbar and the dashboard link works
+- [x] 2.9 Renders at 375px and 1280px with AA-contrast accents and keyboard-navigable rows
