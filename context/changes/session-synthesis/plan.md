@@ -366,9 +366,9 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [x] 4.1 Linting passes: `npm run lint`
-- [x] 4.2 Type checking passes: `npm run build`
-- [x] 4.3 Service unit tests: replay, live, head-failure-no-persist, not-owned→NotFound, round-one-empty error
+- [x] 4.1 Linting passes: `npm run lint` — 4b0548d
+- [x] 4.2 Type checking passes: `npm run build` — 4b0548d
+- [x] 4.3 Service unit tests: replay, live, head-failure-no-persist, not-owned→NotFound, round-one-empty error — 4b0548d
 - [ ] 4.4 `npm run smoke` passes against a running server
 
 #### Manual
@@ -380,9 +380,9 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [ ] 5.1 Linting passes: `npm run lint`
-- [ ] 5.2 Type checking passes: `npm run build`
-- [ ] 5.3 Component/hook unit tests pass (if runner covers them): dispute axes always shown, risk weight label text, error state shows retry
+- [x] 5.1 Linting passes: `npm run lint`
+- [x] 5.2 Type checking passes: `npm run build`
+- [x] 5.3 Component/hook unit tests pass (if runner covers them): dispute axes always shown, risk weight label text, error state shows retry — N/A, no React component test runner in this repo; covered by manual verification
 
 #### Manual
 
