@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
+import Topbar from "@/components/Topbar.astro";
 import { missingConfigs } from "@/lib/config-status";
 import pixelFontLatin from "@/assets/fonts/press-start-2p-latin-400.woff2?url";
 import pixelFontLatinExt from "@/assets/fonts/press-start-2p-latin-ext-400.woff2?url";
@@ -23,6 +24,9 @@ const { title = "Panel Ekspertów" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    <div class="p-4 pb-0 sm:p-8 sm:pb-0">
+      <Topbar />
+    </div>
     {missingConfigs.map((cfg) => (
       <Banner variant="error">
         <strong>Uwaga:</strong> {cfg.message}

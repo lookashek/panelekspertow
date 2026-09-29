@@ -141,6 +141,15 @@ function SynthesisStream({ sessionId, onRetry }: { sessionId: string; onRetry: (
           <RetryButton onRetry={onRetry} />
         </div>
       )}
+
+      {state.status === "done" && (
+        <a
+          href="/sessions/new"
+          className="pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent self-start px-6 py-4 text-xs transition-colors"
+        >
+          NOWA DECYZJA
+        </a>
+      )}
     </div>
   );
 }
