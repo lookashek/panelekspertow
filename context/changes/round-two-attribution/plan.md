@@ -577,10 +577,10 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against a local Supabase: `npx supabase db reset`
-- [x] 1.2 Schema unit tests pass (round-two schema accepts valid + null attribution; rejects self/blank quote): `npm run test -- advisor session`
-- [x] 1.3 Type checking passes: `npx astro check`
-- [x] 1.4 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly against a local Supabase: `npx supabase db reset` — 6576039
+- [x] 1.2 Schema unit tests pass (round-two schema accepts valid + null attribution; rejects self/blank quote): `npm run test -- advisor session` — 6576039
+- [x] 1.3 Type checking passes: `npx astro check` — 6576039
+- [x] 1.4 Linting passes: `npm run lint` — 6576039
 
 #### Manual
 
@@ -590,9 +590,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [ ] 2.1 Registry/prompt unit tests pass (both round-two builders per persona; peer labels + conditional-attribution instruction present): `npm run test -- registry prompts`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Registry/prompt unit tests pass (both round-two builders per persona; peer labels + conditional-attribution instruction present): `npm run test -- registry prompts`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Linting passes: `npm run lint`
 
 #### Manual
 

@@ -129,6 +129,8 @@ describe("runPanel", () => {
       label: "Optymista",
       buildPrompt: () => ({ system: "head-system", user: "head-user" }),
       buildRationalePrompt,
+      buildRoundTwoPrompt: () => ({ system: "round-two-system", user: "round-two-user" }),
+      buildRoundTwoRationalePrompt: () => ({ system: "round-two-rationale-system", user: "round-two-rationale-user" }),
       temperature: 0.9,
       parseScore: (raw) => ok(raw as AdvisorOpinion),
     };

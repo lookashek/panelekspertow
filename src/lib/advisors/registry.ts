@@ -10,21 +10,29 @@ import { parseScore } from "@/lib/advisors/parse-score";
 import {
   buildPrompt as buildOptymistaPrompt,
   buildRationalePrompt as buildOptymistaRationalePrompt,
+  buildRoundTwoPrompt as buildOptymistaRoundTwoPrompt,
+  buildRoundTwoRationalePrompt as buildOptymistaRoundTwoRationalePrompt,
 } from "@/lib/prompts/advisor-optymista.v1";
 import {
   buildPrompt as buildSceptykPrompt,
   buildRationalePrompt as buildSceptykRationalePrompt,
+  buildRoundTwoPrompt as buildSceptykRoundTwoPrompt,
+  buildRoundTwoRationalePrompt as buildSceptykRoundTwoRationalePrompt,
 } from "@/lib/prompts/advisor-sceptyk.v1";
 import {
   buildPrompt as buildPragmatykPrompt,
   buildRationalePrompt as buildPragmatykRationalePrompt,
+  buildRoundTwoPrompt as buildPragmatykRoundTwoPrompt,
+  buildRoundTwoRationalePrompt as buildPragmatykRoundTwoRationalePrompt,
 } from "@/lib/prompts/advisor-pragmatyk.v1";
 import {
   buildPrompt as buildAnalitykPrompt,
   buildRationalePrompt as buildAnalitykRationalePrompt,
+  buildRoundTwoPrompt as buildAnalitykRoundTwoPrompt,
+  buildRoundTwoRationalePrompt as buildAnalitykRoundTwoRationalePrompt,
 } from "@/lib/prompts/advisor-analityk.v1";
 import type { Result } from "@/lib/result";
-import type { AdvisorOpinion, AdvisorScore } from "@/lib/schemas/advisor";
+import type { AdvisorOpinion, AdvisorRoundTwoOpinion, AdvisorScore } from "@/lib/schemas/advisor";
 import { PanelInputSchema } from "@/lib/schemas/panel";
 import type { PanelInput } from "@/lib/schemas/panel";
 
@@ -33,11 +41,27 @@ export type { PanelInput };
 
 export type AdvisorPersonaId = "optymista" | "sceptyk" | "pragmatyk" | "analityk";
 
+export interface RoundOnePeer {
+  label: string;
+  head: AdvisorOpinion;
+}
+
 export interface AdvisorStrategy {
   id: AdvisorPersonaId;
   label: string;
   buildPrompt(input: PanelInput): { system: string; user: string };
   buildRationalePrompt(input: PanelInput, head: AdvisorOpinion): { system: string; user: string };
+  buildRoundTwoPrompt(
+    input: PanelInput,
+    selfHead: AdvisorOpinion,
+    peers: RoundOnePeer[],
+  ): { system: string; user: string };
+  buildRoundTwoRationalePrompt(
+    input: PanelInput,
+    selfHead: AdvisorOpinion,
+    roundTwoHead: AdvisorRoundTwoOpinion,
+    peers: RoundOnePeer[],
+  ): { system: string; user: string };
   temperature: number;
   parseScore(raw: unknown): Result<AdvisorScore, LlmError>;
 }
@@ -53,6 +77,8 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     label: "Optymista",
     buildPrompt: buildOptymistaPrompt,
     buildRationalePrompt: buildOptymistaRationalePrompt,
+    buildRoundTwoPrompt: buildOptymistaRoundTwoPrompt,
+    buildRoundTwoRationalePrompt: buildOptymistaRoundTwoRationalePrompt,
     temperature: 0.9,
     parseScore,
   },
@@ -61,6 +87,8 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     label: "Sceptyk",
     buildPrompt: buildSceptykPrompt,
     buildRationalePrompt: buildSceptykRationalePrompt,
+    buildRoundTwoPrompt: buildSceptykRoundTwoPrompt,
+    buildRoundTwoRationalePrompt: buildSceptykRoundTwoRationalePrompt,
     temperature: 0.7,
     parseScore,
   },
@@ -69,6 +97,8 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     label: "Pragmatyk",
     buildPrompt: buildPragmatykPrompt,
     buildRationalePrompt: buildPragmatykRationalePrompt,
+    buildRoundTwoPrompt: buildPragmatykRoundTwoPrompt,
+    buildRoundTwoRationalePrompt: buildPragmatykRoundTwoRationalePrompt,
     temperature: 0.5,
     parseScore,
   },
@@ -77,6 +107,8 @@ export const ADVISOR_REGISTRY: AdvisorStrategy[] = [
     label: "Analityk",
     buildPrompt: buildAnalitykPrompt,
     buildRationalePrompt: buildAnalitykRationalePrompt,
+    buildRoundTwoPrompt: buildAnalitykRoundTwoPrompt,
+    buildRoundTwoRationalePrompt: buildAnalitykRoundTwoRationalePrompt,
     temperature: 0.3,
     parseScore,
   },
