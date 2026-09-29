@@ -8,7 +8,8 @@
 import { z } from "zod";
 
 import type { AdvisorPersonaId } from "@/lib/advisors/registry";
-import type { AdvisorOpinionRecord, Session } from "@/types/session";
+import { SynthesisSchema } from "@/lib/schemas/synthesis";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
 
 const PERSONA_IDS = ["optymista", "sceptyk", "pragmatyk", "analityk"] as const satisfies readonly AdvisorPersonaId[];
 
@@ -67,5 +68,27 @@ export function toAdvisorOpinion(row: AdvisorOpinionRow): AdvisorOpinionRecord {
     previousScore: row.previous_score,
     attributedPersonaId: row.attributed_persona_id,
     attributionQuote: row.attribution_quote,
+  };
+}
+
+export const SessionSynthesisRowSchema = z.object({
+  id: z.string(),
+  session_id: z.string(),
+  user_id: z.string(),
+  content: SynthesisSchema,
+  narrative: z.string(),
+  created_at: z.string(),
+});
+
+export type SessionSynthesisRow = z.infer<typeof SessionSynthesisRowSchema>;
+
+export function toSessionSynthesis(row: SessionSynthesisRow): SessionSynthesis {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    userId: row.user_id,
+    content: row.content,
+    narrative: row.narrative,
+    createdAt: row.created_at,
   };
 }

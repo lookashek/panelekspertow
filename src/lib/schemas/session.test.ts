@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { AdvisorOpinionRowSchema, SessionRowSchema, toAdvisorOpinion, toSession } from "@/lib/schemas/session";
+import {
+  AdvisorOpinionRowSchema,
+  SessionRowSchema,
+  SessionSynthesisRowSchema,
+  toAdvisorOpinion,
+  toSession,
+  toSessionSynthesis,
+} from "@/lib/schemas/session";
 
 const validSessionRow = {
   id: "session-1",
@@ -35,6 +42,22 @@ const validRoundTwoOpinionRow = {
   previous_score: 6,
   attributed_persona_id: "sceptyk" as const,
   attribution_quote: "Ten argument mnie przekonał.",
+};
+
+const validSynthesisContent = {
+  agreementPoints: ["Both agree on timing"],
+  disputeAxes: [{ title: "Risk tolerance", positions: ["Cautious", "Aggressive"] }],
+  risks: [{ description: "Market downturn", weight: "medium" as const }],
+  recommendedNextStep: "Run a pilot",
+};
+
+const validSynthesisRow = {
+  id: "synthesis-1",
+  session_id: "session-1",
+  user_id: "user-1",
+  content: validSynthesisContent,
+  narrative: "The panel converged on timing but diverged on risk tolerance.",
+  created_at: "2026-09-29T12:00:00.000Z",
 };
 
 describe("SessionRowSchema", () => {
@@ -139,6 +162,35 @@ describe("toAdvisorOpinion", () => {
       previousScore: 6,
       attributedPersonaId: "sceptyk",
       attributionQuote: "Ten argument mnie przekonał.",
+    });
+  });
+});
+
+describe("SessionSynthesisRowSchema", () => {
+  it("accepts a valid row", () => {
+    expect(SessionSynthesisRowSchema.parse(validSynthesisRow)).toEqual(validSynthesisRow);
+  });
+
+  it("rejects a row with invalid content (missing disputeAxes)", () => {
+    const row = { ...validSynthesisRow, content: { ...validSynthesisContent, disputeAxes: [] } };
+    expect(() => SessionSynthesisRowSchema.parse(row)).toThrow();
+  });
+
+  it("rejects a row with malformed content shape", () => {
+    const row = { ...validSynthesisRow, content: { foo: "bar" } };
+    expect(() => SessionSynthesisRowSchema.parse(row)).toThrow();
+  });
+});
+
+describe("toSessionSynthesis", () => {
+  it("maps a snake_case row to the camelCase domain object", () => {
+    expect(toSessionSynthesis(validSynthesisRow)).toEqual({
+      id: "synthesis-1",
+      sessionId: "session-1",
+      userId: "user-1",
+      content: validSynthesisContent,
+      narrative: "The panel converged on timing but diverged on risk tolerance.",
+      createdAt: "2026-09-29T12:00:00.000Z",
     });
   });
 });

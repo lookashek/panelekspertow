@@ -18,6 +18,7 @@ interface QueryResponse {
 function makeQueryBuilder(response: QueryResponse) {
   const builder: Record<string, unknown> = {
     insert: vi.fn(() => builder),
+    update: vi.fn(() => builder),
     select: vi.fn(() => builder),
     order: vi.fn(() => builder),
     limit: vi.fn(() => builder),
@@ -43,6 +44,22 @@ const sessionRow = {
   status: "active",
   created_at: "2026-09-23T12:00:00.000Z",
   updated_at: "2026-09-23T12:00:00.000Z",
+};
+
+const synthesisContent = {
+  agreementPoints: ["Both agree on timing"],
+  disputeAxes: [{ title: "Risk tolerance", positions: ["Cautious", "Aggressive"] }],
+  risks: [{ description: "Market downturn", weight: "medium" as const }],
+  recommendedNextStep: "Run a pilot",
+};
+
+const synthesisRow = {
+  id: "synthesis-1",
+  session_id: "session-1",
+  user_id: "user-1",
+  content: synthesisContent,
+  narrative: "The panel converged on timing but diverged on risk tolerance.",
+  created_at: "2026-09-29T12:00:00.000Z",
 };
 
 const opinionRow = {
@@ -280,6 +297,105 @@ describe("SessionRepository.getSession", () => {
     const repo = new SessionRepository(client);
 
     const result = await repo.getSession("session-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.getSynthesis", () => {
+  it("returns the mapped synthesis when found", async () => {
+    const { client, builder } = makeClient({ data: synthesisRow, error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getSynthesis("session-1");
+
+    expect(builder.eq).toHaveBeenCalledWith("session_id", "session-1");
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual(
+        expect.objectContaining({ id: "synthesis-1", sessionId: "session-1", narrative: synthesisRow.narrative }),
+      );
+    }
+  });
+
+  it("returns ok(null) when no synthesis exists yet", async () => {
+    const { client } = makeClient({ data: null, error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getSynthesis("session-1");
+
+    expect(result).toEqual({ ok: true, value: null });
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "select failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getSynthesis("session-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.saveSynthesis", () => {
+  it("returns the mapped synthesis on success", async () => {
+    const { client, from, builder } = makeClient({ data: synthesisRow, error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.saveSynthesis("session-1", {
+      content: synthesisContent,
+      narrative: synthesisRow.narrative,
+    });
+
+    expect(from).toHaveBeenCalledWith("session_syntheses");
+    expect(builder.insert).toHaveBeenCalledWith({
+      session_id: "session-1",
+      content: synthesisContent,
+      narrative: synthesisRow.narrative,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual(expect.objectContaining({ id: "synthesis-1", sessionId: "session-1" }));
+    }
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "insert failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.saveSynthesis("session-1", { content: synthesisContent, narrative: "narrative" });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.completeSession", () => {
+  it("updates the session status to completed", async () => {
+    const { client, from, builder } = makeClient({ data: null, error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.completeSession("session-1");
+
+    expect(from).toHaveBeenCalledWith("sessions");
+    expect(builder.update).toHaveBeenCalledWith(expect.objectContaining({ status: "completed" }));
+    expect(builder.eq).toHaveBeenCalledWith("id", "session-1");
+    expect(result).toEqual({ ok: true, value: undefined });
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "update failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.completeSession("session-1");
 
     expect(result.ok).toBe(false);
     if (!result.ok) {

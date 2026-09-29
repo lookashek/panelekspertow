@@ -332,10 +332,10 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run build`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 `SynthesisSchema` unit test: rejects empty disputeAxes, axis with <2 positions, invalid weight; accepts valid synthesis
-- [x] 1.4 Prompt-builder unit test: builders return non-empty system/user and embed every head
+- [x] 1.1 Type checking passes: `npm run build` — d43a4d5
+- [x] 1.2 Linting passes: `npm run lint` — d43a4d5
+- [x] 1.3 `SynthesisSchema` unit test: rejects empty disputeAxes, axis with <2 positions, invalid weight; accepts valid synthesis — d43a4d5
+- [x] 1.4 Prompt-builder unit test: builders return non-empty system/user and embed every head — d43a4d5
 
 #### Manual
 
@@ -345,10 +345,10 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [ ] 2.1 Linting passes: `npm run lint`
-- [ ] 2.2 Type checking passes: `npm run build`
-- [ ] 2.3 Repository unit tests: `getSynthesis` (present/absent), `saveSynthesis`, `completeSession`
-- [ ] 2.4 Row schema round-trip test: valid row maps; invalid `content` fails validation
+- [x] 2.1 Linting passes: `npm run lint`
+- [x] 2.2 Type checking passes: `npm run build`
+- [x] 2.3 Repository unit tests: `getSynthesis` (present/absent), `saveSynthesis`, `completeSession`
+- [x] 2.4 Row schema round-trip test: valid row maps; invalid `content` fails validation
 
 #### Manual
 

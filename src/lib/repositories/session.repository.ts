@@ -12,9 +12,17 @@ import type { AdvisorPersonaId } from "@/lib/advisors/registry";
 import { DbError } from "@/lib/errors";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
-import { AdvisorOpinionRowSchema, SessionRowSchema, toAdvisorOpinion, toSession } from "@/lib/schemas/session";
+import {
+  AdvisorOpinionRowSchema,
+  SessionRowSchema,
+  SessionSynthesisRowSchema,
+  toAdvisorOpinion,
+  toSession,
+  toSessionSynthesis,
+} from "@/lib/schemas/session";
 import type { AdvisorOpinion } from "@/lib/schemas/advisor";
-import type { AdvisorOpinionRecord, Session } from "@/types/session";
+import type { Synthesis } from "@/lib/schemas/synthesis";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
 
 const DEFAULT_LIST_LIMIT = 50;
 
@@ -42,6 +50,11 @@ export interface SaveOpinionInput {
   previousScore?: number | null;
   attributedPersonaId?: AdvisorPersonaId | null;
   attributionQuote?: string | null;
+}
+
+export interface SaveSynthesisInput {
+  content: Synthesis;
+  narrative: string;
 }
 
 export class SessionRepository {
@@ -165,5 +178,58 @@ export class SessionRepository {
       return parsed;
     }
     return ok(toSession(parsed.value));
+  }
+
+  async getSynthesis(sessionId: string): Promise<Result<SessionSynthesis | null, DbError>> {
+    const { data, error } = (await this.client
+      .from("session_syntheses")
+      .select()
+      .eq("session_id", sessionId)
+      .maybeSingle()) as DbResponse<unknown>;
+
+    if (error) {
+      return err(new DbError("Failed to fetch session synthesis", error));
+    }
+
+    if (!data) {
+      return ok(null);
+    }
+
+    const parsed = parseRow(SessionSynthesisRowSchema, data);
+    if (!parsed.ok) {
+      return parsed;
+    }
+    return ok(toSessionSynthesis(parsed.value));
+  }
+
+  async saveSynthesis(sessionId: string, input: SaveSynthesisInput): Promise<Result<SessionSynthesis, DbError>> {
+    const { data, error } = (await this.client
+      .from("session_syntheses")
+      .insert({ session_id: sessionId, content: input.content, narrative: input.narrative })
+      .select()
+      .single()) as DbResponse<unknown>;
+
+    if (error) {
+      return err(new DbError("Failed to save session synthesis", error));
+    }
+
+    const parsed = parseRow(SessionSynthesisRowSchema, data);
+    if (!parsed.ok) {
+      return parsed;
+    }
+    return ok(toSessionSynthesis(parsed.value));
+  }
+
+  async completeSession(sessionId: string): Promise<Result<void, DbError>> {
+    const { error } = (await this.client
+      .from("sessions")
+      .update({ status: "completed", updated_at: new Date().toISOString() })
+      .eq("id", sessionId)) as DbResponse<unknown>;
+
+    if (error) {
+      return err(new DbError("Failed to complete session", error));
+    }
+
+    return ok(undefined);
   }
 }

@@ -4,6 +4,7 @@
  */
 
 import type { AdvisorPersonaId } from "@/lib/advisors/registry";
+import type { Synthesis } from "@/lib/schemas/synthesis";
 
 export type SessionStatus = "active" | "completed";
 
@@ -30,4 +31,13 @@ export interface AdvisorOpinionRecord {
   previousScore: number | null;
   attributedPersonaId: AdvisorPersonaId | null;
   attributionQuote: string | null;
+}
+
+export interface SessionSynthesis {
+  id: string;
+  sessionId: string;
+  userId: string;
+  content: Synthesis;
+  narrative: string;
+  createdAt: string;
 }
