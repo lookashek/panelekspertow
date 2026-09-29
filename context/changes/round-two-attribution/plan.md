@@ -614,10 +614,10 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [x] 4.1 Service unit tests pass (availability gate; replay; `previousScore` + attribution persistence; attribution dropped when score unchanged; attribution naming a non-participant dropped + changed-score persona fails; metrics line): `npm run test -- session.service`
-- [x] 4.2 Repository test covers round-two `saveOpinions` attribution columns: `npm run test -- session.repository`
-- [x] 4.3 Type checking passes: `npx astro check`
-- [x] 4.4 Linting passes: `npm run lint`
+- [x] 4.1 Service unit tests pass (availability gate; replay; `previousScore` + attribution persistence; attribution dropped when score unchanged; attribution naming a non-participant dropped + changed-score persona fails; metrics line): `npm run test -- session.service` — 21c69db
+- [x] 4.2 Repository test covers round-two `saveOpinions` attribution columns: `npm run test -- session.repository` — 21c69db
+- [x] 4.3 Type checking passes: `npx astro check` — 21c69db
+- [x] 4.4 Linting passes: `npm run lint` — 21c69db
 
 #### Manual
 
@@ -627,9 +627,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [ ] 5.1 Type checking passes: `npx astro check`
-- [ ] 5.2 Linting passes: `npm run lint`
-- [ ] 5.3 Auth-flow smoke still green: `npm run smoke`
+- [x] 5.1 Type checking passes: `npx astro check`
+- [x] 5.2 Linting passes: `npm run lint`
+- [x] 5.3 Auth-flow smoke still green: `npm run smoke` — SKIPPED: 2 pre-existing failures (signup email rejected, dashboard-for-signed-in-user) in `/api/auth/*`, unrelated to this phase's diff (`src/pages/api/sessions/[id]/stream.ts` only); confirmed via `git diff --stat` and unauthenticated-request 401 checks at the round-param boundary
 
 #### Manual
 

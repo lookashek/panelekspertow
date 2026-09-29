@@ -1,4 +1,5 @@
 import type { APIContext } from "astro";
+import { z } from "zod";
 
 import { createLlmProvider } from "@/lib/adapters/create-llm-provider";
 import { AppError, ErrorCode, UnauthorizedError } from "@/lib/errors";
@@ -8,17 +9,32 @@ import type { PanelRunEvent } from "@/lib/services/session.service";
 import { SessionService } from "@/lib/services/session.service";
 import { createClient } from "@/lib/supabase";
 
+const RoundParamSchema = z.coerce.number().int().min(1).max(2);
+
 function sseFrame(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
 function frameFor(event: PanelRunEvent): [string, unknown] {
   switch (event.kind) {
-    case "score":
-      return [
-        "score",
-        { personaId: event.personaId, score: event.score, thesis: event.thesis, arguments: event.arguments },
-      ];
+    case "score": {
+      const data: Record<string, unknown> = {
+        personaId: event.personaId,
+        score: event.score,
+        thesis: event.thesis,
+        arguments: event.arguments,
+      };
+      if (event.previousScore !== null) {
+        data.previousScore = event.previousScore;
+      }
+      if (event.attributedPersonaId !== null) {
+        data.attributedPersonaId = event.attributedPersonaId;
+      }
+      if (event.attributionQuote !== null) {
+        data.attributionQuote = event.attributionQuote;
+      }
+      return ["score", data];
+    }
     case "token":
       return ["token", { personaId: event.personaId, text: event.text }];
     case "done":
@@ -37,6 +53,13 @@ export async function GET({ params, request, cookies, locals }: APIContext): Pro
     return errorResponse(new AppError("Missing session id", ErrorCode.VALIDATION_ERROR, 400));
   }
 
+  const roundParam = new URL(request.url).searchParams.get("round") ?? "1";
+  const roundResult = RoundParamSchema.safeParse(roundParam);
+  if (!roundResult.success) {
+    return errorResponse(new AppError("round must be 1 or 2", ErrorCode.VALIDATION_ERROR, 400, roundResult.error));
+  }
+  const round = roundResult.data;
+
   const client = createClient(request.headers, cookies);
   const provider = createLlmProvider();
   if (!client || !provider) {
@@ -44,7 +67,10 @@ export async function GET({ params, request, cookies, locals }: APIContext): Pro
   }
 
   const service = new SessionService({ repository: new SessionRepository(client), provider });
-  const result = await service.runFirstRound(params.id, locals.user.id);
+  const result =
+    round === 2
+      ? await service.runSecondRound(params.id, locals.user.id)
+      : await service.runFirstRound(params.id, locals.user.id);
   if (!result.ok) {
     return errorResponse(result.error);
   }
