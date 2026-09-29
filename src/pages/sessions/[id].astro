@@ -2,11 +2,9 @@
 import Layout from "@/layouts/Layout.astro";
 import { AdvisorPanel } from "@/components/advisor-panel/AdvisorPanel";
 import { RoundTwoPanel } from "@/components/advisor-panel/RoundTwoPanel";
-import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
+import { ADVISOR_REGISTRY, MIN_ROUND_TWO_PARTICIPANTS } from "@/lib/advisors/registry";
 import { SessionRepository } from "@/lib/repositories/session.repository";
 import { createClient } from "@/lib/supabase";
-
-const MIN_ROUND_TWO_PARTICIPANTS = 2;
 
 const { id } = Astro.params;
 const user = Astro.locals.user;

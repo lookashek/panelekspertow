@@ -6,7 +6,7 @@
  */
 
 import type { AdvisorPersonaId, AdvisorStrategy } from "@/lib/advisors/registry";
-import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
+import { ADVISOR_REGISTRY, MIN_ROUND_TWO_PARTICIPANTS } from "@/lib/advisors/registry";
 import { runPanel, runSecondRoundPanel } from "@/lib/advisors/run-panel";
 import type { PanelStreamChunk } from "@/lib/advisors/run-panel";
 import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError } from "@/lib/errors";
@@ -34,8 +34,6 @@ export type PanelRunEvent =
   | { personaId: AdvisorPersonaId; kind: "token"; text: string }
   | { personaId: AdvisorPersonaId; kind: "done" }
   | { personaId: AdvisorPersonaId; kind: "error"; code: string; message: string };
-
-const MIN_ROUND_TWO_PARTICIPANTS = 2;
 
 /**
  * Result of applying the round-two attribution invariant to one persona's resolved head (plan

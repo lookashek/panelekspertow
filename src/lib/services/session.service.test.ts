@@ -404,6 +404,41 @@ describe("SessionService.runSecondRound", () => {
     });
   });
 
+  it("replay with partial round-two rows: a participant missing its round-two row surfaces an error, not a hang", async () => {
+    const session = makeSession();
+    const roundOneRecords = ADVISOR_REGISTRY.map((persona) => makeOpinionRecord(persona.id, { score: 5 }));
+    const presentInRoundTwo = ADVISOR_REGISTRY.slice(0, 3);
+    const missingId = ADVISOR_REGISTRY[3].id;
+    const roundTwoRecords = presentInRoundTwo.map((persona) =>
+      makeOpinionRecord(persona.id, { roundNumber: 2, score: 6 }),
+    );
+    const completeMock = vi.fn();
+    const streamMock = vi.fn();
+    const provider = makeRoundTwoProvider({ complete: completeMock, stream: streamMock });
+    const { repository } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: roundTwoRecords }),
+    });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSecondRound("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collect(result.value.events);
+
+    expect(completeMock).not.toHaveBeenCalled();
+    expect(streamMock).not.toHaveBeenCalled();
+
+    const missingPersonaEvents = events.filter((e) => e.personaId === missingId);
+    expect(missingPersonaEvents).toHaveLength(1);
+    expect(missingPersonaEvents[0].kind).toBe("error");
+
+    for (const persona of presentInRoundTwo) {
+      const personaEvents = events.filter((e) => e.personaId === persona.id);
+      expect(personaEvents.map((e) => e.kind)).toEqual(["score", "done"]);
+    }
+  });
+
   it("live: keeps attribution on a valid changed score, drops it when unchanged, fails a changed score with no/invalid attribution, persists + logs metrics", async () => {
     const session = makeSession();
     const roundOneRecords = ADVISOR_REGISTRY.map((persona) => makeOpinionRecord(persona.id, { score: 5 }));

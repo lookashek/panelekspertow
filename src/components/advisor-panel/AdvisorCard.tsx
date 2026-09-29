@@ -15,11 +15,13 @@ function scoreGlyph(score: number): string {
 
 /**
  * `previousScore` is null/undefined exactly when the score did not change (service-owned
- * invariant, see session.service.ts `resolveRoundTwo`) — so a defined `previousScore` always
- * differs from `score`, and ▲/▼ can never mislabel an unchanged score.
+ * invariant, see session.service.ts `resolveRoundTwo`), so a defined `previousScore` should always
+ * differ from `score`. The `score === previousScore` branch is a defensive fallback, not a case
+ * this component expects to hit — it exists so a future violation of that invariant renders as
+ * "no change" instead of a wrong ▼ and a misleading "(w dół)" screen-reader announcement.
  */
 function scoreDelta(score: number, previousScore: number | undefined): { text: string; glyph: string } {
-  if (previousScore === undefined) {
+  if (previousScore === undefined || previousScore === score) {
     return { text: `${score}/10`, glyph: "▬" };
   }
   const glyph = score > previousScore ? "▲" : "▼";
@@ -52,7 +54,7 @@ export function AdvisorCard({ personaId, label, state, attributedPersonaLabel }:
               <p className="text-accent text-xs">
                 OCENA {delta.text} <span aria-hidden="true">{delta.glyph}</span>
                 <span className="sr-only">
-                  {state.previousScore === undefined
+                  {state.previousScore === undefined || state.previousScore === state.score
                     ? " (bez zmian)"
                     : state.score > state.previousScore
                       ? " (w górę)"

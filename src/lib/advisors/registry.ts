@@ -41,6 +41,13 @@ export type { PanelInput };
 
 export type AdvisorPersonaId = "optymista" | "sceptyk" | "pragmatyk" | "analityk";
 
+/**
+ * Round two needs peers to react to — single source of truth for the gate, consumed by both
+ * `SessionService.runSecondRound` (the actual gate) and `src/pages/sessions/[id].astro` (the SSR
+ * "show the trigger" check), so the two can never silently desync.
+ */
+export const MIN_ROUND_TWO_PARTICIPANTS = 2;
+
 export interface RoundOnePeer {
   label: string;
   head: AdvisorOpinion;
