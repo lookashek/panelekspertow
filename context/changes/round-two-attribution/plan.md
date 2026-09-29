@@ -639,9 +639,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [x] 6.1 Type checking passes: `npx astro check`
-- [x] 6.2 Linting passes (no new `console.*`): `npm run lint`
-- [x] 6.3 Build passes: `npm run build`
+- [x] 6.1 Type checking passes: `npx astro check` — cbfe9ed
+- [x] 6.2 Linting passes (no new `console.*`): `npm run lint` — cbfe9ed
+- [x] 6.3 Build passes: `npm run build` — cbfe9ed
 
 #### Manual
 
