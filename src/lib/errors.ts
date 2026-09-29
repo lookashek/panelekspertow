@@ -15,6 +15,7 @@ export const ErrorCode = {
   DB_ERROR: "DB_ERROR",
   UNAUTHORIZED: "UNAUTHORIZED",
   ROUND_TWO_UNAVAILABLE: "ROUND_TWO_UNAVAILABLE",
+  SYNTHESIS_UNAVAILABLE: "SYNTHESIS_UNAVAILABLE",
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -72,5 +73,12 @@ export class RoundTwoUnavailableError extends AppError {
   constructor(message: string, cause?: unknown) {
     super(message, ErrorCode.ROUND_TWO_UNAVAILABLE, 400, cause);
     this.name = "RoundTwoUnavailableError";
+  }
+}
+
+export class SynthesisUnavailableError extends AppError {
+  constructor(message: string, cause?: unknown) {
+    super(message, ErrorCode.SYNTHESIS_UNAVAILABLE, 400, cause);
+    this.name = "SynthesisUnavailableError";
   }
 }

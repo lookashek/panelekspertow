@@ -358,17 +358,17 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint`
-- [x] 3.2 Type checking passes: `npm run build`
-- [x] 3.3 `runSynthesis` unit tests: head success drains prose; head failure emits one error chunk + closes; abort cancels provider call
+- [x] 3.1 Linting passes: `npm run lint` — c0009f1
+- [x] 3.2 Type checking passes: `npm run build` — c0009f1
+- [x] 3.3 `runSynthesis` unit tests: head success drains prose; head failure emits one error chunk + closes; abort cancels provider call — c0009f1
 
 ### Phase 4: Service method + SSE endpoint
 
 #### Automated
 
-- [ ] 4.1 Linting passes: `npm run lint`
-- [ ] 4.2 Type checking passes: `npm run build`
-- [ ] 4.3 Service unit tests: replay, live, head-failure-no-persist, not-owned→NotFound, round-one-empty error
+- [x] 4.1 Linting passes: `npm run lint`
+- [x] 4.2 Type checking passes: `npm run build`
+- [x] 4.3 Service unit tests: replay, live, head-failure-no-persist, not-owned→NotFound, round-one-empty error
 - [ ] 4.4 `npm run smoke` passes against a running server
 
 #### Manual

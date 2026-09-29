@@ -9,16 +9,19 @@ import type { AdvisorPersonaId, AdvisorStrategy } from "@/lib/advisors/registry"
 import { ADVISOR_REGISTRY, MIN_ROUND_TWO_PARTICIPANTS } from "@/lib/advisors/registry";
 import { runPanel, runSecondRoundPanel } from "@/lib/advisors/run-panel";
 import type { PanelStreamChunk } from "@/lib/advisors/run-panel";
-import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError } from "@/lib/errors";
+import { runSynthesis as runSynthesizer } from "@/lib/advisors/run-synthesis";
+import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError, SynthesisUnavailableError } from "@/lib/errors";
 import { createLogger } from "@/lib/logger";
 import type { Logger } from "@/lib/logger";
+import type { SynthesisInput, SynthesisPersonaHead } from "@/lib/prompts/synthesis.v1";
 import type { SaveOpinionInput, SessionRepository } from "@/lib/repositories/session.repository";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
-import type { LlmProvider } from "@/lib/adapters/llm-provider";
+import type { LlmProvider, StreamChunk } from "@/lib/adapters/llm-provider";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 import type { PanelInput } from "@/lib/schemas/panel";
-import type { AdvisorOpinionRecord, Session } from "@/types/session";
+import type { Synthesis } from "@/lib/schemas/synthesis";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
 
 export type PanelRunEvent =
   | {
@@ -282,6 +285,62 @@ async function* buildReplayEventsRoundTwo(
   }
 }
 
+/**
+ * Synthesis event union — analogue of `PanelRunEvent` for the single-stream synthesizer (no
+ * `personaId` tagging: this is one synthesis, not a per-persona fan-out).
+ */
+export type SynthesisRunEvent =
+  | { kind: "synthesis"; synthesis: Synthesis }
+  | { kind: "token"; text: string }
+  | { kind: "done" }
+  | { kind: "error"; code: string; message: string };
+
+export interface SynthesisRunView {
+  events: AsyncIterable<SynthesisRunEvent>;
+  persistTail?: Promise<void>;
+}
+
+/**
+ * Synthesis live path: mirrors `buildLiveEvents` but there is exactly one head (no positional
+ * per-persona array) — await it, emit `synthesis` or `error`, then drain the prose stream.
+ */
+async function* buildLiveSynthesisEvents(
+  synthesis: Promise<Result<Synthesis, LlmError>>,
+  stream: ReadableStream<StreamChunk>,
+): AsyncGenerator<SynthesisRunEvent> {
+  const result = await synthesis;
+  if (!result.ok) {
+    yield { kind: "error", code: result.error.code, message: result.error.message };
+    return;
+  }
+  yield { kind: "synthesis", synthesis: result.value };
+
+  const reader = stream.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value.type === "token") {
+      yield { kind: "token", text: value.text };
+    } else if (value.type === "done") {
+      yield { kind: "done" };
+    } else {
+      yield { kind: "error", code: value.error.code, message: value.error.message };
+    }
+  }
+}
+
+/**
+ * Synthesis replay path: mirrors `buildReplayEvents` — everything is already persisted, so the
+ * persisted narrative is replayed as a single `token` chunk (plan Phase 4: "reconstructed from the
+ * persisted narrative as a single token"), not split into multiple chunks.
+ */
+// eslint-disable-next-line @typescript-eslint/require-await -- see buildReplayEvents doc comment above: async shape is structural
+async function* buildReplaySynthesisEvents(persisted: SessionSynthesis): AsyncGenerator<SynthesisRunEvent> {
+  yield { kind: "synthesis", synthesis: persisted.content };
+  yield { kind: "token", text: persisted.narrative };
+  yield { kind: "done" };
+}
+
 export class SessionService {
   private readonly repository: SessionRepository;
   private readonly provider: LlmProvider;
@@ -388,6 +447,73 @@ export class SessionService {
     });
   }
 
+  async runSynthesis(sessionId: string, userId: string): Promise<Result<SynthesisRunView>> {
+    const sessionResult = await this.repository.getSession(sessionId);
+    if (!sessionResult.ok) {
+      return sessionResult;
+    }
+    const session = sessionResult.value;
+    if (session?.userId !== userId) {
+      return err(new NotFoundError("Session not found"));
+    }
+
+    const existingResult = await this.repository.getSynthesis(sessionId);
+    if (!existingResult.ok) {
+      return existingResult;
+    }
+    const existing = existingResult.value;
+    if (existing) {
+      return ok({ events: buildReplaySynthesisEvents(existing) });
+    }
+
+    const roundOneResult = await this.repository.getOpinions(sessionId, 1);
+    if (!roundOneResult.ok) {
+      return roundOneResult;
+    }
+    const roundOneRecords = roundOneResult.value;
+    if (roundOneRecords.length === 0) {
+      return err(new SynthesisUnavailableError("Synthesis requires at least one round-one opinion"));
+    }
+
+    const roundTwoResult = await this.repository.getOpinions(sessionId, 2);
+    if (!roundTwoResult.ok) {
+      return roundTwoResult;
+    }
+    const roundTwoRecords = roundTwoResult.value;
+
+    // Latest-per-persona merge in registry order — round two only ever covers a subset of
+    // personas, so round-one is the fallback for anyone who didn't participate in round two. See
+    // plan Phase 4 "Critical Implementation Details".
+    const roundOneByPersona = new Map(roundOneRecords.map((record) => [record.personaId, record]));
+    const roundTwoByPersona = new Map(roundTwoRecords.map((record) => [record.personaId, record]));
+    const personaHeads: SynthesisPersonaHead[] = [];
+    for (const persona of ADVISOR_REGISTRY) {
+      const record = roundTwoByPersona.get(persona.id) ?? roundOneByPersona.get(persona.id);
+      if (!record) {
+        continue;
+      }
+      personaHeads.push({
+        label: persona.label,
+        head: { score: record.score, thesis: record.thesis, arguments: record.arguments },
+      });
+    }
+
+    const synthesisInput: SynthesisInput = {
+      panelInput: { decision: session.decision, context: session.context ?? undefined },
+      personaHeads,
+    };
+
+    const { synthesis, stream } = runSynthesizer({ provider: this.provider }, synthesisInput, undefined);
+    // `stream` has exactly one consumer per branch; `persistSynthesis` (narrative accumulation for
+    // the persist tail) and `buildLiveSynthesisEvents` (the live SSE events) each need their own
+    // independent read of the same prose stream, so tee it rather than sharing one reader.
+    const [eventStream, persistStream] = stream.tee();
+
+    const persistTail = this.persistSynthesis(sessionId, synthesis, persistStream);
+
+    return ok({ events: buildLiveSynthesisEvents(synthesis, eventStream), persistTail });
+  }
+
   private async persistRoundTwoAndLogMetrics(
     sessionId: string,
     scores: ReturnType<typeof runSecondRoundPanel>["scores"],
@@ -442,6 +568,45 @@ export class SessionService {
       attributedCount,
       spread,
     });
+  }
+
+  /**
+   * Persist-tail order (plan Phase 4): save the synthesis row first, then flip the session status —
+   * if the save fails, do NOT flip status. On head failure, persist nothing at all.
+   */
+  private async persistSynthesis(
+    sessionId: string,
+    synthesis: Promise<Result<Synthesis, LlmError>>,
+    stream: ReadableStream<StreamChunk>,
+  ): Promise<void> {
+    const result = await synthesis;
+    if (!result.ok) {
+      this.logger.error("synthesis head failed, skipping persist", { sessionId, message: result.error.message });
+      return;
+    }
+
+    let narrative = "";
+    const reader = stream.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value.type === "token") {
+        narrative += value.text;
+      } else if (value.type === "error") {
+        this.logger.error("synthesis rationale stream failed", { sessionId, message: value.error.message });
+      }
+    }
+
+    const saveResult = await this.repository.saveSynthesis(sessionId, { content: result.value, narrative });
+    if (!saveResult.ok) {
+      this.logger.error("failed to persist synthesis", { sessionId, message: saveResult.error.message });
+      return;
+    }
+
+    const completeResult = await this.repository.completeSession(sessionId);
+    if (!completeResult.ok) {
+      this.logger.error("failed to complete session", { sessionId, message: completeResult.error.message });
+    }
   }
 
   private async persistAndLogSpread(

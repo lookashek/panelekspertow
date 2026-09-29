@@ -8,15 +8,16 @@ vi.mock("@/lib/adapters/create-llm-provider", () => ({
 
 import type { CompleteRequest, LlmProvider, StreamChunk, StreamRequest } from "@/lib/adapters/llm-provider";
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
-import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError } from "@/lib/errors";
+import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError, SynthesisUnavailableError } from "@/lib/errors";
 import type { Logger } from "@/lib/logger";
-import type { SaveOpinionInput, SessionRepository } from "@/lib/repositories/session.repository";
+import type { SaveOpinionInput, SaveSynthesisInput, SessionRepository } from "@/lib/repositories/session.repository";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
+import type { Synthesis } from "@/lib/schemas/synthesis";
 import { SessionService } from "@/lib/services/session.service";
-import type { PanelRunEvent } from "@/lib/services/session.service";
-import type { AdvisorOpinionRecord, Session } from "@/types/session";
+import type { PanelRunEvent, SynthesisRunEvent } from "@/lib/services/session.service";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
 
 function makeTokenStream(text: string): ReadableStream<StreamChunk> {
   return new ReadableStream<StreamChunk>({
@@ -46,6 +47,38 @@ function makeRoundTwoProvider(overrides: {
     complete: overrides.complete,
     stream: overrides.stream ?? (() => makeTokenStream("hi")),
   } as unknown as LlmProvider;
+}
+
+function makeSynthesisProvider(overrides: {
+  complete: (req: CompleteRequest<Synthesis>) => Promise<Result<Synthesis, LlmError>>;
+  stream?: (req: StreamRequest) => ReadableStream<StreamChunk>;
+}): LlmProvider {
+  return {
+    complete: overrides.complete,
+    stream: overrides.stream ?? (() => makeTokenStream("narrative")),
+  } as unknown as LlmProvider;
+}
+
+function makeSynthesis(overrides: Partial<Synthesis> = {}): Synthesis {
+  return {
+    agreementPoints: ["agree"],
+    disputeAxes: [{ title: "axis", positions: ["a", "b"] }],
+    risks: [{ description: "risk", weight: "medium" }],
+    recommendedNextStep: "next step",
+    ...overrides,
+  };
+}
+
+function makeSessionSynthesis(overrides: Partial<SessionSynthesis> = {}): SessionSynthesis {
+  return {
+    id: "synthesis-1",
+    sessionId: "session-1",
+    userId: "user-1",
+    content: makeSynthesis(),
+    narrative: "persisted narrative",
+    createdAt: "2026-09-23T12:00:00.000Z",
+    ...overrides,
+  };
 }
 
 /** `getOpinions` fake that routes on `roundNumber`, for tests exercising both round one and two. */
@@ -96,6 +129,9 @@ interface RepoMock {
   listSessions: ReturnType<typeof vi.fn>;
   getSession: ReturnType<typeof vi.fn>;
   getOpinions: ReturnType<typeof vi.fn>;
+  getSynthesis: ReturnType<typeof vi.fn>;
+  saveSynthesis: ReturnType<typeof vi.fn>;
+  completeSession: ReturnType<typeof vi.fn>;
 }
 
 function makeRepository(overrides: Partial<RepoMock> = {}): { repository: SessionRepository; mock: RepoMock } {
@@ -105,6 +141,9 @@ function makeRepository(overrides: Partial<RepoMock> = {}): { repository: Sessio
     listSessions: vi.fn(),
     getSession: vi.fn(),
     getOpinions: vi.fn(),
+    getSynthesis: vi.fn().mockResolvedValue(ok(null)),
+    saveSynthesis: vi.fn().mockResolvedValue(ok(makeSessionSynthesis())),
+    completeSession: vi.fn().mockResolvedValue(ok(undefined)),
     ...overrides,
   };
   return { repository: mock as unknown as SessionRepository, mock };
@@ -112,6 +151,14 @@ function makeRepository(overrides: Partial<RepoMock> = {}): { repository: Sessio
 
 async function collect(events: AsyncIterable<PanelRunEvent>): Promise<PanelRunEvent[]> {
   const out: PanelRunEvent[] = [];
+  for await (const event of events) {
+    out.push(event);
+  }
+  return out;
+}
+
+async function collectSynthesisEvents(events: AsyncIterable<SynthesisRunEvent>): Promise<SynthesisRunEvent[]> {
+  const out: SynthesisRunEvent[] = [];
   for await (const event of events) {
     out.push(event);
   }
@@ -541,5 +588,136 @@ describe("SessionService.runSecondRound", () => {
       attributedCount: 1,
       spread: 3,
     });
+  });
+});
+
+describe("SessionService.runSynthesis", () => {
+  it("returns NotFoundError when the session belongs to another user", async () => {
+    const session = makeSession({ userId: "someone-else" });
+    const { repository, mock } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(session)) });
+    const provider = makeSynthesisProvider({ complete: vi.fn() });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSynthesis("session-1", "user-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NotFoundError);
+    }
+    expect(mock.getSynthesis).not.toHaveBeenCalled();
+  });
+
+  it("returns SynthesisUnavailableError when round one has no opinions", async () => {
+    const session = makeSession();
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: vi.fn().mockResolvedValue(ok([])),
+    });
+    const provider = makeSynthesisProvider({ complete: vi.fn() });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSynthesis("session-1", "user-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(SynthesisUnavailableError);
+    }
+    expect(mock.saveSynthesis).not.toHaveBeenCalled();
+  });
+
+  it("replay: existing synthesis -> provider never called, emits synthesis + single-token narrative + done", async () => {
+    const session = makeSession();
+    const persisted = makeSessionSynthesis();
+    const completeMock = vi.fn();
+    const streamMock = vi.fn();
+    const provider = makeSynthesisProvider({ complete: completeMock, stream: streamMock });
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getSynthesis: vi.fn().mockResolvedValue(ok(persisted)),
+    });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSynthesis("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collectSynthesisEvents(result.value.events);
+
+    expect(completeMock).not.toHaveBeenCalled();
+    expect(streamMock).not.toHaveBeenCalled();
+    expect(mock.getOpinions).not.toHaveBeenCalled();
+    expect(events).toEqual([
+      { kind: "synthesis", synthesis: persisted.content },
+      { kind: "token", text: persisted.narrative },
+      { kind: "done" },
+    ]);
+  });
+
+  it("live: head success -> merges latest-per-persona heads, emits synthesis then token/done, persistTail saves then completes", async () => {
+    const session = makeSession();
+    const roundOneRecords = ADVISOR_REGISTRY.map((persona, index) =>
+      makeOpinionRecord(persona.id, { score: index + 1 }),
+    );
+    // only the first two personas participated in round two -> their round-two head should win
+    const roundTwoParticipants = ADVISOR_REGISTRY.slice(0, 2);
+    const roundTwoRecords = roundTwoParticipants.map((persona) =>
+      makeOpinionRecord(persona.id, { roundNumber: 2, score: 9 }),
+    );
+    const synthesis = makeSynthesis();
+    const completeMock = vi.fn().mockResolvedValue(ok(synthesis));
+    const provider = makeSynthesisProvider({ complete: completeMock, stream: () => makeTokenStream("hello") });
+    const logger = makeLogger();
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: roundTwoRecords }),
+    });
+    const service = new SessionService({ repository, provider, logger });
+
+    const result = await service.runSynthesis("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collectSynthesisEvents(result.value.events);
+    await result.value.persistTail;
+
+    expect(events[0]).toEqual({ kind: "synthesis", synthesis });
+    expect(events.some((e) => e.kind === "token" && e.text === "hello")).toBe(true);
+    expect(events.at(-1)).toEqual({ kind: "done" });
+
+    expect(completeMock).toHaveBeenCalledTimes(1);
+    const request = completeMock.mock.calls[0][0] as CompleteRequest<Synthesis>;
+    // latest-per-persona merge: personas 0 and 1 use round-two score (9), 2 and 3 fall back to round-one
+    expect(request.user).toContain("9/10");
+
+    expect(mock.saveSynthesis).toHaveBeenCalledTimes(1);
+    const [, saveInput] = mock.saveSynthesis.mock.calls[0] as [string, SaveSynthesisInput];
+    expect(saveInput.content).toEqual(synthesis);
+    expect(saveInput.narrative).toBe("hello");
+    expect(mock.completeSession).toHaveBeenCalledTimes(1);
+    expect(mock.completeSession).toHaveBeenCalledWith("session-1");
+  });
+
+  it("live: head failure -> emits a single error event, persistTail saves nothing and does not complete the session", async () => {
+    const session = makeSession();
+    const roundOneRecords = ADVISOR_REGISTRY.map((persona) => makeOpinionRecord(persona.id));
+    const completeMock = vi.fn().mockResolvedValue(err(new LlmError("bad output", ErrorCode.LLM_INVALID_OUTPUT)));
+    const streamMock = vi.fn();
+    const provider = makeSynthesisProvider({ complete: completeMock, stream: streamMock });
+    const logger = makeLogger();
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: [] }),
+    });
+    const service = new SessionService({ repository, provider, logger });
+
+    const result = await service.runSynthesis("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collectSynthesisEvents(result.value.events);
+    await result.value.persistTail;
+
+    expect(events).toEqual([{ kind: "error", code: ErrorCode.LLM_INVALID_OUTPUT, message: "bad output" }]);
+    expect(streamMock).not.toHaveBeenCalled();
+
+    expect(mock.saveSynthesis).not.toHaveBeenCalled();
+    expect(mock.completeSession).not.toHaveBeenCalled();
   });
 });
