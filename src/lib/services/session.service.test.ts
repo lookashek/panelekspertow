@@ -8,12 +8,12 @@ vi.mock("@/lib/adapters/create-llm-provider", () => ({
 
 import type { CompleteRequest, LlmProvider, StreamChunk, StreamRequest } from "@/lib/adapters/llm-provider";
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
-import { ErrorCode, LlmError, NotFoundError } from "@/lib/errors";
+import { ErrorCode, LlmError, NotFoundError, RoundTwoUnavailableError } from "@/lib/errors";
 import type { Logger } from "@/lib/logger";
 import type { SaveOpinionInput, SessionRepository } from "@/lib/repositories/session.repository";
 import { err, ok } from "@/lib/result";
 import type { Result } from "@/lib/result";
-import type { AdvisorOpinion } from "@/lib/schemas/advisor";
+import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 import { SessionService } from "@/lib/services/session.service";
 import type { PanelRunEvent } from "@/lib/services/session.service";
 import type { AdvisorOpinionRecord, Session } from "@/types/session";
@@ -36,6 +36,23 @@ function makeProvider(overrides: {
     complete: overrides.complete,
     stream: overrides.stream ?? (() => makeTokenStream("hi")),
   } as unknown as LlmProvider;
+}
+
+function makeRoundTwoProvider(overrides: {
+  complete: (req: CompleteRequest<AdvisorRoundTwoOpinion>) => Promise<Result<AdvisorRoundTwoOpinion, LlmError>>;
+  stream?: (req: StreamRequest) => ReadableStream<StreamChunk>;
+}): LlmProvider {
+  return {
+    complete: overrides.complete,
+    stream: overrides.stream ?? (() => makeTokenStream("hi")),
+  } as unknown as LlmProvider;
+}
+
+/** `getOpinions` fake that routes on `roundNumber`, for tests exercising both round one and two. */
+function makeGetOpinionsByRound(byRound: Record<number, AdvisorOpinionRecord[]>) {
+  return vi
+    .fn()
+    .mockImplementation((_sessionId: string, roundNumber: number) => Promise.resolve(ok(byRound[roundNumber] ?? [])));
 }
 
 function makeLogger() {
@@ -305,5 +322,189 @@ describe("SessionService.runFirstRound", () => {
     const missingPersonaEvents = events.filter((e) => e.personaId === missingId);
     expect(missingPersonaEvents).toHaveLength(1);
     expect(missingPersonaEvents[0].kind).toBe("error");
+  });
+});
+
+describe("SessionService.runSecondRound", () => {
+  it("returns NotFoundError when the session belongs to another user", async () => {
+    const session = makeSession({ userId: "someone-else" });
+    const { repository, mock } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(session)) });
+    const provider = makeRoundTwoProvider({ complete: vi.fn() });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSecondRound("session-1", "user-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NotFoundError);
+    }
+    expect(mock.getOpinions).not.toHaveBeenCalled();
+  });
+
+  it("returns RoundTwoUnavailableError when fewer than two round-one opinions exist", async () => {
+    const session = makeSession();
+    const records = [makeOpinionRecord(ADVISOR_REGISTRY[0].id)];
+    const { repository } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: vi.fn().mockResolvedValue(ok(records)),
+    });
+    const provider = makeRoundTwoProvider({ complete: vi.fn() });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSecondRound("session-1", "user-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(RoundTwoUnavailableError);
+    }
+  });
+
+  it("replay: round-two rows already exist -> provider never called, attribution fields come from persisted rows", async () => {
+    const session = makeSession();
+    const roundOneRecords = ADVISOR_REGISTRY.map((persona, index) =>
+      makeOpinionRecord(persona.id, { score: index + 1 }),
+    );
+    const roundTwoRecords = ADVISOR_REGISTRY.map((persona, index) =>
+      makeOpinionRecord(persona.id, {
+        roundNumber: 2,
+        score: index === 0 ? 8 : index + 1,
+        previousScore: index === 0 ? 1 : null,
+        attributedPersonaId: index === 0 ? ADVISOR_REGISTRY[1].id : null,
+        attributionQuote: index === 0 ? "quote" : null,
+      }),
+    );
+    const completeMock = vi.fn();
+    const streamMock = vi.fn();
+    const provider = makeRoundTwoProvider({ complete: completeMock, stream: streamMock });
+    const { repository } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: roundTwoRecords }),
+    });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSecondRound("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collect(result.value.events);
+
+    expect(completeMock).not.toHaveBeenCalled();
+    expect(streamMock).not.toHaveBeenCalled();
+
+    const firstScoreEvent = events.find((e) => e.personaId === ADVISOR_REGISTRY[0].id && e.kind === "score");
+    expect(firstScoreEvent).toMatchObject({
+      previousScore: 1,
+      attributedPersonaId: ADVISOR_REGISTRY[1].id,
+      attributionQuote: "quote",
+    });
+    const unchangedScoreEvent = events.find((e) => e.personaId === ADVISOR_REGISTRY[1].id && e.kind === "score");
+    expect(unchangedScoreEvent).toMatchObject({
+      previousScore: null,
+      attributedPersonaId: null,
+      attributionQuote: null,
+    });
+  });
+
+  it("live: keeps attribution on a valid changed score, drops it when unchanged, fails a changed score with no/invalid attribution, persists + logs metrics", async () => {
+    const session = makeSession();
+    const roundOneRecords = ADVISOR_REGISTRY.map((persona) => makeOpinionRecord(persona.id, { score: 5 }));
+
+    let call = 0;
+    const completeMock = vi.fn().mockImplementation(() => {
+      const index = call;
+      call += 1;
+      if (index === 0) {
+        // score changes, names a real participating peer -> kept
+        return Promise.resolve(
+          ok<AdvisorRoundTwoOpinion>({
+            score: 8,
+            thesis: "t",
+            arguments: ["a"],
+            attribution: { convincedByPersonaId: ADVISOR_REGISTRY[1].id, quotedPeerArgument: "peer arg" },
+          }),
+        );
+      }
+      if (index === 1) {
+        // score unchanged but attribution present -> dropped, not a failure
+        return Promise.resolve(
+          ok<AdvisorRoundTwoOpinion>({
+            score: 5,
+            thesis: "t",
+            arguments: ["a"],
+            attribution: { convincedByPersonaId: ADVISOR_REGISTRY[0].id, quotedPeerArgument: "should be dropped" },
+          }),
+        );
+      }
+      if (index === 2) {
+        // score changes, no attribution -> fails
+        return Promise.resolve(
+          ok<AdvisorRoundTwoOpinion>({ score: 9, thesis: "t", arguments: ["a"], attribution: null }),
+        );
+      }
+      // score changes, attribution names itself (invalid) -> fails
+      return Promise.resolve(
+        ok<AdvisorRoundTwoOpinion>({
+          score: 3,
+          thesis: "t",
+          arguments: ["a"],
+          attribution: { convincedByPersonaId: ADVISOR_REGISTRY[3].id, quotedPeerArgument: "self-attribution" },
+        }),
+      );
+    });
+    const provider = makeRoundTwoProvider({ complete: completeMock });
+    const logger = makeLogger();
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: [] }),
+    });
+    const service = new SessionService({ repository, provider, logger });
+
+    const result = await service.runSecondRound("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collect(result.value.events);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const scoreEvent0 = events.find((e) => e.personaId === ADVISOR_REGISTRY[0].id && e.kind === "score");
+    expect(scoreEvent0).toMatchObject({
+      previousScore: 5,
+      attributedPersonaId: ADVISOR_REGISTRY[1].id,
+      attributionQuote: "peer arg",
+    });
+
+    const scoreEvent1 = events.find((e) => e.personaId === ADVISOR_REGISTRY[1].id && e.kind === "score");
+    expect(scoreEvent1).toMatchObject({ previousScore: null, attributedPersonaId: null, attributionQuote: null });
+
+    const errorEvent2 = events.find((e) => e.personaId === ADVISOR_REGISTRY[2].id && e.kind === "error");
+    expect(errorEvent2).toMatchObject({ code: ErrorCode.LLM_INVALID_OUTPUT });
+
+    const errorEvent3 = events.find((e) => e.personaId === ADVISOR_REGISTRY[3].id && e.kind === "error");
+    expect(errorEvent3).toMatchObject({ code: ErrorCode.LLM_INVALID_OUTPUT });
+
+    expect(mock.saveOpinions).toHaveBeenCalledTimes(1);
+    const [, roundNumber, saved] = mock.saveOpinions.mock.calls[0] as [string, number, SaveOpinionInput[]];
+    expect(roundNumber).toBe(2);
+    expect(saved).toHaveLength(2);
+    expect(saved.find((s) => s.personaId === ADVISOR_REGISTRY[0].id)).toEqual({
+      personaId: ADVISOR_REGISTRY[0].id,
+      opinion: { score: 8, thesis: "t", arguments: ["a"] },
+      previousScore: 5,
+      attributedPersonaId: ADVISOR_REGISTRY[1].id,
+      attributionQuote: "peer arg",
+    });
+    expect(saved.find((s) => s.personaId === ADVISOR_REGISTRY[1].id)).toEqual({
+      personaId: ADVISOR_REGISTRY[1].id,
+      opinion: { score: 5, thesis: "t", arguments: ["a"] },
+      previousScore: null,
+      attributedPersonaId: null,
+      attributionQuote: null,
+    });
+
+    expect(logger.info).toHaveBeenCalledWith("round-two metrics", {
+      sessionId: "session-1",
+      participantCount: 4,
+      changedCount: 1,
+      attributedCount: 1,
+      spread: 3,
+    });
   });
 });

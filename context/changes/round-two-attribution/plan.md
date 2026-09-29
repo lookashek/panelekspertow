@@ -602,9 +602,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [x] 3.1 Fan-out unit tests pass (only `priorHeads` personas run; peer self-exclusion; partial failure; abort cancels all): `npm run test -- run-panel`
-- [x] 3.2 Type checking passes: `npx astro check`
-- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.1 Fan-out unit tests pass (only `priorHeads` personas run; peer self-exclusion; partial failure; abort cancels all): `npm run test -- run-panel` — 998d1ba
+- [x] 3.2 Type checking passes: `npx astro check` — 998d1ba
+- [x] 3.3 Linting passes: `npm run lint` — 998d1ba
 
 #### Manual
 
@@ -614,10 +614,10 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [ ] 4.1 Service unit tests pass (availability gate; replay; `previousScore` + attribution persistence; attribution dropped when score unchanged; attribution naming a non-participant dropped + changed-score persona fails; metrics line): `npm run test -- session.service`
-- [ ] 4.2 Repository test covers round-two `saveOpinions` attribution columns: `npm run test -- session.repository`
-- [ ] 4.3 Type checking passes: `npx astro check`
-- [ ] 4.4 Linting passes: `npm run lint`
+- [x] 4.1 Service unit tests pass (availability gate; replay; `previousScore` + attribution persistence; attribution dropped when score unchanged; attribution naming a non-participant dropped + changed-score persona fails; metrics line): `npm run test -- session.service`
+- [x] 4.2 Repository test covers round-two `saveOpinions` attribution columns: `npm run test -- session.repository`
+- [x] 4.3 Type checking passes: `npx astro check`
+- [x] 4.4 Linting passes: `npm run lint`
 
 #### Manual
 

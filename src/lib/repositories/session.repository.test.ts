@@ -117,6 +117,65 @@ describe("SessionRepository.saveOpinions", () => {
       expect(result.error).toBeInstanceOf(DbError);
     }
   });
+
+  it("round two: writes attribution columns to the inserted row and reads them back", async () => {
+    const roundTwoRow = {
+      ...opinionRow,
+      id: "opinion-2",
+      round_number: 2,
+      score: 9,
+      previous_score: 8,
+      attributed_persona_id: "sceptyk",
+      attribution_quote: "the exact peer argument",
+    };
+    const { client, builder } = makeClient({ data: [roundTwoRow], error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.saveOpinions("session-1", 2, [
+      {
+        personaId: "optymista",
+        opinion: { score: 9, thesis: "Reconsidered", arguments: ["arg 1"] },
+        previousScore: 8,
+        attributedPersonaId: "sceptyk",
+        attributionQuote: "the exact peer argument",
+      },
+    ]);
+
+    expect(builder.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        previous_score: 8,
+        attributed_persona_id: "sceptyk",
+        attribution_quote: "the exact peer argument",
+      }),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual([
+        expect.objectContaining({
+          previousScore: 8,
+          attributedPersonaId: "sceptyk",
+          attributionQuote: "the exact peer argument",
+        }),
+      ]);
+    }
+  });
+
+  it("round one: omitted attribution fields insert as null", async () => {
+    const { client, builder } = makeClient({ data: [opinionRow], error: null });
+    const repo = new SessionRepository(client);
+
+    await repo.saveOpinions("session-1", 1, [
+      { personaId: "optymista", opinion: { score: 8, thesis: "Go for it", arguments: ["arg 1"] } },
+    ]);
+
+    expect(builder.insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        previous_score: null,
+        attributed_persona_id: null,
+        attribution_quote: null,
+      }),
+    ]);
+  });
 });
 
 describe("SessionRepository.listSessions", () => {

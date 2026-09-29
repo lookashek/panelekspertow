@@ -39,6 +39,9 @@ export interface CreateSessionInput {
 export interface SaveOpinionInput {
   personaId: AdvisorPersonaId;
   opinion: AdvisorOpinion;
+  previousScore?: number | null;
+  attributedPersonaId?: AdvisorPersonaId | null;
+  attributionQuote?: string | null;
 }
 
 export class SessionRepository {
@@ -67,13 +70,16 @@ export class SessionRepository {
     roundNumber: number,
     opinions: SaveOpinionInput[],
   ): Promise<Result<AdvisorOpinionRecord[], DbError>> {
-    const rows = opinions.map(({ personaId, opinion }) => ({
+    const rows = opinions.map(({ personaId, opinion, previousScore, attributedPersonaId, attributionQuote }) => ({
       session_id: sessionId,
       persona_id: personaId,
       round_number: roundNumber,
       score: opinion.score,
       thesis: opinion.thesis,
       arguments: opinion.arguments,
+      previous_score: previousScore ?? null,
+      attributed_persona_id: attributedPersonaId ?? null,
+      attribution_quote: attributionQuote ?? null,
     }));
 
     const { data, error } = (await this.client.from("advisor_opinions").insert(rows).select()) as DbResponse<unknown[]>;
