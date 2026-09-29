@@ -4,6 +4,8 @@ interface AdvisorCardProps {
   personaId: string;
   label: string;
   state: PersonaViewState;
+  /** Display label for `state.attributedPersonaId`, looked up by the caller (round two only). */
+  attributedPersonaLabel?: string;
 }
 
 function scoreGlyph(score: number): string {
@@ -11,7 +13,20 @@ function scoreGlyph(score: number): string {
   return "■".repeat(filled) + "□".repeat(5 - filled);
 }
 
-export function AdvisorCard({ personaId, label, state }: AdvisorCardProps) {
+/**
+ * `previousScore` is null/undefined exactly when the score did not change (service-owned
+ * invariant, see session.service.ts `resolveRoundTwo`) — so a defined `previousScore` always
+ * differs from `score`, and ▲/▼ can never mislabel an unchanged score.
+ */
+function scoreDelta(score: number, previousScore: number | undefined): { text: string; glyph: string } {
+  if (previousScore === undefined) {
+    return { text: `${score}/10`, glyph: "▬" };
+  }
+  const glyph = score > previousScore ? "▲" : "▼";
+  return { text: `${previousScore} → ${score}`, glyph };
+}
+
+export function AdvisorCard({ personaId, label, state, attributedPersonaLabel }: AdvisorCardProps) {
   return (
     <article
       className="pixel-panel flex flex-col gap-3 p-4 sm:p-5"
@@ -31,8 +46,32 @@ export function AdvisorCard({ personaId, label, state }: AdvisorCardProps) {
           <p className="text-accent text-xs" aria-hidden="true">
             {scoreGlyph(state.score)}
           </p>
-          <p className="text-accent text-xs">OCENA {state.score}/10</p>
+          {(() => {
+            const delta = scoreDelta(state.score, state.previousScore);
+            return (
+              <p className="text-accent text-xs">
+                OCENA {delta.text} <span aria-hidden="true">{delta.glyph}</span>
+                <span className="sr-only">
+                  {state.previousScore === undefined
+                    ? " (bez zmian)"
+                    : state.score > state.previousScore
+                      ? " (w górę)"
+                      : " (w dół)"}
+                </span>
+              </p>
+            );
+          })()}
           {state.thesis && <p className="text-foreground text-sm font-bold">{state.thesis}</p>}
+          {state.attributedPersonaId && (
+            <div className="border-accent bg-accent/10 mt-1 border-2 p-2">
+              <p className="font-pixel text-accent text-[10px]">
+                PRZEKONAŁ: {attributedPersonaLabel ?? state.attributedPersonaId}
+              </p>
+              {state.attributionQuote && (
+                <p className="text-foreground mt-1 text-xs italic">„{state.attributionQuote}”</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 

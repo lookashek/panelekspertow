@@ -1,9 +1,12 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { AdvisorPanel } from "@/components/advisor-panel/AdvisorPanel";
+import { RoundTwoPanel } from "@/components/advisor-panel/RoundTwoPanel";
 import { ADVISOR_REGISTRY } from "@/lib/advisors/registry";
 import { SessionRepository } from "@/lib/repositories/session.repository";
 import { createClient } from "@/lib/supabase";
+
+const MIN_ROUND_TWO_PARTICIPANTS = 2;
 
 const { id } = Astro.params;
 const user = Astro.locals.user;
@@ -12,6 +15,9 @@ const sessionId = id ?? "";
 let notFound = !id || !user;
 let decision = "";
 let context: string | null = null;
+let roundTwoAvailable = false;
+let hasRoundTwo = false;
+let roundTwoPersonas: { id: string; label: string }[] = [];
 
 if (id && user) {
   const client = createClient(Astro.request.headers, Astro.cookies);
@@ -25,6 +31,18 @@ if (id && user) {
     } else {
       decision = result.value.decision;
       context = result.value.context;
+
+      const roundOneResult = await repository.getOpinions(id, 1);
+      const roundOneRecords = roundOneResult.ok ? roundOneResult.value : [];
+      roundTwoAvailable = roundOneRecords.length >= MIN_ROUND_TWO_PARTICIPANTS;
+      roundTwoPersonas = ADVISOR_REGISTRY.filter((persona) =>
+        roundOneRecords.some((record) => record.personaId === persona.id),
+      ).map((persona) => ({ id: persona.id, label: persona.label }));
+
+      if (roundTwoAvailable) {
+        const roundTwoResult = await repository.getOpinions(id, 2);
+        hasRoundTwo = roundTwoResult.ok && roundTwoResult.value.length > 0;
+      }
     }
   }
 }
@@ -58,6 +76,13 @@ const personas = ADVISOR_REGISTRY.map((persona) => ({ id: persona.id, label: per
             {context && <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{context}</p>}
           </div>
           <AdvisorPanel sessionId={sessionId} personas={personas} client:load />
+          <RoundTwoPanel
+            sessionId={sessionId}
+            personas={roundTwoPersonas}
+            available={roundTwoAvailable}
+            hasRoundTwo={hasRoundTwo}
+            client:load
+          />
         </>
       )}
     </div>

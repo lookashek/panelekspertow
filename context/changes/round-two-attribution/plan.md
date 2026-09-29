@@ -627,9 +627,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [x] 5.1 Type checking passes: `npx astro check`
-- [x] 5.2 Linting passes: `npm run lint`
-- [x] 5.3 Auth-flow smoke still green: `npm run smoke` — SKIPPED: 2 pre-existing failures (signup email rejected, dashboard-for-signed-in-user) in `/api/auth/*`, unrelated to this phase's diff (`src/pages/api/sessions/[id]/stream.ts` only); confirmed via `git diff --stat` and unauthenticated-request 401 checks at the round-param boundary
+- [x] 5.1 Type checking passes: `npx astro check` — 0120bea
+- [x] 5.2 Linting passes: `npm run lint` — 0120bea
+- [x] 5.3 Auth-flow smoke still green: `npm run smoke` — SKIPPED: 2 pre-existing failures (signup email rejected, dashboard-for-signed-in-user) in `/api/auth/*`, unrelated to this phase's diff (`src/pages/api/sessions/[id]/stream.ts` only); confirmed via `git diff --stat` and unauthenticated-request 401 checks at the round-param boundary — 0120bea
 
 #### Manual
 
@@ -639,9 +639,9 @@ backfill. Do not edit the applied create migration.
 
 #### Automated
 
-- [ ] 6.1 Type checking passes: `npx astro check`
-- [ ] 6.2 Linting passes (no new `console.*`): `npm run lint`
-- [ ] 6.3 Build passes: `npm run build`
+- [x] 6.1 Type checking passes: `npx astro check`
+- [x] 6.2 Linting passes (no new `console.*`): `npm run lint`
+- [x] 6.3 Build passes: `npm run build`
 
 #### Manual
 

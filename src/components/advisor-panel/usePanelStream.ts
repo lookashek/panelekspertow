@@ -14,6 +14,9 @@ export interface PersonaViewState {
   arguments?: string[];
   text: string;
   error?: string;
+  previousScore?: number;
+  attributedPersonaId?: string;
+  attributionQuote?: string;
 }
 
 interface ScoreEventData {
@@ -21,6 +24,9 @@ interface ScoreEventData {
   score: number;
   thesis: string;
   arguments: string[];
+  previousScore?: number;
+  attributedPersonaId?: string;
+  attributionQuote?: string;
 }
 
 interface TokenEventData {
@@ -50,11 +56,15 @@ function isTerminal(state: PersonaViewState): boolean {
   return state.status === "done" || state.status === "error";
 }
 
-export function usePanelStream(sessionId: string, personaIds: string[]): Record<string, PersonaViewState> {
+export function usePanelStream(
+  sessionId: string,
+  personaIds: string[],
+  round: 1 | 2 = 1,
+): Record<string, PersonaViewState> {
   const [state, setState] = useState<Record<string, PersonaViewState>>(() => initialState(personaIds));
 
   useEffect(() => {
-    const eventSource = new EventSource(`/api/sessions/${sessionId}/stream`);
+    const eventSource = new EventSource(`/api/sessions/${sessionId}/stream?round=${round}`);
     let closed = false;
 
     const closeIfComplete = (next: Record<string, PersonaViewState>) => {
@@ -77,6 +87,9 @@ export function usePanelStream(sessionId: string, personaIds: string[]): Record<
             score: data.score,
             thesis: data.thesis,
             arguments: data.arguments,
+            previousScore: data.previousScore,
+            attributedPersonaId: data.attributedPersonaId,
+            attributionQuote: data.attributionQuote,
           },
         };
         closeIfComplete(next);
