@@ -216,15 +216,15 @@ None — no schema changes; reuses the existing `sessions` table and RLS policie
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npx astro check`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Production build succeeds: `npm run build`
+- [x] 2.1 Type checking passes: `npx astro check` — f6c6a31
+- [x] 2.2 Linting passes: `npm run lint` — f6c6a31
+- [x] 2.3 Production build succeeds: `npm run build` — f6c6a31
 
 #### Manual
 
-- [x] 2.4 `/sessions` lists the user's sessions newest-first with decision, Polish date, and correct status badge
-- [x] 2.5 Clicking a row opens that session at `/sessions/[id]`
-- [x] 2.6 A user with zero sessions sees the empty panel + working "Nowa decyzja" CTA
-- [x] 2.7 A second account sees only its own sessions (isolation)
-- [x] 2.8 "Historia" appears in the Topbar and the dashboard link works
-- [x] 2.9 Renders at 375px and 1280px with AA-contrast accents and keyboard-navigable rows
+- [x] 2.4 `/sessions` lists the user's sessions newest-first with decision, Polish date, and correct status badge — f6c6a31 (manual verification skipped per user instruction; user to confirm post-hoc)
+- [x] 2.5 Clicking a row opens that session at `/sessions/[id]` — f6c6a31 (manual verification skipped per user instruction; user to confirm post-hoc)
+- [x] 2.6 A user with zero sessions sees the empty panel + working "Nowa decyzja" CTA — f6c6a31 (manual verification skipped per user instruction; user to confirm post-hoc)
+- [x] 2.7 A second account sees only its own sessions (isolation) — f6c6a31 (manual verification skipped per user instruction; user to confirm post-hoc)
+- [x] 2.8 "Historia" appears in the Topbar and the dashboard link works — f6c6a31 (manual verification skipped per user instruction; user to confirm post-hoc)
+- [x] 2.9 Renders at 375px and 1280px with AA-contrast accents and keyboard-navigable rows — f6c6a31 (manual verification skipped per user instruction; user to confirm post-hoc)
