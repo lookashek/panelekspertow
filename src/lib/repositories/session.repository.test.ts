@@ -8,6 +8,7 @@ import { SessionRepository } from "@/lib/repositories/session.repository";
 interface QueryResponse {
   data: unknown;
   error: { message: string } | null;
+  count?: number | null;
 }
 
 /**
@@ -23,6 +24,7 @@ function makeQueryBuilder(response: QueryResponse) {
     order: vi.fn(() => builder),
     limit: vi.fn(() => builder),
     eq: vi.fn(() => builder),
+    gte: vi.fn(() => builder),
     single: vi.fn(() => builder),
     maybeSingle: vi.fn(() => builder),
     then: (resolve: (value: QueryResponse) => unknown) => resolve(response),
@@ -75,6 +77,16 @@ const opinionRow = {
   previous_score: null,
   attributed_persona_id: null,
   attribution_quote: null,
+};
+
+const sideThreadMessageRow = {
+  id: "message-1",
+  session_id: "session-1",
+  user_id: "user-1",
+  persona_id: "optymista",
+  role: "user" as const,
+  content: "Can you elaborate?",
+  created_at: "2026-09-29T12:00:00.000Z",
 };
 
 describe("SessionRepository.createSession", () => {
@@ -396,6 +408,138 @@ describe("SessionRepository.completeSession", () => {
     const repo = new SessionRepository(client);
 
     const result = await repo.completeSession("session-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.saveSideThreadMessage", () => {
+  it("round-trips a saved row", async () => {
+    const { client, from, builder } = makeClient({ data: sideThreadMessageRow, error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.saveSideThreadMessage("session-1", {
+      personaId: "optymista",
+      role: "user",
+      content: "Can you elaborate?",
+    });
+
+    expect(from).toHaveBeenCalledWith("advisor_side_thread_messages");
+    expect(builder.insert).toHaveBeenCalledWith({
+      session_id: "session-1",
+      persona_id: "optymista",
+      role: "user",
+      content: "Can you elaborate?",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual(
+        expect.objectContaining({ id: "message-1", sessionId: "session-1", personaId: "optymista", role: "user" }),
+      );
+    }
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "insert failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.saveSideThreadMessage("session-1", {
+      personaId: "optymista",
+      role: "user",
+      content: "Can you elaborate?",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.getSideThreadMessagesForSession", () => {
+  it("returns messages ordered persona_id, created_at, id", async () => {
+    const { client, builder } = makeClient({ data: [sideThreadMessageRow], error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getSideThreadMessagesForSession("session-1");
+
+    expect(builder.eq).toHaveBeenCalledWith("session_id", "session-1");
+    expect(builder.order).toHaveBeenCalledWith("persona_id", { ascending: true });
+    expect(builder.order).toHaveBeenCalledWith("created_at", { ascending: true });
+    expect(builder.order).toHaveBeenCalledWith("id", { ascending: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual([expect.objectContaining({ id: "message-1", personaId: "optymista" })]);
+    }
+  });
+});
+
+describe("SessionRepository.getSideThreadMessages", () => {
+  it("returns one thread's messages ordered created_at, id", async () => {
+    const { client, builder } = makeClient({ data: [sideThreadMessageRow], error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getSideThreadMessages("session-1", "optymista");
+
+    expect(builder.eq).toHaveBeenCalledWith("session_id", "session-1");
+    expect(builder.eq).toHaveBeenCalledWith("persona_id", "optymista");
+    expect(builder.order).toHaveBeenCalledWith("created_at", { ascending: true });
+    expect(builder.order).toHaveBeenCalledWith("id", { ascending: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual([expect.objectContaining({ id: "message-1", personaId: "optymista" })]);
+    }
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "select failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.getSideThreadMessages("session-1", "optymista");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.countSideThreadUserMessages", () => {
+  it("returns the exact count", async () => {
+    const { client, builder } = makeClient({ data: null, error: null, count: 3 });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.countSideThreadUserMessages("session-1", "optymista");
+
+    expect(builder.select).toHaveBeenCalledWith("*", { count: "exact", head: true });
+    expect(builder.eq).toHaveBeenCalledWith("session_id", "session-1");
+    expect(builder.eq).toHaveBeenCalledWith("persona_id", "optymista");
+    expect(builder.eq).toHaveBeenCalledWith("role", "user");
+    expect(result).toEqual({ ok: true, value: 3 });
+  });
+});
+
+describe("SessionRepository.countRecentSideThreadMessagesByUser", () => {
+  it("returns the exact count within the window", async () => {
+    const { client, builder } = makeClient({ data: null, error: null, count: 5 });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.countRecentSideThreadMessagesByUser("2026-09-29T11:59:00.000Z");
+
+    expect(builder.select).toHaveBeenCalledWith("*", { count: "exact", head: true });
+    expect(builder.eq).toHaveBeenCalledWith("role", "user");
+    expect(builder.gte).toHaveBeenCalledWith("created_at", "2026-09-29T11:59:00.000Z");
+    expect(result).toEqual({ ok: true, value: 5 });
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "count failed" }, count: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.countRecentSideThreadMessagesByUser("2026-09-29T11:59:00.000Z");
 
     expect(result.ok).toBe(false);
     if (!result.ok) {

@@ -16,13 +16,15 @@ import {
   AdvisorOpinionRowSchema,
   SessionRowSchema,
   SessionSynthesisRowSchema,
+  SideThreadMessageRowSchema,
   toAdvisorOpinion,
   toSession,
   toSessionSynthesis,
+  toSideThreadMessage,
 } from "@/lib/schemas/session";
 import type { AdvisorOpinion } from "@/lib/schemas/advisor";
 import type { Synthesis } from "@/lib/schemas/synthesis";
-import type { AdvisorOpinionRecord, Session, SessionSynthesis } from "@/types/session";
+import type { AdvisorOpinionRecord, Session, SessionSynthesis, SideThreadMessage } from "@/types/session";
 
 const DEFAULT_LIST_LIMIT = 50;
 
@@ -36,6 +38,11 @@ function parseRow<Schema extends z.ZodType>(schema: Schema, data: unknown): Resu
 
 interface DbResponse<T> {
   data: T | null;
+  error: { message: string } | null;
+}
+
+interface DbCountResponse {
+  count: number | null;
   error: { message: string } | null;
 }
 
@@ -55,6 +62,12 @@ export interface SaveOpinionInput {
 export interface SaveSynthesisInput {
   content: Synthesis;
   narrative: string;
+}
+
+export interface SaveSideThreadMessageInput {
+  personaId: AdvisorPersonaId;
+  role: "user" | "advisor";
+  content: string;
 }
 
 export class SessionRepository {
@@ -231,5 +244,106 @@ export class SessionRepository {
     }
 
     return ok(undefined);
+  }
+
+  async saveSideThreadMessage(
+    sessionId: string,
+    input: SaveSideThreadMessageInput,
+  ): Promise<Result<SideThreadMessage, DbError>> {
+    const { data, error } = (await this.client
+      .from("advisor_side_thread_messages")
+      .insert({ session_id: sessionId, persona_id: input.personaId, role: input.role, content: input.content })
+      .select()
+      .single()) as DbResponse<unknown>;
+
+    if (error) {
+      return err(new DbError("Failed to save side thread message", error));
+    }
+
+    const parsed = parseRow(SideThreadMessageRowSchema, data);
+    if (!parsed.ok) {
+      return parsed;
+    }
+    return ok(toSideThreadMessage(parsed.value));
+  }
+
+  async getSideThreadMessagesForSession(sessionId: string): Promise<Result<SideThreadMessage[], DbError>> {
+    const { data, error } = (await this.client
+      .from("advisor_side_thread_messages")
+      .select()
+      .eq("session_id", sessionId)
+      .order("persona_id", { ascending: true })
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })) as DbResponse<unknown[]>;
+
+    if (error) {
+      return err(new DbError("Failed to fetch side thread messages for session", error));
+    }
+
+    const messages: SideThreadMessage[] = [];
+    for (const row of data ?? []) {
+      const parsed = parseRow(SideThreadMessageRowSchema, row);
+      if (!parsed.ok) {
+        return parsed;
+      }
+      messages.push(toSideThreadMessage(parsed.value));
+    }
+    return ok(messages);
+  }
+
+  async getSideThreadMessages(
+    sessionId: string,
+    personaId: AdvisorPersonaId,
+  ): Promise<Result<SideThreadMessage[], DbError>> {
+    const { data, error } = (await this.client
+      .from("advisor_side_thread_messages")
+      .select()
+      .eq("session_id", sessionId)
+      .eq("persona_id", personaId)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })) as DbResponse<unknown[]>;
+
+    if (error) {
+      return err(new DbError("Failed to fetch side thread messages", error));
+    }
+
+    const messages: SideThreadMessage[] = [];
+    for (const row of data ?? []) {
+      const parsed = parseRow(SideThreadMessageRowSchema, row);
+      if (!parsed.ok) {
+        return parsed;
+      }
+      messages.push(toSideThreadMessage(parsed.value));
+    }
+    return ok(messages);
+  }
+
+  async countSideThreadUserMessages(sessionId: string, personaId: AdvisorPersonaId): Promise<Result<number, DbError>> {
+    const { count, error } = (await this.client
+      .from("advisor_side_thread_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", sessionId)
+      .eq("persona_id", personaId)
+      .eq("role", "user")) as DbCountResponse;
+
+    if (error) {
+      return err(new DbError("Failed to count side thread user messages", error));
+    }
+
+    return ok(count ?? 0);
+  }
+
+  async countRecentSideThreadMessagesByUser(sinceIso: string): Promise<Result<number, DbError>> {
+    const { count, error } = (await this.client
+      .from("advisor_side_thread_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "user")
+      .gte("created_at", sinceIso)) as DbCountResponse;
+
+    if (error) {
+      return err(new DbError("Failed to count recent side thread messages", error));
+    }
+
+    return ok(count ?? 0);
   }
 }
