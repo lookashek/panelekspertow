@@ -191,7 +191,10 @@ export function runSecondRoundPanel(
   function requireHead(id: AdvisorPersonaId): AdvisorOpinion {
     const head = priorHeads.get(id);
     if (!head) {
-      throw new Error(`runSecondRoundPanel: missing round-one head for persona "${id}"`);
+      throw new LlmError(
+        `runSecondRoundPanel: missing round-one head for persona "${id}"`,
+        ErrorCode.LLM_PROVIDER_ERROR,
+      );
     }
     return head;
   }
