@@ -345,10 +345,10 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [x] 2.1 Linting passes: `npm run lint`
-- [x] 2.2 Type checking passes: `npm run build`
-- [x] 2.3 Repository unit tests: `getSynthesis` (present/absent), `saveSynthesis`, `completeSession`
-- [x] 2.4 Row schema round-trip test: valid row maps; invalid `content` fails validation
+- [x] 2.1 Linting passes: `npm run lint` — 4792519
+- [x] 2.2 Type checking passes: `npm run build` — 4792519
+- [x] 2.3 Repository unit tests: `getSynthesis` (present/absent), `saveSynthesis`, `completeSession` — 4792519
+- [x] 2.4 Row schema round-trip test: valid row maps; invalid `content` fails validation — 4792519
 
 #### Manual
 
@@ -358,9 +358,9 @@ Forward-only additive migration; no backfill (existing sessions simply have no s
 
 #### Automated
 
-- [ ] 3.1 Linting passes: `npm run lint`
-- [ ] 3.2 Type checking passes: `npm run build`
-- [ ] 3.3 `runSynthesis` unit tests: head success drains prose; head failure emits one error chunk + closes; abort cancels provider call
+- [x] 3.1 Linting passes: `npm run lint`
+- [x] 3.2 Type checking passes: `npm run build`
+- [x] 3.3 `runSynthesis` unit tests: head success drains prose; head failure emits one error chunk + closes; abort cancels provider call
 
 ### Phase 4: Service method + SSE endpoint
 
