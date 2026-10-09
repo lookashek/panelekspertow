@@ -5,6 +5,9 @@
  * move — see `SessionFlow`'s auto-scroll effect) plus up to two actions.
  */
 
+import { buttonVariants } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
+
 export type Action = { label: string } & ({ onClick: () => void } | { href: string });
 
 export interface StepActionBarProps {
@@ -13,12 +16,9 @@ export interface StepActionBarProps {
   secondary?: Action;
 }
 
-const PRIMARY_CLASS =
-  "pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent px-6 py-4 text-xs transition-colors";
-const SECONDARY_CLASS =
-  "pixel-btn font-pixel bg-secondary text-secondary-foreground hover:border-accent hover:bg-accent px-6 py-4 text-xs transition-colors";
+function ActionButton({ action, variant }: { action: Action; variant: "default" | "secondary" }) {
+  const className = buttonVariants({ variant, size: "lg" });
 
-function ActionButton({ action, className }: { action: Action; className: string }) {
   if ("href" in action) {
     return (
       <a href={action.href} className={className}>
@@ -36,15 +36,15 @@ function ActionButton({ action, className }: { action: Action; className: string
 
 export function StepActionBar({ status, primary, secondary }: StepActionBarProps) {
   return (
-    <div className="pixel-panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-      <p aria-live="polite" className="text-muted-foreground text-xs sm:text-sm">
+    <div className={`${panelVariants({ padding: "card" })} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`}>
+      <p aria-live="polite" className="text-muted-foreground text-sm">
         {status}
       </p>
 
       {(primary ?? secondary) && (
         <div className="flex flex-col gap-3 sm:flex-row">
-          {secondary && <ActionButton action={secondary} className={SECONDARY_CLASS} />}
-          {primary && <ActionButton action={primary} className={PRIMARY_CLASS} />}
+          {secondary && <ActionButton action={secondary} variant="secondary" />}
+          {primary && <ActionButton action={primary} variant="default" />}
         </div>
       )}
     </div>

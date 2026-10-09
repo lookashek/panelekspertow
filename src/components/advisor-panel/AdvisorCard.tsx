@@ -1,8 +1,13 @@
 import { useState } from "react";
 
 import { SideThread } from "@/components/advisor-panel/SideThread";
-import type { PersonaViewState } from "@/components/advisor-panel/usePanelStream";
+import { Button } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
+import { Skeleton } from "@/components/ui/skeleton";
+import { advisorAccent } from "@/lib/advisors/advisor-accent";
+import { scoreDelta } from "@/lib/score-delta";
 import { cn } from "@/lib/utils";
+import type { PersonaViewState } from "@/components/advisor-panel/usePanelStream";
 
 interface AdvisorCardProps {
   personaId: string;
@@ -21,21 +26,6 @@ function scoreGlyph(score: number): string {
   return "■".repeat(filled) + "□".repeat(5 - filled);
 }
 
-/**
- * `previousScore` is null/undefined exactly when the score did not change (service-owned
- * invariant, see session.service.ts `resolveRoundTwo`), so a defined `previousScore` should always
- * differ from `score`. The `score === previousScore` branch is a defensive fallback, not a case
- * this component expects to hit — it exists so a future violation of that invariant renders as
- * "no change" instead of a wrong ▼ and a misleading "(w dół)" screen-reader announcement.
- */
-function scoreDelta(score: number, previousScore: number | undefined): { text: string; glyph: string } {
-  if (previousScore === undefined || previousScore === score) {
-    return { text: `${score}/10`, glyph: "▬" };
-  }
-  const glyph = score > previousScore ? "▲" : "▼";
-  return { text: `${previousScore} → ${score}`, glyph };
-}
-
 export function AdvisorCard({
   personaId,
   label,
@@ -47,45 +37,42 @@ export function AdvisorCard({
 }: AdvisorCardProps) {
   const [threadOpen, setThreadOpen] = useState(false);
   const [argumentsOpen, setArgumentsOpen] = useState(false);
+  const accent = advisorAccent(personaId);
+  const delta = state.score !== undefined ? scoreDelta(state.score, state.previousScore) : null;
 
   return (
     <article
-      className="pixel-panel flex flex-col gap-3 p-4 sm:p-5"
+      className={cn(panelVariants({ padding: "card" }), "flex flex-col gap-3", accent.border)}
       aria-label={label}
       data-persona-id={personaId}
       data-status={state.status}
     >
       <header className="flex items-center justify-between gap-2">
-        <h3 className="font-pixel text-foreground text-xs sm:text-sm">{label.toUpperCase()}</h3>
+        <h3 className={cn("font-pixel text-pixel-sm uppercase tracking-wide", accent.text)}>{label}</h3>
         {state.status === "pending" && (
-          <span className="motion-safe:animate-blink text-muted-foreground text-xs">Oczekiwanie…</span>
+          <span className="motion-safe:animate-blink text-muted-foreground text-pixel-micro">Oczekiwanie…</span>
         )}
       </header>
 
-      {state.score !== undefined && (
+      {state.score !== undefined && delta && (
         <div className="animate-fade-up flex flex-col gap-1">
-          <p className="text-accent text-xs" aria-hidden="true">
+          <p className="text-info text-pixel-md" aria-hidden="true">
             {scoreGlyph(state.score)}
           </p>
-          {(() => {
-            const delta = scoreDelta(state.score, state.previousScore);
-            return (
-              <p className="text-accent text-xs">
-                OCENA {delta.text} <span aria-hidden="true">{delta.glyph}</span>
-                <span className="sr-only">
-                  {state.previousScore === undefined || state.previousScore === state.score
-                    ? " (bez zmian)"
-                    : state.score > state.previousScore
-                      ? " (w górę)"
-                      : " (w dół)"}
-                </span>
-              </p>
-            );
-          })()}
+          <p className="text-info text-pixel-sm">
+            OCENA {delta.text}
+            {delta.glyph && (
+              <>
+                {" "}
+                <span aria-hidden="true">{delta.glyph}</span>
+                <span className="sr-only">{delta.direction === "up" ? " (w górę)" : " (w dół)"}</span>
+              </>
+            )}
+          </p>
           {state.thesis && <p className="text-foreground text-sm font-bold">{state.thesis}</p>}
           {state.attributedPersonaId && (
-            <div className="border-accent bg-accent/10 mt-1 border-2 p-2">
-              <p className="font-pixel text-accent text-[10px]">
+            <div className="border-info bg-card mt-1 border-2 p-2">
+              <p className="font-pixel text-info text-pixel-micro">
                 PRZEKONAŁ: {attributedPersonaLabel ?? state.attributedPersonaId}
               </p>
               {state.attributionQuote && (
@@ -98,23 +85,28 @@ export function AdvisorCard({
 
       <div aria-live="polite" className="text-muted-foreground min-h-16 flex-1 text-sm leading-relaxed">
         {state.text ||
-          (state.status === "pending" && <span className="text-muted-foreground/70">Czekam na doradcę…</span>)}
+          (state.status === "pending" && (
+            <span className="flex flex-col gap-1">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-5/6" />
+              <Skeleton className="h-3 w-2/3" />
+            </span>
+          ))}
       </div>
 
       {state.arguments && state.arguments.length > 0 && (
         <div>
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => {
               setArgumentsOpen((open) => !open);
             }}
             aria-expanded={argumentsOpen}
-            className={cn(
-              "pixel-btn font-pixel bg-secondary text-secondary-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground px-4 py-2 text-[10px] transition-colors",
-            )}
           >
             ARGUMENTY ({state.arguments.length})
-          </button>
+          </Button>
           {argumentsOpen && (
             <ul className="text-muted-foreground mt-2 flex flex-col gap-1 text-xs">
               {state.arguments.map((argument) => (
@@ -134,19 +126,18 @@ export function AdvisorCard({
       {state.status === "done" && <p className="text-muted-foreground text-xs">Gotowe.</p>}
 
       {sideThreadEnabled && sessionId && (
-        <div className="border-primary/40 mt-2 border-t-2 pt-3">
-          <button
+        <div className="border-border mt-2 border-t-2 pt-3">
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => {
               setThreadOpen((open) => !open);
             }}
             aria-expanded={threadOpen}
-            className={cn(
-              "pixel-btn font-pixel bg-secondary text-secondary-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground px-4 py-2 text-[10px] transition-colors",
-            )}
           >
             {threadOpen ? "ZWIŃ" : "DOPYTAJ"}
-          </button>
+          </Button>
           {threadOpen && (
             <div className="mt-3">
               <SideThread

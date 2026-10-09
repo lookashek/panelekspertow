@@ -13,6 +13,9 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { AdvisorCard } from "@/components/advisor-panel/AdvisorCard";
 import { RoundSummary } from "@/components/advisor-panel/RoundSummary";
 import { usePanelStream } from "@/components/advisor-panel/usePanelStream";
+import { headingVariants } from "@/components/ui/heading";
+import { panelVariants } from "@/components/ui/panel";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { RoundOutcome } from "@/lib/session-flow";
 
 interface RoundTwoPanelProps {
@@ -110,12 +113,15 @@ export function RoundTwoPanel({
 
   return (
     <section className="mt-8 flex flex-col gap-4">
-      <h2 className="font-pixel text-accent text-sm sm:text-base">RUNDA 2</h2>
+      <h2 className={headingVariants({ level: "section" })}>Runda 2</h2>
       {participantsReady ? (
         <RoundTwoStream sessionId={sessionId} personas={personas} onOutcome={onOutcome} folded={folded} />
       ) : (
-        <div className="pixel-panel p-4 sm:p-5">
-          <span className="motion-safe:animate-blink text-muted-foreground text-xs">Przygotowywanie rundy 2…</span>
+        <div className={panelVariants({ padding: "card" })}>
+          <span className="motion-safe:animate-blink text-muted-foreground text-sm mb-2 block">
+            Przygotowywanie rundy 2…
+          </span>
+          <Skeleton className="h-4 w-3/4" />
         </div>
       )}
     </section>

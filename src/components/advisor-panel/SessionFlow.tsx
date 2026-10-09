@@ -17,8 +17,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AdvisorPanel } from "@/components/advisor-panel/AdvisorPanel";
 import { RoundTwoPanel } from "@/components/advisor-panel/RoundTwoPanel";
 import { StepActionBar } from "@/components/advisor-panel/StepActionBar";
+import { StepIndicator } from "@/components/advisor-panel/StepIndicator";
 import { SynthesisPanel } from "@/components/advisor-panel/SynthesisPanel";
-import { deriveSessionStep } from "@/lib/session-flow";
+import { deriveSessionStep, deriveStepProgress } from "@/lib/session-flow";
 import type { Action } from "@/components/advisor-panel/StepActionBar";
 import type { RoundOutcome, SessionStep, SynthesisStreamStatus } from "@/lib/session-flow";
 
@@ -184,6 +185,7 @@ export function SessionFlow({
     node.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
   }, [step.kind, hasRoundOne]);
 
+  const stepProgress = deriveStepProgress(step, roundTwoStarted);
   const { status, primaryKind, secondaryKind } = deriveActionBarKinds(step);
 
   // Plain object lookup, not a function call passing the handlers along: `react-hooks/refs`
@@ -200,6 +202,8 @@ export function SessionFlow({
 
   return (
     <>
+      <StepIndicator progress={stepProgress} />
+
       <AdvisorPanel
         key={roundOneRetryKey}
         sessionId={sessionId}

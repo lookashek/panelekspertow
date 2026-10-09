@@ -69,3 +69,35 @@ export function deriveSessionStep(input: DeriveSessionStepInput): SessionStep {
     canRunRoundTwo: roundOne.scoredPersonaIds.length >= minRoundTwoParticipants,
   };
 }
+
+export type StepProgressState = "pending" | "active" | "done" | "failed" | "skipped";
+
+export type StepProgress = Record<"roundOne" | "roundTwo" | "synthesis", StepProgressState>;
+
+/**
+ * Pure mapping from the derived step to the 3-step progress indicator state (frontend.md §3 — kept
+ * free of Polish strings; the component renders the labels). Round two reads "skipped" only once
+ * synthesis has started without it ever starting — before that it stays "pending" (it may still run).
+ */
+export function deriveStepProgress(step: SessionStep, roundTwoStarted: boolean): StepProgress {
+  const roundTwoDoneOrSkipped: StepProgressState = roundTwoStarted ? "done" : "skipped";
+
+  switch (step.kind) {
+    case "round-one-running":
+      return { roundOne: "active", roundTwo: "pending", synthesis: "pending" };
+    case "round-one-failed":
+      return { roundOne: "failed", roundTwo: "pending", synthesis: "pending" };
+    case "round-one-settled":
+      return { roundOne: "done", roundTwo: "pending", synthesis: "pending" };
+    case "round-two-running":
+      return { roundOne: "done", roundTwo: "active", synthesis: "pending" };
+    case "round-two-settled":
+      return { roundOne: "done", roundTwo: "done", synthesis: "pending" };
+    case "synthesis-running":
+      return { roundOne: "done", roundTwo: roundTwoDoneOrSkipped, synthesis: "active" };
+    case "synthesis-failed":
+      return { roundOne: "done", roundTwo: roundTwoDoneOrSkipped, synthesis: "failed" };
+    case "finished":
+      return { roundOne: "done", roundTwo: roundTwoDoneOrSkipped, synthesis: "done" };
+  }
+}

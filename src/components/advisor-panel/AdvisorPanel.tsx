@@ -3,6 +3,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { AdvisorCard } from "@/components/advisor-panel/AdvisorCard";
 import { RoundSummary } from "@/components/advisor-panel/RoundSummary";
 import { usePanelStream } from "@/components/advisor-panel/usePanelStream";
+import { headingVariants } from "@/components/ui/heading";
 import type { RoundOutcome } from "@/lib/session-flow";
 
 interface AdvisorPanelProps {
@@ -35,7 +36,8 @@ export function AdvisorPanel({ sessionId, personas, initialThreads, onOutcome, f
   }, [settled, personaIds, state, onOutcome]);
 
   return (
-    <div>
+    <section className="flex flex-col gap-4">
+      <h2 className={headingVariants({ level: "section" })}>Runda 1</h2>
       {folded && (
         <RoundSummary
           round={1}
@@ -68,6 +70,6 @@ export function AdvisorPanel({ sessionId, personas, initialThreads, onOutcome, f
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

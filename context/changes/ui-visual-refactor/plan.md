@@ -766,8 +766,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 3.1 `npm run lint` and `npm run build` pass
-- [x] 3.2 Hardcoded-value scan on `Layout.astro`, `Topbar.astro`, `Banner.astro` returns 0 hits
+- [x] 3.1 `npm run lint` and `npm run build` pass — 0709eb6
+- [x] 3.2 Hardcoded-value scan on `Layout.astro`, `Topbar.astro`, `Banner.astro` returns 0 hits — 0709eb6
 
 #### Manual
 
@@ -780,9 +780,9 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 4.1 `npm run lint`, `npm run build` and `npm test` pass (incl. new `deriveStepProgress` tests: each `SessionStep` kind, skipped round two, failed states)
-- [ ] 4.2 Hardcoded-value scan on `src/pages/sessions/[id].astro` and `src/components/advisor-panel/**` returns 0 hits
-- [ ] 4.3 `grep -rn "pixel-btn\|pixel-panel\|bg-pixel-grid" src/components/advisor-panel src/pages/sessions/[id].astro` returns 0
+- [x] 4.1 `npm run lint`, `npm run build` and `npm test` pass (incl. new `deriveStepProgress` tests: each `SessionStep` kind, skipped round two, failed states)
+- [x] 4.2 Hardcoded-value scan on `src/pages/sessions/[id].astro` and `src/components/advisor-panel/**` returns 0 hits
+- [x] 4.3 `grep -rn "pixel-btn\|pixel-panel\|bg-pixel-grid" src/components/advisor-panel src/pages/sessions/[id].astro` returns 0
 
 #### Manual
 

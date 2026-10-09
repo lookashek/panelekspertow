@@ -4,6 +4,10 @@
  * `hidden` attribute via `expanded`/`onToggle` here — this component never unmounts anything
  * itself, it only renders the summary rows and the expand/collapse control.
  */
+import { Button } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
+import { advisorAccent } from "@/lib/advisors/advisor-accent";
+import { formatScore } from "@/lib/score-delta";
 import { cn } from "@/lib/utils";
 
 export interface RoundSummaryRow {
@@ -22,41 +26,26 @@ interface RoundSummaryProps {
   controlsId: string;
 }
 
-function formatScore(score: number | undefined, previousScore: number | undefined): string {
-  if (score === undefined) {
-    return "—";
-  }
-  if (previousScore === undefined || previousScore === score) {
-    return `${score}/10`;
-  }
-  return `${previousScore} → ${score}`;
-}
-
 export function RoundSummary({ round, rows, expanded, onToggle, controlsId }: RoundSummaryProps) {
   return (
-    <div className="pixel-panel mb-4 flex flex-col gap-3 p-4 sm:p-5">
+    <div className={cn(panelVariants({ padding: "card" }), "mb-4 flex flex-col gap-3")}>
       <ul className="flex flex-col gap-2">
-        {rows.map((row) => (
-          <li key={row.personaId} className="flex flex-col gap-0.5 text-xs sm:flex-row sm:items-baseline sm:gap-3">
-            <span className="font-pixel text-foreground text-[10px] sm:w-32 sm:flex-shrink-0">
-              {row.label.toUpperCase()}
-            </span>
-            <span className="text-accent flex-shrink-0">{formatScore(row.score, row.previousScore)}</span>
-            {row.thesis && <span className="text-muted-foreground truncate">{row.thesis}</span>}
-          </li>
-        ))}
+        {rows.map((row) => {
+          const accent = advisorAccent(row.personaId);
+          return (
+            <li key={row.personaId} className="flex flex-col gap-0.5 text-xs sm:flex-row sm:items-baseline sm:gap-3">
+              <span className={cn("font-pixel text-pixel-micro sm:w-32 sm:flex-shrink-0 uppercase", accent.text)}>
+                {row.label}
+              </span>
+              <span className="text-info flex-shrink-0">{formatScore(row.score, row.previousScore)}</span>
+              {row.thesis && <span className="text-muted-foreground truncate">{row.thesis}</span>}
+            </li>
+          );
+        })}
       </ul>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={expanded}
-        aria-controls={controlsId}
-        className={cn(
-          "pixel-btn font-pixel bg-secondary text-secondary-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground self-start px-4 py-2 text-[10px] transition-colors",
-        )}
-      >
+      <Button type="button" variant="secondary" size="sm" onClick={onToggle} aria-expanded={expanded} aria-controls={controlsId} className="self-start">
         {expanded ? `ZWIŃ RUNDĘ ${round}` : `ROZWIŃ RUNDĘ ${round}`}
-      </button>
+      </Button>
     </div>
   );
 }
