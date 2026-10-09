@@ -357,13 +357,13 @@ No schema/data migration. Existing sessions replay unchanged (persisted text is 
 
 #### Automated
 
-- [x] 4.1 Unit tests pass for adapter max_tokens and prompt clauses
-- [x] 4.2 No expansion wording left in R1/R2 builders
-- [x] 4.3 Lint passes
-- [x] 4.4 Build passes
+- [x] 4.1 Unit tests pass for adapter max_tokens and prompt clauses — 1a24cf4
+- [x] 4.2 No expansion wording left in R1/R2 builders — 1a24cf4
+- [x] 4.3 Lint passes — 1a24cf4
+- [x] 4.4 Build passes — 1a24cf4
 
 #### Manual
 
-- [x] 4.5 Prose is 2–3 sentences, not restating arguments, not truncated
-- [x] 4.6 Heads return 1–3 arguments without more LLM_INVALID_OUTPUT
-- [x] 4.7 Round-2 attribution and score divergence preserved
+- [x] 4.5 Prose is 2–3 sentences, not restating arguments, not truncated — 1a24cf4
+- [x] 4.6 Heads return 1–3 arguments without more LLM_INVALID_OUTPUT — 1a24cf4
+- [x] 4.7 Round-2 attribution and score divergence preserved — 1a24cf4
