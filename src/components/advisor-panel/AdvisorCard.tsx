@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { panelVariants } from "@/components/ui/panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { advisorAccent } from "@/lib/advisors/advisor-accent";
-import { scoreDelta } from "@/lib/score-delta";
+import { scoreDelta, scoreGlyph } from "@/lib/score-delta";
 import { cn } from "@/lib/utils";
 import type { PersonaViewState } from "@/components/advisor-panel/usePanelStream";
 
@@ -19,11 +19,6 @@ interface AdvisorCardProps {
   sessionId?: string;
   sideThreadEnabled?: boolean;
   initialMessages?: { role: "user" | "advisor"; content: string }[];
-}
-
-function scoreGlyph(score: number): string {
-  const filled = Math.round(score / 2);
-  return "■".repeat(filled) + "□".repeat(5 - filled);
 }
 
 export function AdvisorCard({

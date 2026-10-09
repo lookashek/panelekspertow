@@ -1,8 +1,14 @@
 ---
+import { containerVariants } from "@/components/layout/container";
+import { buttonVariants } from "@/components/ui/button";
+import { headingVariants } from "@/components/ui/heading";
+import { panelVariants } from "@/components/ui/panel";
+import { scoreGlyph } from "@/lib/score-delta";
+
 const { user } = Astro.locals;
 
 // 12×12 pixel-art avatar placeholders — swap for real sprites later.
-// Legend: V primary (violet), D chart-3 (dark violet), C accent (cyan),
+// Legend: V primary (action yellow), D chart-3 (success green), C accent (info cyan),
 // W foreground (light), B background (dark), . transparent
 const PIXEL_FILL: Record<string, string> = {
   V: "var(--primary)",
@@ -117,10 +123,10 @@ const steps = [
 ];
 ---
 
-<div class="bg-pixel-grid relative min-h-screen w-full bg-background">
-  <div class="relative z-10 p-4 sm:p-8">
+<div class="relative min-h-screen w-full bg-background">
+  <div class={containerVariants({ width: "wide" })}>
     <!-- Hero: character select -->
-    <section class="animate-fade-up mx-auto flex max-w-5xl flex-col items-center px-4 pt-16 pb-12 text-center sm:pt-24">
+    <section class="motion-safe:animate-fade-up flex flex-col items-center pt-16 pb-12 text-center sm:pt-24">
       <h1 class="font-pixel mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-2xl leading-relaxed text-transparent sm:text-4xl">
         PANEL EKSPERTÓW
       </h1>
@@ -128,7 +134,9 @@ const steps = [
 
       <ul class="mb-12 grid w-full grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4" aria-label="Przykładowi doradcy">
         {advisors.map((advisor) => (
-          <li class="pixel-panel flex flex-col items-center p-4 transition-transform duration-150 hover:border-accent motion-safe:hover:-translate-y-1 sm:p-5">
+          <li
+            class={`${panelVariants({ padding: "card" })} flex flex-col items-center transition-transform duration-150 hover:border-primary motion-safe:hover:-translate-y-1`}
+          >
             <svg
               viewBox="0 0 12 12"
               shape-rendering="crispEdges"
@@ -141,14 +149,10 @@ const steps = [
                 ),
               )}
             </svg>
-            <h2 class="font-pixel mb-2 text-[0.65rem] text-foreground sm:text-xs">{advisor.name}</h2>
+            <h2 class="font-pixel text-pixel-micro mb-2 text-foreground">{advisor.name}</h2>
             <p class="mb-3 text-xs text-muted-foreground">{advisor.role}</p>
-            <p class="mt-auto text-xs text-accent">
-              <span aria-hidden="true">
-                {"■".repeat(Math.round(advisor.score / 2))}
-                {"□".repeat(5 - Math.round(advisor.score / 2))}
-              </span>{" "}
-              OCENA {advisor.score}/10
+            <p class="mt-auto text-xs text-info">
+              <span aria-hidden="true">{scoreGlyph(advisor.score)}</span> OCENA {advisor.score}/10
             </p>
           </li>
         ))}
@@ -156,30 +160,21 @@ const steps = [
 
       <div class="flex flex-col gap-5 sm:flex-row">
         {user ? (
-          <a
-            href="/sessions/new"
-            class="pixel-btn font-pixel bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
-          >
-            <span class="animate-blink" aria-hidden="true">
+          <a href="/sessions/new" class={buttonVariants({ variant: "default", size: "lg" })}>
+            <span class="motion-safe:animate-blink" aria-hidden="true">
               ►
             </span>
             NOWA DECYZJA
           </a>
         ) : (
           <>
-            <a
-              href="/auth/signup"
-              class="pixel-btn font-pixel bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
-            >
-              <span class="animate-blink" aria-hidden="true">
+            <a href="/auth/signup" class={buttonVariants({ variant: "default", size: "lg" })}>
+              <span class="motion-safe:animate-blink" aria-hidden="true">
                 ►
               </span>
               ZBIERZ SWÓJ PANEL
             </a>
-            <a
-              href="/auth/signin"
-              class="pixel-btn font-pixel px-6 py-4 text-xs text-primary transition-colors hover:border-accent hover:text-accent"
-            >
+            <a href="/auth/signin" class={buttonVariants({ variant: "ghost", size: "lg" })}>
               ZALOGUJ SIĘ
             </a>
           </>
@@ -188,12 +183,12 @@ const steps = [
     </section>
 
     <!-- How it works -->
-    <section class="animate-fade-up mx-auto max-w-5xl px-4 pb-24">
-      <h2 class="font-pixel mb-8 text-center text-sm text-accent sm:text-base">JAK TO DZIAŁA</h2>
+    <section class="motion-safe:animate-fade-up pb-24">
+      <h2 class={`${headingVariants({ level: "section" })} mb-8 text-center`}>JAK TO DZIAŁA</h2>
       <ol class="grid grid-cols-1 gap-6 sm:grid-cols-3">
         {steps.map((step) => (
-          <li class="pixel-panel p-6">
-            <p class="font-pixel mb-4 text-lg text-accent" aria-hidden="true">
+          <li class={panelVariants({ padding: "page" })}>
+            <p class="font-pixel text-pixel-lg text-info mb-4" aria-hidden="true">
               {step.nr}
             </p>
             <h3 class="mb-2 font-bold text-foreground">{step.title}</h3>

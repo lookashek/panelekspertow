@@ -809,8 +809,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 6.1 `npm run lint` and `npm run build` pass
-- [x] 6.2 Hardcoded-value scan on `sessions/index.astro` and `src/components/session-history/**` returns 0 hits
+- [x] 6.1 `npm run lint` and `npm run build` pass — d754296
+- [x] 6.2 Hardcoded-value scan on `sessions/index.astro` and `src/components/session-history/**` returns 0 hits — d754296
 
 #### Manual
 
@@ -821,8 +821,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 7.1 `npm run lint` and `npm run build` pass
-- [ ] 7.2 Hardcoded-value scan on `index.astro` and `Welcome.astro` returns 0 hits
+- [x] 7.1 `npm run lint` and `npm run build` pass
+- [x] 7.2 Hardcoded-value scan on `index.astro` and `Welcome.astro` returns 0 hits
 
 #### Manual
 

@@ -20,3 +20,9 @@ export function formatScore(score: number | undefined, previousScore: number | u
   }
   return scoreDelta(score, previousScore).text;
 }
+
+/** Renders a 0-10 score as a 5-block filled/empty bar (AdvisorCard, Welcome's example advisors). */
+export function scoreGlyph(score: number): string {
+  const filled = Math.round(score / 2);
+  return "■".repeat(filled) + "□".repeat(5 - filled);
+}
