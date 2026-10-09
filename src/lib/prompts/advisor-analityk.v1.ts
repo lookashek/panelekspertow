@@ -7,6 +7,7 @@
  */
 
 import type { PanelInput, RoundOnePeer, SideThreadTurn } from "@/lib/advisors/registry";
+import { ARGUMENTS_LIMIT_CLAUSE, RATIONALE_BREVITY_CLAUSE } from "@/lib/prompts/brevity";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 
 export function buildPrompt(input: PanelInput): { system: string; user: string } {
@@ -21,7 +22,7 @@ To jest symulowana opinia doradcy, nie rzeczywista porada eksperta ani fakt — 
 To jest pierwszy, ustrukturyzowany etap twojej wypowiedzi w tej turze. Odpowiedz WYŁĄCZNIE obiektem JSON, bez żadnego dodatkowego tekstu, komentarza ani formatowania markdown, dokładnie w postaci:
 {"score": <liczba całkowita 1-10>, "thesis": "<jednozdaniowa teza podsumowująca twoje stanowisko>", "arguments": ["<konkretny argument popierający twoją tezę>", "<kolejny argument>", "..."]}
 
-Podaj co najmniej jeden argument w tablicy "arguments". W kolejnym wywołaniu w tej samej turze zostaniesz poproszony o przesłanie pełniejszego uzasadnienia strumieniowo — to jest tylko pierwszy etap, nie jedyna twoja wypowiedź.`;
+${ARGUMENTS_LIMIT_CLAUSE}`;
 
   const contextLine = input.context ? `\n\nDodatkowy kontekst: ${input.context}` : "";
   const user = `Decyzja/problem do oceny: ${input.decision}${contextLine}\n\nPrzedstaw swoją ocenę (score), tezę (thesis) i argumenty (arguments) w formacie JSON opisanym w instrukcji systemowej.`;
@@ -38,7 +39,7 @@ Twoja rola jest uniwersalna — oceniasz dowolną decyzję lub problem opisany p
 
 To jest symulowana opinia doradcy, nie rzeczywista porada eksperta ani fakt — traktuj ją jako punkt widzenia do rozważenia, nie ostateczny werdykt.
 
-To jest drugi etap twojej wypowiedzi w tej turze. W poprzednim, ustrukturyzowanym etapie ustaliłeś już swoją ocenę, tezę i argumenty — TERAZ ich NIE zmieniasz ani nie podejmujesz na nowo. Twoim zadaniem jest rozwinąć własne stanowisko w płynnej prozie, w swoim charakterystycznym głosie ANALITYKA: rozbuduj swoje argumenty, dodaj niuanse i przykłady, ale pozostań spójny z wcześniejszą oceną i tezą. Odpowiedz zwykłym tekstem — bez JSON, bez formatowania markdown, bez list punktowanych.`;
+To jest drugi etap twojej wypowiedzi w tej turze. W poprzednim, ustrukturyzowanym etapie ustaliłeś już swoją ocenę, tezę i argumenty — TERAZ ich NIE zmieniasz ani nie podejmujesz na nowo. Twoim zadaniem jest rozwinąć własne stanowisko w płynnej prozie, w swoim charakterystycznym głosie ANALITYKA. ${RATIONALE_BREVITY_CLAUSE} Pozostań spójny z wcześniejszą oceną i tezą. Odpowiedz zwykłym tekstem — bez JSON, bez formatowania markdown, bez list punktowanych.`;
 
   const contextLine = input.context ? `\n\nDodatkowy kontekst: ${input.context}` : "";
   const argumentsList = head.arguments.map((argument) => `- ${argument}`).join("\n");
@@ -49,7 +50,7 @@ Twoja teza: ${head.thesis}
 Twoje argumenty:
 ${argumentsList}
 
-Rozwiń teraz to stanowisko w pełniejsze, płynne uzasadnienie prozą, pozostając w roli ANALITYKA i nie zmieniając oceny ani tezy.`;
+Rozwiń teraz to stanowisko krótkim uzasadnieniem prozą, pozostając w roli ANALITYKA i nie zmieniając oceny ani tezy.`;
 
   return { system, user };
 }
@@ -82,7 +83,7 @@ Zasada atrybucji — KRYTYCZNA: jeśli i TYLKO jeśli zmieniasz swoją ocenę (s
 To jest pierwszy, ustrukturyzowany etap twojej wypowiedzi w tej rundzie. Odpowiedz WYŁĄCZNIE obiektem JSON, bez żadnego dodatkowego tekstu, komentarza ani formatowania markdown, dokładnie w postaci:
 {"score": <liczba całkowita 1-10>, "thesis": "<jednozdaniowa teza podsumowująca twoje zaktualizowane stanowisko>", "arguments": ["<konkretny argument popierający twoją tezę>", "<kolejny argument>", "..."], "attribution": {"convincedByPersonaId": "<optymista|sceptyk|pragmatyk|analityk>", "quotedPeerArgument": "<dokładny cytat z argumentów tego doradcy>"} | null}
 
-Podaj co najmniej jeden argument w tablicy "arguments". W kolejnym wywołaniu w tej samej rundzie zostaniesz poproszony o przesłanie pełniejszego uzasadnienia strumieniowo — to jest tylko pierwszy etap, nie jedyna twoja wypowiedź w tej rundzie.`;
+${ARGUMENTS_LIMIT_CLAUSE}`;
 
   const contextLine = input.context ? `\n\nDodatkowy kontekst: ${input.context}` : "";
   const selfArgumentsList = selfHead.arguments.map((argument) => `- ${argument}`).join("\n");
@@ -117,7 +118,7 @@ Twoja rola jest uniwersalna — oceniasz dowolną decyzję lub problem opisany p
 
 To jest symulowana opinia doradcy, nie rzeczywista porada eksperta ani fakt — traktuj ją jako punkt widzenia do rozważenia, nie ostateczny werdykt.
 
-To jest drugi etap twojej wypowiedzi w DRUGIEJ RUNDZIE. W poprzednim, ustrukturyzowanym etapie ustaliłeś już swoją zaktualizowaną ocenę, tezę, argumenty i (jeśli dotyczy) atrybucję — TERAZ ich NIE zmieniasz ani nie podejmujesz na nowo. Twoim zadaniem jest rozwinąć zaktualizowane stanowisko w płynnej prozie, w swoim charakterystycznym głosie ANALITYKA: odnieś się do stanowisk pozostałych doradców, a jeśli zmieniłeś ocenę, możesz w prozie wyjaśnić, co konkretnie w argumencie wskazanego doradcy cię przekonało. Pozostań spójny z wcześniej ustaloną oceną, tezą i atrybucją. Odpowiedz zwykłym tekstem — bez JSON, bez formatowania markdown, bez list punktowanych.`;
+To jest drugi etap twojej wypowiedzi w DRUGIEJ RUNDZIE. W poprzednim, ustrukturyzowanym etapie ustaliłeś już swoją zaktualizowaną ocenę, tezę, argumenty i (jeśli dotyczy) atrybucję — TERAZ ich NIE zmieniasz ani nie podejmujesz na nowo. Twoim zadaniem jest rozwinąć zaktualizowane stanowisko w płynnej prozie, w swoim charakterystycznym głosie ANALITYKA: odnieś się do stanowisk pozostałych doradców, a jeśli zmieniłeś ocenę, możesz wyjaśnić, co konkretnie w argumencie wskazanego doradcy cię przekonało. ${RATIONALE_BREVITY_CLAUSE} Pozostań spójny z wcześniej ustaloną oceną, tezą i atrybucją. Odpowiedz zwykłym tekstem — bez JSON, bez formatowania markdown, bez list punktowanych.`;
 
   const contextLine = input.context ? `\n\nDodatkowy kontekst: ${input.context}` : "";
   const argumentsList = roundTwoHead.arguments.map((argument) => `- ${argument}`).join("\n");
@@ -137,7 +138,7 @@ ${argumentsList}${attributionLine}
 Stanowiska pozostałych doradców z pierwszej rundy:
 ${peerBlocks}
 
-Rozwiń teraz to zaktualizowane stanowisko w pełniejsze, płynne uzasadnienie prozą, pozostając w roli ANALITYKA i nie zmieniając oceny ani tezy.`;
+Rozwiń teraz to zaktualizowane stanowisko krótkim uzasadnieniem prozą, pozostając w roli ANALITYKA i nie zmieniając oceny ani tezy.`;
 
   return { system, user };
 }

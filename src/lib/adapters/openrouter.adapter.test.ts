@@ -162,4 +162,40 @@ describe("OpenRouterAdapter#stream", () => {
     expect(chunks).toHaveLength(1);
     expect(chunks[0]?.type).toBe("error");
   });
+
+  it("includes max_tokens in the request body when maxTokens is set", async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, body });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const adapter = new OpenRouterAdapter("test-key");
+    await collectStream(adapter.stream({ model: "openai/gpt-4o-mini", system: "sys", user: "usr", maxTokens: 350 }));
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const parsedBody = JSON.parse(init.body as string) as { max_tokens?: number };
+    expect(parsedBody.max_tokens).toBe(350);
+  });
+
+  it("omits max_tokens from the request body when maxTokens is not set", async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200, body });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const adapter = new OpenRouterAdapter("test-key");
+    await collectStream(adapter.stream({ model: "openai/gpt-4o-mini", system: "sys", user: "usr" }));
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const parsedBody = JSON.parse(init.body as string) as { max_tokens?: number };
+    expect(parsedBody).not.toHaveProperty("max_tokens");
+  });
 });

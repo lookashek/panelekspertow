@@ -342,28 +342,28 @@ No schema/data migration. Existing sessions replay unchanged (persisted text is 
 
 #### Automated
 
-- [x] 3.1 Lint passes
-- [x] 3.2 Type check passes
-- [x] 3.3 Build passes
+- [x] 3.1 Lint passes — 6beb31d
+- [x] 3.2 Type check passes — 6beb31d
+- [x] 3.3 Build passes — 6beb31d
 
 #### Manual
 
-- [x] 3.4 Round 1 folds on round-2 start; expand reopens no stream
-- [x] 3.5 Open side thread survives fold and expand
-- [x] 3.6 ARGUMENTY toggle keyboard-accessible, collapsed by default
-- [x] 3.7 Finished session on reload shows both rounds folded
+- [x] 3.4 Round 1 folds on round-2 start; expand reopens no stream — 6beb31d
+- [x] 3.5 Open side thread survives fold and expand — 6beb31d
+- [x] 3.6 ARGUMENTY toggle keyboard-accessible, collapsed by default — 6beb31d
+- [x] 3.7 Finished session on reload shows both rounds folded — 6beb31d
 
 ### Phase 4: Brevity — prompt caps and prose max_tokens
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass for adapter max_tokens and prompt clauses
-- [ ] 4.2 No expansion wording left in R1/R2 builders
-- [ ] 4.3 Lint passes
-- [ ] 4.4 Build passes
+- [x] 4.1 Unit tests pass for adapter max_tokens and prompt clauses
+- [x] 4.2 No expansion wording left in R1/R2 builders
+- [x] 4.3 Lint passes
+- [x] 4.4 Build passes
 
 #### Manual
 
-- [ ] 4.5 Prose is 2–3 sentences, not restating arguments, not truncated
-- [ ] 4.6 Heads return 1–3 arguments without more LLM_INVALID_OUTPUT
-- [ ] 4.7 Round-2 attribution and score divergence preserved
+- [x] 4.5 Prose is 2–3 sentences, not restating arguments, not truncated
+- [x] 4.6 Heads return 1–3 arguments without more LLM_INVALID_OUTPUT
+- [x] 4.7 Round-2 attribution and score divergence preserved

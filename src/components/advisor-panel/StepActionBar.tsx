@@ -43,7 +43,7 @@ export function StepActionBar({ status, primary, secondary }: StepActionBarProps
         {status}
       </p>
 
-      {(primary || secondary) && (
+      {(primary ?? secondary) && (
         <div className="flex flex-col gap-3 sm:flex-row">
           {secondary && <ActionButton action={secondary} className={cn(SECONDARY_CLASS)} />}
           {primary && <ActionButton action={primary} className={cn(PRIMARY_CLASS)} />}

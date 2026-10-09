@@ -36,6 +36,8 @@ export interface StreamRequest {
   persona?: string;
   /** Prompt version tag, threaded through for logging only (added in a later phase's callers). */
   promptVersion?: string;
+  /** Hard ceiling on streamed prose tokens; sent only when set (S-07 brevity guard). */
+  maxTokens?: number;
 }
 
 export type StreamChunk = { type: "token"; text: string } | { type: "done" } | { type: "error"; error: LlmError };

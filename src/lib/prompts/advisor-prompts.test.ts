@@ -4,6 +4,7 @@ import * as analityk from "@/lib/prompts/advisor-analityk.v1";
 import * as optymista from "@/lib/prompts/advisor-optymista.v1";
 import * as pragmatyk from "@/lib/prompts/advisor-pragmatyk.v1";
 import * as sceptyk from "@/lib/prompts/advisor-sceptyk.v1";
+import { ARGUMENTS_LIMIT_CLAUSE, RATIONALE_BREVITY_CLAUSE } from "@/lib/prompts/brevity";
 import type { PanelInput, SideThreadTurn } from "@/lib/advisors/registry";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 
@@ -106,5 +107,42 @@ describe.each(personas)("advisor-$name.v1 round-two builders", ({ voice, module 
     );
     expect(system).toContain(voice);
     expect(user).toContain(sampleRoundTwoHead.thesis);
+  });
+});
+
+describe.each(personas)("advisor-$name.v1 brevity (S-07)", ({ voice, module }) => {
+  it("buildPrompt's head system prompt carries the shared arguments-limit clause", () => {
+    const { system } = module.buildPrompt(sampleInput);
+    expect(system).toContain(voice);
+    expect(system).toContain(ARGUMENTS_LIMIT_CLAUSE);
+    expect(system).not.toMatch(/rozbuduj|pełniejsze/i);
+  });
+
+  it("buildRoundTwoPrompt's head system prompt carries the shared arguments-limit clause", () => {
+    const { system } = module.buildRoundTwoPrompt(sampleInput, sampleHead, samplePeers);
+    expect(system).toContain(voice);
+    expect(system).toContain(ARGUMENTS_LIMIT_CLAUSE);
+    expect(system).not.toMatch(/rozbuduj|pełniejsze/i);
+  });
+
+  it("buildRationalePrompt's system prompt carries the shared rationale-brevity clause", () => {
+    const { system, user } = module.buildRationalePrompt(sampleInput, sampleHead);
+    expect(system).toContain(voice);
+    expect(system).toContain(RATIONALE_BREVITY_CLAUSE);
+    expect(system).not.toMatch(/rozbuduj|pełniejsze/i);
+    expect(user).not.toMatch(/rozbuduj|pełniejsze/i);
+  });
+
+  it("buildRoundTwoRationalePrompt's system prompt carries the shared rationale-brevity clause", () => {
+    const { system, user } = module.buildRoundTwoRationalePrompt(
+      sampleInput,
+      sampleHead,
+      sampleRoundTwoHead,
+      samplePeers,
+    );
+    expect(system).toContain(voice);
+    expect(system).toContain(RATIONALE_BREVITY_CLAUSE);
+    expect(system).not.toMatch(/rozbuduj|pełniejsze/i);
+    expect(user).not.toMatch(/rozbuduj|pełniejsze/i);
   });
 });

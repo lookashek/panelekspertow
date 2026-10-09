@@ -15,7 +15,10 @@ import type { AdvisorPersonaId, AdvisorStrategy, PanelInput, RoundOnePeer } from
 import { AdvisorOpinionSchema, AdvisorRoundTwoOpinionSchema } from "@/lib/schemas/advisor";
 import type { AdvisorOpinion, AdvisorRoundTwoOpinion } from "@/lib/schemas/advisor";
 
-const PROMPT_VERSION = "v1";
+const PROMPT_VERSION = "v2";
+/** Guard on streamed prose length (S-07 brevity); the prompt shapes ~2-3 sentences (~100-150
+ * tokens), this is a safety ceiling, not the shaper. */
+const RATIONALE_MAX_TOKENS = 350;
 
 export interface PanelStreamChunk {
   personaId: AdvisorPersonaId;
@@ -112,6 +115,7 @@ function fanOutPanel<THead>(
               temperature: persona.temperature,
               persona: persona.id,
               promptVersion: PROMPT_VERSION,
+              maxTokens: RATIONALE_MAX_TOKENS,
             });
             reader = personaStream.getReader();
             activeReaders.add(reader);

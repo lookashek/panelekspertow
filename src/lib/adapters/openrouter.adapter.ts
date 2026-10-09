@@ -190,6 +190,7 @@ export class OpenRouterAdapter implements LlmProvider {
               messages: buildMessages(req.system, req.user),
               temperature: req.temperature,
               stream: true,
+              max_tokens: req.maxTokens,
             }),
             signal,
           });
