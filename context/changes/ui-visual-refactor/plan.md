@@ -821,8 +821,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 7.1 `npm run lint` and `npm run build` pass
-- [x] 7.2 Hardcoded-value scan on `index.astro` and `Welcome.astro` returns 0 hits
+- [x] 7.1 `npm run lint` and `npm run build` pass — 3726393
+- [x] 7.2 Hardcoded-value scan on `index.astro` and `Welcome.astro` returns 0 hits — 3726393
 
 #### Manual
 
@@ -833,10 +833,10 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 8.1 `npm run lint` and `npm run build` pass
-- [ ] 8.2 Hardcoded-value scan on `src/pages/auth/**`, `dashboard.astro`, `src/components/auth/**` returns 0 hits
-- [ ] 8.3 `grep -rn "bg-cosmic\|useFormStatus\|backdrop-blur" src/` returns 0 hits
-- [ ] 8.4 `npm run smoke` passes against a running server
+- [x] 8.1 `npm run lint` and `npm run build` pass
+- [x] 8.2 Hardcoded-value scan on `src/pages/auth/**`, `dashboard.astro`, `src/components/auth/**` returns 0 hits
+- [x] 8.3 `grep -rn "bg-cosmic\|useFormStatus\|backdrop-blur" src/` returns 0 hits
+- [ ] 8.4 `npm run smoke` passes against a running server — SKIPPED: local Supabase (Docker) not running in this environment; preflight-flagged. Run manually: `supabase start && npm run smoke`.
 
 #### Manual
 

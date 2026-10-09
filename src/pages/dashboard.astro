@@ -1,30 +1,26 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { containerVariants } from "@/components/layout/container";
+import { buttonVariants } from "@/components/ui/button";
+import { headingVariants } from "@/components/ui/heading";
+import { panelVariants } from "@/components/ui/panel";
 
 const { user } = Astro.locals;
 ---
 
-<Layout title="Dashboard">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
-      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-        Dashboard
-      </h1>
-      <p class="text-blue-100/80">
-        Welcome, <span class="font-semibold text-white">{user?.email}</span>
+<Layout title="Panel — Panel Ekspertów">
+  <div class={`${containerVariants({ width: "narrow" })} flex flex-1 flex-col items-center justify-center py-16`}>
+    <div class={`${panelVariants({ padding: "page" })} w-full text-center`}>
+      <h1 class={headingVariants({ level: "page" })}>PANEL</h1>
+      <p class="mt-4 text-muted-foreground">
+        Witaj, <span class="font-bold text-foreground">{user?.email}</span>
       </p>
-      <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
+      <p class="mt-2 text-sm text-muted-foreground">Ta strona jest dostępna tylko dla zalogowanych użytkowników.</p>
       <div class="mt-6 flex flex-wrap items-center justify-center gap-4">
-        <a
-          href="/sessions/new"
-          class="pixel-btn font-pixel inline-flex bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
-        >
+        <a href="/sessions/new" class={buttonVariants({ variant: "default", size: "lg" })}>
           NOWA DECYZJA
         </a>
-        <a
-          href="/sessions"
-          class="pixel-btn font-pixel inline-flex bg-background px-6 py-4 text-xs text-foreground transition-colors hover:border-accent hover:text-accent"
-        >
+        <a href="/sessions" class={buttonVariants({ variant: "secondary", size: "lg" })}>
           MOJE SESJE
         </a>
       </div>
