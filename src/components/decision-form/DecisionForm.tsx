@@ -2,11 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { PanelInputSchema, type PanelInput } from "@/lib/schemas/panel";
 
 type AsyncState = "idle" | "submitting" | "error";
@@ -71,52 +71,37 @@ export function DecisionForm() {
 
   return (
     <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="flex flex-col gap-6" noValidate>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="decision">Decyzja</Label>
-        <Input
-          id="decision"
-          placeholder="Np. Czy powinienem zmienić pracę?"
-          aria-invalid={!!errors.decision}
-          disabled={isSubmitting}
-          {...register("decision")}
-        />
-        {errors.decision && (
-          <p className="text-destructive text-sm" role="alert">
-            {errors.decision.message}
-          </p>
-        )}
-      </div>
+      <Field id="decision" label="Decyzja" error={errors.decision?.message}>
+        <Input placeholder="Np. Czy powinienem zmienić pracę?" disabled={isSubmitting} {...register("decision")} />
+      </Field>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="context">Kontekst (opcjonalnie)</Label>
+      <Field
+        id="context"
+        label="Kontekst (opcjonalnie)"
+        hint="Więcej kontekstu = trafniejsze opinie doradców."
+        error={errors.context?.message}
+      >
         <Textarea
-          id="context"
           placeholder="Opisz sytuację, ograniczenia, to, co już rozważałeś…"
           rows={5}
           disabled={isSubmitting}
           {...register("context")}
         />
-        <p className="text-muted-foreground text-xs">Więcej kontekstu = trafniejsze opinie doradców.</p>
-        {showContextNudge && !context && (
-          <p className="text-accent text-xs" role="status">
-            Brak kontekstu — doradcy ocenią na podstawie samej decyzji.
-          </p>
-        )}
-      </div>
+      </Field>
 
-      {asyncState === "error" && errorMessage && (
-        <p className="text-destructive text-sm" role="alert">
-          {errorMessage}
-        </p>
+      {showContextNudge && !context && (
+        <Alert variant="warning">
+          <AlertDescription>Brak kontekstu — doradcy ocenią na podstawie samej decyzji.</AlertDescription>
+        </Alert>
       )}
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className={cn(
-          "pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent px-6 py-4 text-xs",
-        )}
-      >
+      {asyncState === "error" && errorMessage && (
+        <Alert variant="error">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      <Button type="submit" variant="default" size="lg" disabled={isSubmitting}>
         {isSubmitting ? "Uruchamiam panel…" : "Zbierz panel"}
       </Button>
     </form>

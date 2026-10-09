@@ -780,9 +780,9 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 4.1 `npm run lint`, `npm run build` and `npm test` pass (incl. new `deriveStepProgress` tests: each `SessionStep` kind, skipped round two, failed states)
-- [x] 4.2 Hardcoded-value scan on `src/pages/sessions/[id].astro` and `src/components/advisor-panel/**` returns 0 hits
-- [x] 4.3 `grep -rn "pixel-btn\|pixel-panel\|bg-pixel-grid" src/components/advisor-panel src/pages/sessions/[id].astro` returns 0
+- [x] 4.1 `npm run lint`, `npm run build` and `npm test` pass (incl. new `deriveStepProgress` tests: each `SessionStep` kind, skipped round two, failed states) — be75667
+- [x] 4.2 Hardcoded-value scan on `src/pages/sessions/[id].astro` and `src/components/advisor-panel/**` returns 0 hits — be75667
+- [x] 4.3 `grep -rn "pixel-btn\|pixel-panel\|bg-pixel-grid" src/components/advisor-panel src/pages/sessions/[id].astro` returns 0 — be75667
 
 #### Manual
 
@@ -796,8 +796,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 5.1 `npm run lint` and `npm run build` pass
-- [ ] 5.2 Hardcoded-value scan on `new.astro` and `src/components/decision-form/**` returns 0 hits
+- [x] 5.1 `npm run lint` and `npm run build` pass
+- [x] 5.2 Hardcoded-value scan on `new.astro` and `src/components/decision-form/**` returns 0 hits
 
 #### Manual
 
