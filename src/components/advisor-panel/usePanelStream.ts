@@ -44,6 +44,11 @@ interface ErrorEventData {
   message: string;
 }
 
+interface FatalEventData {
+  code: string;
+  message: string;
+}
+
 function initialState(personaIds: string[]): Record<string, PersonaViewState> {
   const state: Record<string, PersonaViewState> = {};
   for (const personaId of personaIds) {
@@ -161,16 +166,38 @@ export function usePanelStream(
       });
     };
 
+    // A pre-stream failure (auth, validation, a business-rule `Result` error — e.g. round two
+    // requested before enough round-one opinions are persisted) arrives as a single `fatal` frame
+    // (see `sseErrorResponse`) rather than a per-persona `error` frame, so every non-terminal
+    // persona is settled with the real message instead of falling through to `onError`'s generic
+    // connection-failure text.
+    const onFatal = (event: MessageEvent<string>) => {
+      const data = JSON.parse(event.data) as FatalEventData;
+      closed = true;
+      setState((prev) => {
+        const next = { ...prev };
+        for (const id of personaIds) {
+          if (!isTerminal(next[id])) {
+            next[id] = { ...next[id], status: "error" as const, error: data.message };
+          }
+        }
+        return next;
+      });
+      eventSource.close();
+    };
+
     eventSource.addEventListener("score", onScore);
     eventSource.addEventListener("token", onToken);
     eventSource.addEventListener("done", onDone);
     eventSource.addEventListener("error", onError);
+    eventSource.addEventListener("fatal", onFatal);
 
     return () => {
       eventSource.removeEventListener("score", onScore);
       eventSource.removeEventListener("token", onToken);
       eventSource.removeEventListener("done", onDone);
       eventSource.removeEventListener("error", onError);
+      eventSource.removeEventListener("fatal", onFatal);
       eventSource.close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- personaIds is a stable list for the session lifetime

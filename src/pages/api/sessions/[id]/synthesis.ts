@@ -2,7 +2,7 @@ import type { APIContext } from "astro";
 
 import { createLlmProvider } from "@/lib/adapters/create-llm-provider";
 import { AppError, ErrorCode, UnauthorizedError } from "@/lib/errors";
-import { errorResponse } from "@/lib/http";
+import { sseErrorResponse } from "@/lib/http";
 import { SessionRepository } from "@/lib/repositories/session.repository";
 import type { SynthesisRunEvent } from "@/lib/services/session.service";
 import { SessionService } from "@/lib/services/session.service";
@@ -27,23 +27,23 @@ function frameFor(event: SynthesisRunEvent): [string, unknown] {
 
 export async function GET({ params, request, cookies, locals }: APIContext): Promise<Response> {
   if (!locals.user) {
-    return errorResponse(new UnauthorizedError("Sign in required"));
+    return sseErrorResponse(new UnauthorizedError("Sign in required"));
   }
 
   if (!params.id) {
-    return errorResponse(new AppError("Missing session id", ErrorCode.VALIDATION_ERROR, 400));
+    return sseErrorResponse(new AppError("Missing session id", ErrorCode.VALIDATION_ERROR, 400));
   }
 
   const client = createClient(request.headers, cookies);
   const provider = createLlmProvider();
   if (!client || !provider) {
-    return errorResponse(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
+    return sseErrorResponse(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
   }
 
   const service = new SessionService({ repository: new SessionRepository(client), provider });
   const result = await service.runSynthesis(params.id, locals.user.id);
   if (!result.ok) {
-    return errorResponse(result.error);
+    return sseErrorResponse(result.error);
   }
 
   const view = result.value;

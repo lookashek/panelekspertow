@@ -22,3 +22,30 @@ export function errorResponse(error: AppError): Response {
   }
   return json(body, { status: error.status });
 }
+
+/**
+ * SSE counterpart to `errorResponse`, for routes whose only consumer is an `EventSource` (the
+ * round/synthesis stream endpoints). `EventSource` cannot read a plain JSON error body — a non-200
+ * or non-`text/event-stream` response just fires a payload-less `error` event, so the real
+ * code/message is lost and the client falls back to a generic "connection aborted" message. This
+ * always returns status 200 with a single `event: fatal` frame instead, so a pre-stream failure
+ * (auth, validation, a business-rule `Result` error) reaches the client the same way a mid-stream
+ * one already does.
+ */
+export function sseErrorResponse(error: AppError): Response {
+  const encoder = new TextEncoder();
+  const frame = `event: fatal\ndata: ${JSON.stringify({ code: error.code, message: error.message })}\n\n`;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(encoder.encode(frame));
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}

@@ -25,6 +25,8 @@ interface ErrorEventData {
   message: string;
 }
 
+type FatalEventData = ErrorEventData;
+
 function isTerminal(status: SynthesisViewState["status"]): boolean {
   return status === "done" || status === "error";
 }
@@ -81,16 +83,28 @@ export function useSynthesisStream(sessionId: string): SynthesisViewState {
       closeIfTerminal("error");
     };
 
+    // A pre-stream failure (auth, validation, a business-rule `Result` error) arrives as a single
+    // `fatal` frame (see `sseErrorResponse`) rather than the per-chunk `error` frame, so the real
+    // message reaches the client instead of `onError`'s generic connection-failure text.
+    const onFatal = (event: MessageEvent<string>) => {
+      const data = JSON.parse(event.data) as FatalEventData;
+      closed = true;
+      setState((prev) => (isTerminal(prev.status) ? prev : { ...prev, status: "error", error: data.message }));
+      eventSource.close();
+    };
+
     eventSource.addEventListener("synthesis", onSynthesis);
     eventSource.addEventListener("token", onToken);
     eventSource.addEventListener("done", onDone);
     eventSource.addEventListener("error", onError);
+    eventSource.addEventListener("fatal", onFatal);
 
     return () => {
       eventSource.removeEventListener("synthesis", onSynthesis);
       eventSource.removeEventListener("token", onToken);
       eventSource.removeEventListener("done", onDone);
       eventSource.removeEventListener("error", onError);
+      eventSource.removeEventListener("fatal", onFatal);
       eventSource.close();
     };
   }, [sessionId]);
