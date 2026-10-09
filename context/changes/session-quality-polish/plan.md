@@ -326,32 +326,32 @@ No schema/data migration. Existing sessions replay unchanged (persisted text is 
 
 #### Automated
 
-- [x] 2.1 Lint passes
-- [x] 2.2 Type check passes
-- [x] 2.3 Build passes
-- [x] 2.4 No per-panel forward buttons remain in RoundTwoPanel/SynthesisPanel
+- [x] 2.1 Lint passes — 4e70e2d
+- [x] 2.2 Type check passes — 4e70e2d
+- [x] 2.3 Build passes — 4e70e2d
+- [x] 2.4 No per-panel forward buttons remain in RoundTwoPanel/SynthesisPanel — 4e70e2d
 
 #### Manual
 
-- [x] 2.5 Settled steps scroll the bar into view; instant under reduced motion
-- [x] 2.6 Revisit does not auto-scroll; NOWA DECYZJA + HISTORIA SESJI work
-- [x] 2.7 Keyboard walk-through and screen-reader status announcement
-- [x] 2.8 Bar layout correct at 375px and 1280px
+- [x] 2.5 Settled steps scroll the bar into view; instant under reduced motion — 4e70e2d
+- [x] 2.6 Revisit does not auto-scroll; NOWA DECYZJA + HISTORIA SESJI work — 4e70e2d
+- [x] 2.7 Keyboard walk-through and screen-reader status announcement — 4e70e2d
+- [x] 2.8 Bar layout correct at 375px and 1280px — 4e70e2d
 
 ### Phase 3: Density — fold finished rounds, argument toggle
 
 #### Automated
 
-- [ ] 3.1 Lint passes
-- [ ] 3.2 Type check passes
-- [ ] 3.3 Build passes
+- [x] 3.1 Lint passes
+- [x] 3.2 Type check passes
+- [x] 3.3 Build passes
 
 #### Manual
 
-- [ ] 3.4 Round 1 folds on round-2 start; expand reopens no stream
-- [ ] 3.5 Open side thread survives fold and expand
-- [ ] 3.6 ARGUMENTY toggle keyboard-accessible, collapsed by default
-- [ ] 3.7 Finished session on reload shows both rounds folded
+- [x] 3.4 Round 1 folds on round-2 start; expand reopens no stream
+- [x] 3.5 Open side thread survives fold and expand
+- [x] 3.6 ARGUMENTY toggle keyboard-accessible, collapsed by default
+- [x] 3.7 Finished session on reload shows both rounds folded
 
 ### Phase 4: Brevity — prompt caps and prose max_tokens
 

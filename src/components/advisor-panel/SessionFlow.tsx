@@ -7,7 +7,9 @@
  *
  * Phase 2 replaces the minimal inline action area with `StepActionBar` (full-width status + up to
  * two actions) and auto-scrolls it into view on live transitions — see the effect below for the
- * exact gate. Finished rounds stay mounted but are not visually folded yet (Phase 3).
+ * exact gate. Phase 3 folds round one once round two or synthesis starts, and round two once
+ * synthesis starts — `AdvisorPanel`/`RoundTwoPanel` receive `folded` and manage their own
+ * expand/collapse toggle, keeping both the compact summary and the full card grid mounted.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,54 +32,41 @@ interface SessionFlowProps {
   initialThreads: Record<string, { role: "user" | "advisor"; content: string }[]>;
 }
 
-interface ActionBarContent {
-  status: string;
-  primary?: Action;
-  secondary?: Action;
-}
+type ActionKind = "retry-round-one" | "start-round-two" | "start-synthesis" | "new-decision" | "history";
 
-interface ActionBarHandlers {
-  onRetryRoundOne: () => void;
-  onStartRoundTwo: () => void;
-  onStartSynthesis: () => void;
+interface ActionBarKinds {
+  status: string;
+  primaryKind?: ActionKind;
+  secondaryKind?: ActionKind;
 }
 
 const EMPTY_OUTCOME: RoundOutcome = { settled: false, scoredPersonaIds: [] };
 
-/** Maps the derived step to the status text + actions `StepActionBar` renders — kept out of
- * `session-flow.ts` so that module stays free of UI/Polish-string concerns. */
-function deriveActionBarContent(step: SessionStep, handlers: ActionBarHandlers): ActionBarContent {
+/**
+ * Maps the derived step to the status text + which actions `StepActionBar` should offer — kept
+ * free of the actual `onClick` handlers (and out of `session-flow.ts`, so that module stays free
+ * of UI/Polish-string concerns): `react-hooks/refs` flags passing a ref-touching closure as an
+ * argument into a plain function during render, so the handlers are attached afterward, in the
+ * component body, via plain object lookup rather than being threaded through this function.
+ */
+function deriveActionBarKinds(step: SessionStep): ActionBarKinds {
   switch (step.kind) {
     case "round-one-running":
       return { status: "Runda 1 w toku…" };
 
     case "round-one-failed":
-      return {
-        status: "Runda 1 nie powiodła się.",
-        primary: { label: "PONÓW", onClick: handlers.onRetryRoundOne },
-      };
+      return { status: "Runda 1 nie powiodła się.", primaryKind: "retry-round-one" };
 
     case "round-one-settled":
-      if (step.canRunRoundTwo) {
-        return {
-          status: "Runda 1 zakończona.",
-          primary: { label: "URUCHOM RUNDĘ 2", onClick: handlers.onStartRoundTwo },
-          secondary: { label: "ZAKOŃCZ SESJĘ", onClick: handlers.onStartSynthesis },
-        };
-      }
-      return {
-        status: "Runda 1 zakończona.",
-        primary: { label: "ZAKOŃCZ SESJĘ", onClick: handlers.onStartSynthesis },
-      };
+      return step.canRunRoundTwo
+        ? { status: "Runda 1 zakończona.", primaryKind: "start-round-two", secondaryKind: "start-synthesis" }
+        : { status: "Runda 1 zakończona.", primaryKind: "start-synthesis" };
 
     case "round-two-running":
       return { status: "Runda 2 w toku… synteza zablokowana." };
 
     case "round-two-settled":
-      return {
-        status: "Runda 2 zakończona.",
-        primary: { label: "ZAKOŃCZ SESJĘ", onClick: handlers.onStartSynthesis },
-      };
+      return { status: "Runda 2 zakończona.", primaryKind: "start-synthesis" };
 
     case "synthesis-running":
       return { status: "Synteza w toku…" };
@@ -86,15 +75,15 @@ function deriveActionBarContent(step: SessionStep, handlers: ActionBarHandlers):
       return { status: "Synteza nie powiodła się." };
 
     case "finished":
-      return {
-        status: "Sesja zakończona.",
-        primary: { label: "NOWA DECYZJA", href: "/sessions/new" },
-        secondary: { label: "HISTORIA SESJI", href: "/sessions" },
-      };
+      return { status: "Sesja zakończona.", primaryKind: "new-decision", secondaryKind: "history" };
   }
 }
 
-const RUNNING_STEP_KINDS = new Set<SessionStep["kind"]>(["round-one-running", "round-two-running", "synthesis-running"]);
+const RUNNING_STEP_KINDS = new Set<SessionStep["kind"]>([
+  "round-one-running",
+  "round-two-running",
+  "synthesis-running",
+]);
 
 export function SessionFlow({
   sessionId,
@@ -131,22 +120,22 @@ export function SessionFlow({
     [personas],
   );
 
-  const handleRoundOneRetry = () => {
+  const handleRoundOneRetry = useCallback(() => {
     userActedThisLoadRef.current = true;
     setRoundOneRetryKey((key) => key + 1);
     setRoundOneOutcome(EMPTY_OUTCOME);
     setRoundTwoParticipants(null);
-  };
+  }, []);
 
-  const handleStartRoundTwo = () => {
+  const handleStartRoundTwo = useCallback(() => {
     userActedThisLoadRef.current = true;
     setRoundTwoStarted(true);
-  };
+  }, []);
 
-  const handleStartSynthesis = () => {
+  const handleStartSynthesis = useCallback(() => {
     userActedThisLoadRef.current = true;
     setSynthesisStarted(true);
-  };
+  }, []);
 
   const step = deriveSessionStep({
     roundOne: roundOneOutcome,
@@ -185,9 +174,9 @@ export function SessionFlow({
       return;
     }
 
-    let reducedMotion = false;
+    let reducedMotion: boolean;
     try {
-      reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     } catch {
       reducedMotion = false;
     }
@@ -195,11 +184,19 @@ export function SessionFlow({
     node.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
   }, [step.kind, hasRoundOne]);
 
-  const { status, primary, secondary } = deriveActionBarContent(step, {
-    onRetryRoundOne: handleRoundOneRetry,
-    onStartRoundTwo: handleStartRoundTwo,
-    onStartSynthesis: handleStartSynthesis,
-  });
+  const { status, primaryKind, secondaryKind } = deriveActionBarKinds(step);
+
+  // Plain object lookup, not a function call passing the handlers along: `react-hooks/refs`
+  // flags a ref-touching closure passed as an argument into another function during render.
+  const actionByKind: Record<ActionKind, Action> = {
+    "retry-round-one": { label: "PONÓW", onClick: handleRoundOneRetry },
+    "start-round-two": { label: "URUCHOM RUNDĘ 2", onClick: handleStartRoundTwo },
+    "start-synthesis": { label: "ZAKOŃCZ SESJĘ", onClick: handleStartSynthesis },
+    "new-decision": { label: "NOWA DECYZJA", href: "/sessions/new" },
+    history: { label: "HISTORIA SESJI", href: "/sessions" },
+  };
+  const primary = primaryKind ? actionByKind[primaryKind] : undefined;
+  const secondary = secondaryKind ? actionByKind[secondaryKind] : undefined;
 
   return (
     <>
@@ -209,6 +206,7 @@ export function SessionFlow({
         personas={personas}
         initialThreads={initialThreads}
         onOutcome={handleRoundOneOutcome}
+        folded={roundTwoStarted || synthesisStarted}
       />
 
       {showRoundTwo && (
@@ -218,6 +216,7 @@ export function SessionFlow({
           started={roundTwoStarted}
           participantsReady={roundOneOutcome.settled}
           onOutcome={setRoundTwoOutcome}
+          folded={synthesisStarted}
         />
       )}
 

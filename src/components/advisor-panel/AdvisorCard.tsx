@@ -46,6 +46,7 @@ export function AdvisorCard({
   initialMessages,
 }: AdvisorCardProps) {
   const [threadOpen, setThreadOpen] = useState(false);
+  const [argumentsOpen, setArgumentsOpen] = useState(false);
 
   return (
     <article
@@ -101,11 +102,27 @@ export function AdvisorCard({
       </div>
 
       {state.arguments && state.arguments.length > 0 && (
-        <ul className="text-muted-foreground flex flex-col gap-1 text-xs">
-          {state.arguments.map((argument) => (
-            <li key={argument}>• {argument}</li>
-          ))}
-        </ul>
+        <div>
+          <button
+            type="button"
+            onClick={() => {
+              setArgumentsOpen((open) => !open);
+            }}
+            aria-expanded={argumentsOpen}
+            className={cn(
+              "pixel-btn font-pixel bg-secondary text-secondary-foreground hover:border-accent hover:bg-accent hover:text-accent-foreground px-4 py-2 text-[10px] transition-colors",
+            )}
+          >
+            ARGUMENTY ({state.arguments.length})
+          </button>
+          {argumentsOpen && (
+            <ul className="text-muted-foreground mt-2 flex flex-col gap-1 text-xs">
+              {state.arguments.map((argument) => (
+                <li key={argument}>• {argument}</li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       {state.status === "error" && (
