@@ -5,8 +5,6 @@
  * move — see `SessionFlow`'s auto-scroll effect) plus up to two actions.
  */
 
-import { cn } from "@/lib/utils";
-
 export type Action = { label: string } & ({ onClick: () => void } | { href: string });
 
 export interface StepActionBarProps {
@@ -45,8 +43,8 @@ export function StepActionBar({ status, primary, secondary }: StepActionBarProps
 
       {(primary ?? secondary) && (
         <div className="flex flex-col gap-3 sm:flex-row">
-          {secondary && <ActionButton action={secondary} className={cn(SECONDARY_CLASS)} />}
-          {primary && <ActionButton action={primary} className={cn(PRIMARY_CLASS)} />}
+          {secondary && <ActionButton action={secondary} className={SECONDARY_CLASS} />}
+          {primary && <ActionButton action={primary} className={PRIMARY_CLASS} />}
         </div>
       )}
     </div>

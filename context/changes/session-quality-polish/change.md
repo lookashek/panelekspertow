@@ -1,7 +1,7 @@
 ---
 change_id: session-quality-polish
 title: Session quality polish
-status: implemented
+status: impl_reviewed
 created: 2026-10-09
 updated: 2026-10-09
 archived_at: null
