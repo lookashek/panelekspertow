@@ -1,5 +1,8 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { StepIndicator } from "@/components/advisor-panel/StepIndicator";
+import { SubmitButton } from "@/components/auth/SubmitButton";
+import SessionList from "@/components/session-history/SessionList.astro";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -8,6 +11,8 @@ import { Alert, AlertTitle, AlertDescription, AlertAction } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import { panelVariants } from "@/components/ui/panel";
 import { headingVariants } from "@/components/ui/heading";
+import { LogIn } from "lucide-react";
+import type { Session } from "@/types/session";
 
 const isDev = import.meta.env.DEV;
 if (!isDev) {
@@ -28,6 +33,16 @@ const swatches: { role: string; className: string }[] = [
   { role: "advisor-3 (orange)", className: "bg-advisor-3" },
   { role: "advisor-4 (lilac)", className: "bg-advisor-4" },
 ];
+
+const mockSession: Session = {
+  id: "00000000-0000-0000-0000-000000000000",
+  userId: "00000000-0000-0000-0000-000000000000",
+  decision: "Czy powinienem przyjąć ofertę pracy w innym mieście?",
+  context: null,
+  status: "completed",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
 
 const typeScale: { role: string; className: string }[] = [
   { role: "micro label", className: "text-pixel-micro" },
@@ -182,6 +197,157 @@ const typeScale: { role: string; className: string }[] = [
           <p class={headingVariants({ level: "section" })}>Section heading</p>
           <p class={headingVariants({ level: "panel" })}>Panel heading</p>
           <p class={headingVariants({ level: "label" })}>Micro label</p>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-6">
+        <h2 class={headingVariants({ level: "section" })}>Matryca 7 stanów</h2>
+        <p class="text-sm text-muted-foreground">
+          Default / Hover / Focus-visible / Disabled / Error / Empty / Loading — każda komórka pokazana albo oznaczona
+          N/A z powodem. Hover/focus: najedź kursorem lub przejdź Tab, aby zobaczyć stan na żywo.
+        </p>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>Button</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Button>Default</Button></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1"><Button>Najedź</Button></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1"><Button>Tab</Button></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1"><Button disabled>Disabled</Button></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Button aria-invalid="true">Invalid</Button></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — przycisk zawsze ma treść</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — zob. SubmitButton poniżej (pending)</dd></div>
+          </dl>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>Field / Input</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Input placeholder="Tekst" /></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1"><Input placeholder="Najedź" /></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1"><Input placeholder="Tab" /></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1"><Input placeholder="Wyłączone" disabled /></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Input placeholder="Błąd" aria-invalid="true" /></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — puste pole = stan domyślny</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — pole nie ma własnego stanu ładowania</dd></div>
+          </dl>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>Badge</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Badge variant="neutral">Neutralny</Badge></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1 text-muted-foreground">N/A — Badge nie jest interaktywny</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1 text-muted-foreground">N/A — Badge nie jest interaktywny</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1 text-muted-foreground">N/A — Badge nie ma stanu wyłączonego</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Badge variant="destructive">Błąd</Badge></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — treść jest zawsze wymagana (kolor nigdy nie jest jedynym sygnałem)</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — zob. Skeleton</dd></div>
+          </dl>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>Alert</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Alert variant="info"><AlertDescription>Info</AlertDescription></Alert></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1 text-muted-foreground">N/A — interaktywność jest na przycisku akcji, nie na Alert</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1 text-muted-foreground">N/A — jak wyżej</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1 text-muted-foreground">N/A — Alert nie ma stanu wyłączonego</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Alert variant="error"><AlertDescription>Błąd</AlertDescription></Alert></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — Alert zawsze renderuje treść</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — stan ładowania pokazuje Skeleton, nie Alert</dd></div>
+          </dl>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>Skeleton</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT / LOADING</dt><dd class="mt-1"><Skeleton className="h-4 w-24" /></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">HOVER / FOCUS-VISIBLE / DISABLED / ERROR / EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — Skeleton ma tylko jeden stan (placeholder ładowania)</dd></div>
+          </dl>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>Panel</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><div class={panelVariants({ padding: "card" })}>Treść</div></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">HOVER / FOCUS-VISIBLE</dt><dd class="mt-1"><a href="#kitchen-sink" class={panelVariants({ padding: "card", interactive: true })}>Najedź / Tab</a></dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1 text-muted-foreground">N/A — Panel to kontener, nie kontrolka</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1 text-muted-foreground">N/A — brak dedykowanego tonu błędu; użyj Alert w panelu</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — stan pusty komponuje wywołujący (zob. SessionList)</dd></div>
+            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — stan ładowania komponuje wywołujący przez Skeleton (zob. RoundTwoPanel)</dd></div>
+          </dl>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>AdvisorCard</h3>
+          <p class="mt-2 text-sm text-muted-foreground">
+            N/A dla wszystkich 7 komórek — AdvisorCard zależy od żywego strumienia EventSource
+            (<code>usePanelStream</code>) i nie da się go sensownie zamontować statycznie bez aktywnej sesji. Zweryfikuj
+            wszystkie stany (pending/streaming/done/error, z i bez poprzedniego wyniku) na żywo na
+            <code>/sessions/[id]</code>.
+          </p>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>StepIndicator</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT (w toku) / LOADING (active)</dt>
+              <dd class="mt-1"><StepIndicator progress={{ roundOne: "active", roundTwo: "pending", synthesis: "pending" }} /></dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">ERROR (failed) / DONE + SKIPPED</dt>
+              <dd class="mt-1"><StepIndicator progress={{ roundOne: "failed", roundTwo: "skipped", synthesis: "pending" }} /></dd>
+            </div>
+          </dl>
+          <p class="mt-3 text-sm text-muted-foreground">
+            HOVER / FOCUS-VISIBLE / DISABLED / EMPTY: N/A — czysto prezentacyjny, nieinteraktywny; zawsze pokazuje 3 kroki.
+          </p>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>SessionList — pozycja listy</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-4 text-sm">
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT / HOVER / FOCUS-VISIBLE (najedź / Tab)</dt>
+              <dd class="mt-1 max-w-md"><SessionList sessions={[mockSession]} /></dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
+              <dd class="mt-1 max-w-md"><SessionList sessions={[]} /></dd>
+            </div>
+          </dl>
+          <p class="mt-3 text-sm text-muted-foreground">
+            DISABLED: N/A — pozycje to zwykłe linki. ERROR: N/A — stan błędu wczytywania żyje w stronie nadrzędnej
+            (sessions/index.astro), nie w SessionList. LOADING: N/A — lista jest renderowana po stronie serwera.
+          </p>
+        </div>
+
+        <div class={panelVariants({ padding: "card" })}>
+          <h3 class={headingVariants({ level: "panel" })}>SubmitButton (formularz auth)</h3>
+          <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT / HOVER / FOCUS-VISIBLE</dt>
+              <dd class="mt-1">
+                <SubmitButton pending={false} pendingText="Logowanie…" icon={<LogIn className="size-4" />}>
+                  Zaloguj się
+                </SubmitButton>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DISABLED + LOADING (pending)</dt>
+              <dd class="mt-1">
+                <SubmitButton pending={true} pendingText="Logowanie…" icon={<LogIn className="size-4" />}>
+                  Zaloguj się
+                </SubmitButton>
+              </dd>
+            </div>
+          </dl>
+          <p class="mt-3 text-sm text-muted-foreground">
+            ERROR: N/A — błędy pojawiają się przez ServerError/Alert nad przyciskiem, nie na przycisku samym. EMPTY:
+            N/A — przycisk zawsze ma treść.
+          </p>
         </div>
       </section>
     </div>

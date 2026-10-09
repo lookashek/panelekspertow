@@ -6,8 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Panel Ekspertów** — a web app where a user submits a decision/problem and a panel of LLM advisor personas debates it with forced
 divergence (isolated first-round opinions, numeric scores before rationale, attributed score changes in round two, synthesis with at least
-one axis of dispute). Product requirements: `@context/foundation/prd.md`; stack rationale: `@context/foundation/tech-stack.md`. The codebase
-is currently the untouched `10x-astro-starter` scaffold (auth flow only — no panel features yet).
+one axis of dispute). Product requirements: `@context/foundation/prd.md`; stack rationale: `@context/foundation/tech-stack.md`. Built out
+from the `10x-astro-starter` scaffold: auth flow, session history, the decision form, and the full advisor-panel/synthesis flow are in
+place, reskinned on a single "neon arcade on graphite" design-system contract (`.claude/rules/frontend.md` §4–6).
 
 `AGENTS.md` is a pointer to this file (Windows checkout can't materialize the symlink). This file is the single source of truth for agent
 rules.
@@ -18,9 +19,14 @@ rules.
 - `npm run build` — production build (SSR via `@astrojs/cloudflare`)
 - `npm run preview` — preview production build
 - `npm run lint` / `npm run lint:fix` — ESLint with type-checked rules
+- `npm run lint:ui` — dependency-free hardcoded-value scan (`scripts/ui-scan.mjs`) over `src/components/**` and `src/pages/**`; fails on
+  literal colours/arbitrary values in views (frontend.md §4). Wired into lint-staged and CI alongside `lint`.
 - `npm run format` — Prettier (astro + tailwindcss plugins)
 - `npm run smoke` — dependency-free auth-flow smoke test (`scripts/smoke.mjs`) against a running server; `BASE_URL` env, default
-  `http://localhost:4321`. Needs a reachable Supabase with email confirmation disabled. There is no unit test suite yet.
+  `http://localhost:4321`. Needs a reachable Supabase with email confirmation disabled.
+- `npm test` — Vitest unit tests (`src/**/*.test.ts`).
+- Dev-only kitchen sink at `/dev/kitchen-sink` (`npm run dev`, 404 in production) — every shared `src/components/ui/**` component and key
+  view components in their 7 states (default/hover/focus-visible/disabled/error/empty/loading or N/A with a reason).
 
 Pre-commit: husky + lint-staged runs `eslint --fix` on `*.{ts,tsx,astro}` and `prettier --write` on `*.{json,css,md}`.
 
@@ -71,8 +77,8 @@ Factory, Result, Pipeline) and the ones that are not (DI containers, event buses
 
 - Node v22.14.0 (`.nvmrc`). Setup, Supabase config, and deploy steps: `@README.md`. The one split the README scatters: Node/Supabase CLI
   reads secrets from `.env`, Cloudflare local dev reads `.dev.vars` (gitignored) — keep both in sync.
-- CI (`.github/workflows/ci.yml`): lint + `astro check` + build on push/PR, plus a smoke job that boots a local Supabase and runs
-  `npm run smoke` against the production preview.
+- CI (`.github/workflows/ci.yml`): lint + `lint:ui` + `astro check` + build on push/PR, plus a smoke job that boots a local Supabase and
+  runs `npm run smoke` against the production preview.
 
 ## Foundation docs (10xDevs workflow)
 

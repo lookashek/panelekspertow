@@ -1,5 +1,6 @@
 ---
 import { buttonVariants } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 
 const { user } = Astro.locals;
@@ -16,7 +17,7 @@ const linkClass = (href: string) =>
   );
 ---
 
-<div class="pixel-panel mb-4 flex flex-wrap items-center justify-between gap-3 px-4 py-2 text-sm">
+<div class={cn(panelVariants({ padding: "none" }), "mb-4 flex flex-wrap items-center justify-between gap-3 px-4 py-2 text-sm")}>
   <a href="/" class="font-pixel text-pixel-sm shrink-0 uppercase tracking-wide text-foreground hover:text-primary">
     Panel Ekspertów
   </a>

@@ -144,7 +144,7 @@
 }
 
 @theme inline {
-  /* Pixel aesthetic: sharp corners everywhere, no rounded-* (frontend.md §5) */
+  /* Pixel aesthetic: sharp corners everywhere — radius tokens stay 0 (frontend.md §5) */
   --radius-sm: 0;
   --radius-md: 0;
   --radius-lg: 0;
@@ -228,30 +228,6 @@
   }
   body {
     @apply bg-background font-mono text-foreground;
-  }
-}
-
-@layer components {
-  /*
-   * Legacy pixel helpers — repointed to neutral structure per the semantics table.
-   * Migration note (S-08 ui-visual-refactor): deleted in Phase 9 once no view uses them; never add new uses.
-   */
-  .pixel-panel {
-    border: 2px solid var(--border);
-    background-color: var(--card);
-    box-shadow: var(--shadow-pixel);
-  }
-  .pixel-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: 2px solid var(--border);
-    box-shadow: var(--shadow-pixel);
-  }
-  .pixel-btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: none;
   }
 }
 

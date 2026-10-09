@@ -833,9 +833,9 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 8.1 `npm run lint` and `npm run build` pass
-- [x] 8.2 Hardcoded-value scan on `src/pages/auth/**`, `dashboard.astro`, `src/components/auth/**` returns 0 hits
-- [x] 8.3 `grep -rn "bg-cosmic\|useFormStatus\|backdrop-blur" src/` returns 0 hits
+- [x] 8.1 `npm run lint` and `npm run build` pass — 06a73cd
+- [x] 8.2 Hardcoded-value scan on `src/pages/auth/**`, `dashboard.astro`, `src/components/auth/**` returns 0 hits — 06a73cd
+- [x] 8.3 `grep -rn "bg-cosmic\|useFormStatus\|backdrop-blur" src/` returns 0 hits — 06a73cd
 - [ ] 8.4 `npm run smoke` passes against a running server — SKIPPED: local Supabase (Docker) not running in this environment; preflight-flagged. Run manually: `supabase start && npm run smoke`.
 
 #### Manual
@@ -849,9 +849,9 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 9.1 `npm run lint`, `npm run lint:ui`, `npm run build`, `npm test` pass
-- [ ] 9.2 `grep -rn "pixel-panel\|pixel-btn\|bg-pixel-grid\|rounded-" src/` returns 0 hits
-- [ ] 9.3 `.claude/rules/backend.md` exists; `grep -n "b388ff\|Press Start\|Migration note" .claude/rules/frontend.md` returns 0
+- [x] 9.1 `npm run lint`, `npm run lint:ui`, `npm run build`, `npm test` pass
+- [x] 9.2 `grep -rn "pixel-panel\|pixel-btn\|bg-pixel-grid\|rounded-" src/` returns 0 hits
+- [x] 9.3 `.claude/rules/backend.md` exists; `grep -n "b388ff\|Press Start\|Migration note" .claude/rules/frontend.md` returns 0
 
 #### Manual
 

@@ -57,14 +57,13 @@ src/components/
 - Page widths: the shared container (`narrow` forms/auth, `default` lists, `wide` session/landing) — no per-page `max-w-*` inventions.
 - Responsive: mobile-first (`sm:` up). Test at 375px and 1280px.
 - **Visual gate:** every shared component and its 7 states live on the dev-only kitchen sink, `src/pages/dev/kitchen-sink.astro` (`/dev/kitchen-sink`). A new or changed shared component is added there in the same change.
-- *Migration note (S-08 `ui-visual-refactor`, remove when Phase 9 lands):* legacy `.pixel-panel`, `.pixel-btn` and `bg-pixel-grid` still exist while views are migrated — never add new uses.
 
 ## 5. Design language — "neon arcade on graphite" (single dark theme)
 
 - The app has ONE visual style: modern 8-bit arcade — neutral graphite surfaces, multicolour neon accents. No light mode, no theme toggle. Final values and contrast table: `context/changes/ui-visual-refactor/palette.md` (archived with the change).
 - Palette roles (tokens in `global.css`, never hardcoded) and their fixed meaning:
 
-  | Role | Token(s) | Baseline | Meaning — use only for |
+  | Role | Token(s) | Value | Meaning — use only for |
   |---|---|---|---|
   | Surfaces | `background`, `card`, `secondary`/`muted` | graphite `#12141c` / `#1b1e2a` / `#252a3a` | page, panels, insets |
   | Text | `foreground`, `muted-foreground` | `#eef0f6` / `#9aa3b8` | body, secondary text |

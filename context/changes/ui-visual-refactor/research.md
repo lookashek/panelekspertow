@@ -305,7 +305,8 @@ Several rules in `frontend.md` §5 contradict the shipped helpers: the `.pixel-p
 Input for `/10x-plan` (per /10x-ui). Scope is the whole app (user decision, see `change.md`). Every charge must map to a plan
 phase or stay here marked **deferred** with a reason. Line numbers are as of `2a024b2`; re-verify before editing.
 
-**C1 — Missing tokens: two visual systems (starter "cosmic glass" vs pixel-retro).**
+**C1 — Missing tokens: two visual systems (starter "cosmic glass" vs pixel-retro). Addressed: Phase 1 (tokens), Phase 8 (`/auth/*`,
+`/dashboard` migrated off `bg-cosmic`/`rounded-2xl`/`backdrop-blur-xl`/`text-purple-300`).**
 - Evidence: `src/pages/auth/signin.astro:9-17`, `signup.astro:9-17`, `confirm-email.astro:22-29`, `dashboard.astro:8-16`
   (palette classes `from-blue-200 to-purple-200`, `text-purple-300`, `rounded-2xl`, `backdrop-blur-xl`, undefined `bg-cosmic`);
   `src/components/auth/FormField.tsx:6,37,41,53,59`, `SubmitButton.tsx:18,22`, `ServerError.tsx:11`;
@@ -315,7 +316,9 @@ phase or stay here marked **deferred** with a reason. Line numbers are as of `2a
 - User effect: signing in looks like a different product from the app behind it, and the page background silently renders
   nothing (`bg-cosmic` is defined nowhere).
 
-**C2 — Missing tokens: the pixel layer has no names for what it repeats.**
+**C2 — Missing tokens: the pixel layer has no names for what it repeats. Addressed: Phase 1 (pixel type scale, `--shadow-pixel`,
+`success`/`warning`/`info` + foregrounds), Phase 2 (`panelVariants` padding/tone replaces the padding/callout recipes), Phase 4–7
+(call sites migrated off the arbitrary-value classes).**
 - Evidence: micro type `text-[10px]` ×9 (`AdvisorCard.tsx:88,113,145`, `RoundSummary.tsx:41,55`, `SynthesisPanel.tsx:38,126`,
   `SideThread.tsx:57,84`), `text-[9px]` `SideThread.tsx:48`, `text-[0.6rem]` `SessionList.astro:47`, `text-[0.65rem]`
   `Welcome.astro:144`; hard shadow duplicated `global.css:163,171`; status colours improvised (`SynthesisPanel.tsx:24-26`,
@@ -326,7 +329,8 @@ phase or stay here marked **deferred** with a reason. Line numbers are as of `2a
 - User effect: labels jump between four tiny sizes and "warning"/"risk" colours mean different things on different screens,
   so the user can't learn the visual language.
 
-**C3 — Missing shared component: Button.**
+**C3 — Missing shared component: Button. Addressed: Phase 2 (pixel look baked into `buttonVariants`, `focus-visible` ring), all
+view phases (4–8, every raw `.pixel-btn`/private `ActionButton` call site migrated to `Button`/`buttonVariants`).**
 - Evidence: `src/components/ui/button.tsx:7-33` has no pixel variant; primary pixel-button recipe copied 7× (`StepActionBar.tsx:16-17`,
   `DecisionForm.tsx:117`, `Welcome.astro:161,172`, `SessionList.astro:28`, `dashboard.astro:20`, `[id].astro:72`), secondary
   3 recipes, small secondary 4×; `DecisionForm.tsx:113-118` forces the look onto `<Button>` via className (fights `h-9`,
@@ -336,7 +340,9 @@ phase or stay here marked **deferred** with a reason. Line numbers are as of `2a
 - User effect: keyboard users get no visible focus on any raw `.pixel-btn` action (most of the app), and same-rank buttons
   differ in size and hover from screen to screen.
 
-**C4 — Missing shared components: Panel, Badge, Heading, Field, ErrorMessage, Skeleton.**
+**C4 — Missing shared components: Panel, Badge, Heading, Field, ErrorMessage, Skeleton. Addressed: Phase 2 (`panelVariants`,
+`headingVariants`, `Field`, `Badge`, `Alert`, `Skeleton` added; dead `LibBadge.astro` deleted), Phase 9 (legacy `.pixel-panel`/
+`.pixel-btn` helpers removed from `global.css` once no caller remained).**
 - Evidence: `.pixel-panel` in 5 padding/width recipes; bordered tag implemented twice with two colour maps
   (`SessionList.astro:16-19,47`, `SynthesisPanel.tsx:23-27,126`, the latter via template string); 4 heading recipes + off-system
   `Welcome.astro:199`; 3 unrelated field recipes (`auth/FormField.tsx`, `DecisionForm.tsx:75-98` 1px shadcn, `SideThread.tsx:66-79`
@@ -345,7 +351,9 @@ phase or stay here marked **deferred** with a reason. Line numbers are as of `2a
 - User effect: an error looks different on every screen (sometimes just grey text), and form fields change border weight
   between the new-decision form and the side thread.
 
-**C5 — Accidental architecture: shell, entry points and dead states.**
+**C5 — Accidental architecture: shell, entry points and dead states. Addressed: Phase 3 (Topbar home link + active state +
+wrapping, aligned container), Phase 8 (`/dashboard` reskinned + translated, `useFormStatus` pending-state fix via
+`useSubmittingState`), Phase 1 (`motion-safe:animate-blink` registered as a real utility).**
 - Evidence: `/dashboard` is still the starter page in English and only duplicates Topbar links (`dashboard.astro:13-29`);
   Topbar is one non-wrapping row with email + 4 links and no mobile handling, no home link, no active state
   (`Topbar.astro:5-35`), and its wrapper doesn't align with page content (`Layout.astro:27`); `motion-safe:animate-blink` is a
@@ -354,15 +362,18 @@ phase or stay here marked **deferred** with a reason. Line numbers are as of `2a
 - User effect: after login the user lands on a redundant English page; at 375px the top bar overflows; while advisors are
   thinking the "waiting" label is static and the sign-in button gives no feedback, so the app looks frozen.
 
-**Layout / hierarchy (judge after C1–C4 land, in the review loop — not a charge yet):** Round 1 has no h2
-(`AdvisorPanel.tsx:38`); synthesis core content at `text-xs` (`SynthesisPanel.tsx:93,109,124`); narrative has no max line
-length; inverted emphasis thesis vs prose (`AdvisorCard.tsx:85,99`); 5 page widths; no active-step indicator.
+**Layout / hierarchy — partially addressed.** Round 1 h2 and the 3-step active-step indicator shipped in Phase 4
+(`StepIndicator`, `deriveStepProgress`); page widths collapsed to 3 (`containerVariants`, Phase 3). Declined in planning (see
+`plan.md` "What We're NOT Doing") and left deferred to the review loop: synthesis core content still at `text-xs`, no max
+narrative line length, the thesis/prose emphasis inversion (`AdvisorCard.tsx`) — revisit only if it hurts in practice.
 
 **Deferred**
-- " (bez zmian)" announced for round-1 cards (`AdvisorCard.tsx:76-77`) — copy/a11y, not visual; separate fix.
-- Markdown / newline rendering of LLM output — needs a check of real output first; not decidable from code.
-- Translating auth/dashboard copy to Polish and deciding what `/dashboard` is for — content/product change, FR-012 says
-  "no functional change"; plan must decide in or out explicitly.
+- " (bez zmian)" SR announcement for round-1 cards — **fixed in Phase 4** (no delta rendered when there's no previous score),
+  not actually deferred; recorded here for traceability.
+- Markdown / newline rendering of LLM output — declined; needs a check of real output first, not decided in this change.
+- Raising synthesis/argument text off `text-xs`, capping narrative line length, the thesis/prose emphasis inversion, promoting
+  the decision text into the `/sessions/[id]` h1 — all declined at planning time (user decision, `plan.md` "What We're NOT
+  Doing"); revisit in the review loop if any of them hurts in practice.
 
 ## Open Questions
 

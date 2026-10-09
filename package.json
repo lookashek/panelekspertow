@@ -9,6 +9,7 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:ui": "node scripts/ui-scan.mjs",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
     "smoke:advisor": "node scripts/advisor-smoke.mjs",
@@ -67,6 +68,9 @@
   "lint-staged": {
     "*.{ts,tsx,astro}": [
       "eslint --fix"
+    ],
+    "src/{components,pages}/**/*.{tsx,astro}": [
+      "node scripts/ui-scan.mjs"
     ],
     "*.{json,css,md}": [
       "prettier --write"
