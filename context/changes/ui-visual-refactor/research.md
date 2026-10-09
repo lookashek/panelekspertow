@@ -300,6 +300,70 @@ Several rules in `frontend.md` §5 contradict the shipped helpers: the `.pixel-p
 
 - `context/changes/session-quality-polish/research.md` — S-07, covers the `AdvisorCard`/`SynthesisPanel` density and end-of-session CTA that this slice will restyle.
 
+## Charges
+
+Input for `/10x-plan` (per /10x-ui). Scope is the whole app (user decision, see `change.md`). Every charge must map to a plan
+phase or stay here marked **deferred** with a reason. Line numbers are as of `2a024b2`; re-verify before editing.
+
+**C1 — Missing tokens: two visual systems (starter "cosmic glass" vs pixel-retro).**
+- Evidence: `src/pages/auth/signin.astro:9-17`, `signup.astro:9-17`, `confirm-email.astro:22-29`, `dashboard.astro:8-16`
+  (palette classes `from-blue-200 to-purple-200`, `text-purple-300`, `rounded-2xl`, `backdrop-blur-xl`, undefined `bg-cosmic`);
+  `src/components/auth/FormField.tsx:6,37,41,53,59`, `SubmitButton.tsx:18,22`, `ServerError.tsx:11`;
+  `src/components/Banner.astro:20,28-40` (9 hex literals, 1px border).
+- Should be covered by: existing `global.css` roles (`background`, `card`, `primary`, `accent`, `destructive`, `border`) +
+  `.pixel-panel`.
+- User effect: signing in looks like a different product from the app behind it, and the page background silently renders
+  nothing (`bg-cosmic` is defined nowhere).
+
+**C2 — Missing tokens: the pixel layer has no names for what it repeats.**
+- Evidence: micro type `text-[10px]` ×9 (`AdvisorCard.tsx:88,113,145`, `RoundSummary.tsx:41,55`, `SynthesisPanel.tsx:38,126`,
+  `SideThread.tsx:57,84`), `text-[9px]` `SideThread.tsx:48`, `text-[0.6rem]` `SessionList.astro:47`, `text-[0.65rem]`
+  `Welcome.astro:144`; hard shadow duplicated `global.css:163,171`; status colours improvised (`SynthesisPanel.tsx:24-26`,
+  `SessionList.astro:18`, `DecisionForm.tsx:101`); tinted callouts `accent/10`, `primary/10` (+`/30`,`/40`,`/50`) at
+  `AdvisorCard.tsx:87,137`, `SynthesisPanel.tsx:103,139`, `SideThread.tsx:35,44,45,78`.
+- Should be covered by: new tokens in `global.css` — pixel type scale (≥ micro label), `--shadow-pixel`, status
+  `success`/`warning`/`info` (+ foregrounds), callout surface(s), panel padding scale.
+- User effect: labels jump between four tiny sizes and "warning"/"risk" colours mean different things on different screens,
+  so the user can't learn the visual language.
+
+**C3 — Missing shared component: Button.**
+- Evidence: `src/components/ui/button.tsx:7-33` has no pixel variant; primary pixel-button recipe copied 7× (`StepActionBar.tsx:16-17`,
+  `DecisionForm.tsx:117`, `Welcome.astro:161,172`, `SessionList.astro:28`, `dashboard.astro:20`, `[id].astro:72`), secondary
+  3 recipes, small secondary 4×; `DecisionForm.tsx:113-118` forces the look onto `<Button>` via className (fights `h-9`,
+  `shadow-xs`); `StepActionBar.tsx:21-35` private `ActionButton`.
+- Fix: pixel `variant`/`size` in `buttonVariants` (usable from `.astro` as `class={buttonVariants(...)}`). S-07 handed this here
+  (`context/changes/session-quality-polish/plan.md:42`).
+- User effect: keyboard users get no visible focus on any raw `.pixel-btn` action (most of the app), and same-rank buttons
+  differ in size and hover from screen to screen.
+
+**C4 — Missing shared components: Panel, Badge, Heading, Field, ErrorMessage, Skeleton.**
+- Evidence: `.pixel-panel` in 5 padding/width recipes; bordered tag implemented twice with two colour maps
+  (`SessionList.astro:16-19,47`, `SynthesisPanel.tsx:23-27,126`, the latter via template string); 4 heading recipes + off-system
+  `Welcome.astro:199`; 3 unrelated field recipes (`auth/FormField.tsx`, `DecisionForm.tsx:75-98` 1px shadcn, `SideThread.tsx:66-79`
+  2px bespoke); 6 error recipes; 0 skeletons; dead `ui/LibBadge.astro`.
+- Fix: `cva` variants on shadcn primitives (`npx shadcn@latest add badge skeleton` etc.) + small local wrappers where needed.
+- User effect: an error looks different on every screen (sometimes just grey text), and form fields change border weight
+  between the new-decision form and the side thread.
+
+**C5 — Accidental architecture: shell, entry points and dead states.**
+- Evidence: `/dashboard` is still the starter page in English and only duplicates Topbar links (`dashboard.astro:13-29`);
+  Topbar is one non-wrapping row with email + 4 links and no mobile handling, no home link, no active state
+  (`Topbar.astro:5-35`), and its wrapper doesn't align with page content (`Layout.astro:27`); `motion-safe:animate-blink` is a
+  no-op (`AdvisorCard.tsx:61`, `RoundTwoPanel.tsx:118`, `SynthesisPanel.tsx:68`, `SideThread.tsx:57` vs `global.css:199-206`);
+  auth spinner driven by `useFormStatus` never fires on native form POST (`SubmitButton.tsx:12,22`).
+- User effect: after login the user lands on a redundant English page; at 375px the top bar overflows; while advisors are
+  thinking the "waiting" label is static and the sign-in button gives no feedback, so the app looks frozen.
+
+**Layout / hierarchy (judge after C1–C4 land, in the review loop — not a charge yet):** Round 1 has no h2
+(`AdvisorPanel.tsx:38`); synthesis core content at `text-xs` (`SynthesisPanel.tsx:93,109,124`); narrative has no max line
+length; inverted emphasis thesis vs prose (`AdvisorCard.tsx:85,99`); 5 page widths; no active-step indicator.
+
+**Deferred**
+- " (bez zmian)" announced for round-1 cards (`AdvisorCard.tsx:76-77`) — copy/a11y, not visual; separate fix.
+- Markdown / newline rendering of LLM output — needs a check of real output first; not decidable from code.
+- Translating auth/dashboard copy to Polish and deciding what `/dashboard` is for — content/product change, FR-012 says
+  "no functional change"; plan must decide in or out explicitly.
+
 ## Open Questions
 
 These are product and design choices for `/10x-plan`. None is a missing fact.

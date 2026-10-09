@@ -51,7 +51,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | done |
 | S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | planning |
 | S-07  | session-quality-polish  | otrzymać zwięzłe opinie doradców i jasną akcję po zakończeniu sesji | S-03        | FR-011                            | in-progress |
-| S-08  | ui-visual-refactor      | korzystać z wizualnie spójnego, odświeżonego UI na całej aplikacji | S-01          | FR-012                            | planning |
+| S-08  | ui-visual-refactor      | korzystać z wizualnie spójnego, odświeżonego UI na całej aplikacji | S-01          | FR-012                            | in-progress |
 
 ## Streams
 
