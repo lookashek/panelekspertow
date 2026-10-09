@@ -750,12 +750,12 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 2.1 `npm run lint` and `npm run build` pass
-- [x] 2.2 `npm test` passes, including the new `advisor-accent` test (known ids + fallback)
-- [x] 2.3 Hardcoded-value scan on `src/components/ui/**` returns 0 hits
-- [x] 2.4 `grep -rn "rounded-\|shadow-xs\|dark:" src/components/ui/` returns 0 hits
-- [x] 2.5 `src/components/ui/LibBadge.astro` no longer exists
-- [x] 2.6 Production build: `/dev/kitchen-sink` returns 404 (`npm run preview` + request)
+- [x] 2.1 `npm run lint` and `npm run build` pass — 4e23d33
+- [x] 2.2 `npm test` passes, including the new `advisor-accent` test (known ids + fallback) — 4e23d33
+- [x] 2.3 Hardcoded-value scan on `src/components/ui/**` returns 0 hits — 4e23d33
+- [x] 2.4 `grep -rn "rounded-\|shadow-xs\|dark:" src/components/ui/` returns 0 hits — 4e23d33
+- [x] 2.5 `src/components/ui/LibBadge.astro` no longer exists — 4e23d33
+- [x] 2.6 Production build: `/dev/kitchen-sink` returns 404 (`npm run preview` + request) — 4e23d33
 
 #### Manual
 
@@ -766,8 +766,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` and `npm run build` pass
-- [ ] 3.2 Hardcoded-value scan on `Layout.astro`, `Topbar.astro`, `Banner.astro` returns 0 hits
+- [x] 3.1 `npm run lint` and `npm run build` pass
+- [x] 3.2 Hardcoded-value scan on `Layout.astro`, `Topbar.astro`, `Banner.astro` returns 0 hits
 
 #### Manual
 

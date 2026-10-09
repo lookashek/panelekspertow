@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
 import Topbar from "@/components/Topbar.astro";
+import { containerVariants } from "@/components/layout/container";
 import { missingConfigs } from "@/lib/config-status";
 import pixelFontLatin from "@/assets/fonts/silkscreen-latin-400.woff2?url";
 import pixelFontLatinExt from "@/assets/fonts/silkscreen-latin-ext-400.woff2?url";
@@ -23,9 +24,11 @@ const { title = "Panel Ekspertów" } = Astro.props;
     <link rel="preload" href={pixelFontLatinExt} as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
   </head>
-  <body>
-    <div class="p-4 pb-0 sm:p-8 sm:pb-0">
-      <Topbar />
+  <body class="flex min-h-screen flex-col bg-background">
+    <div class={containerVariants({ width: "default" })}>
+      <div class="pt-4 sm:pt-8">
+        <Topbar />
+      </div>
     </div>
     {missingConfigs.map((cfg) => (
       <Banner variant="error">
