@@ -56,6 +56,8 @@ function isTerminal(state: PersonaViewState): boolean {
   return state.status === "done" || state.status === "error";
 }
 
+const CONNECTION_ERROR_MESSAGE = "Połączenie zostało przerwane.";
+
 export function usePanelStream(
   sessionId: string,
   personaIds: string[],
@@ -127,9 +129,25 @@ export function usePanelStream(
 
     // "error" is a reserved EventSource event type: it fires both for our server-sent named
     // `event: error` frames (a MessageEvent with `.data`) AND for underlying connection failures
-    // (a plain Event with no `.data`). Only the former carries a parseable payload.
+    // (a plain Event with no `.data`). Only the former carries a parseable payload; a payload-less
+    // error with `readyState === CLOSED` is a fatal connection failure (CONNECTING means the
+    // browser is auto-reconnecting a transient drop, not fatal) — settle every non-terminal
+    // persona as errored so the round doesn't hang.
     const onError = (event: Event) => {
       if (!("data" in event) || typeof event.data !== "string") {
+        if (!closed && eventSource.readyState === EventSource.CLOSED) {
+          closed = true;
+          setState((prev) => {
+            const next = { ...prev };
+            for (const id of personaIds) {
+              if (!isTerminal(next[id])) {
+                next[id] = { ...next[id], status: "error" as const, error: CONNECTION_ERROR_MESSAGE };
+              }
+            }
+            return next;
+          });
+          eventSource.close();
+        }
         return;
       }
       const data = JSON.parse(event.data) as ErrorEventData;

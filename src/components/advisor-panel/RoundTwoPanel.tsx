@@ -1,27 +1,50 @@
 /**
- * Round-two trigger + panel (frontend.md §1/§3) — the streaming child that calls
- * `usePanelStream(..., 2)` is not mounted until the user activates it, so no round-two
- * `EventSource` opens (and no LLM cost is incurred) before then. `hasRoundTwo` mounts the
- * streaming child immediately instead (page reload with already-persisted round-two rows — the
- * replay path has no LLM cost either).
+ * Round-two panel (frontend.md §1/§3) — `SessionFlow` owns the "started" decision and the trigger
+ * button now (session-quality-polish Phase 1); this component only decides when it is safe to
+ * mount the streaming child. `RoundTwoStream` (which opens the round-two `EventSource`) is not
+ * mounted until both `started` is true AND `participantsReady` is true — round one's live
+ * participant derivation must settle first, even on a reload where `started` is true from the
+ * first render (replayed round-two rows have no LLM cost, but racing round one's replay stream
+ * would freeze `usePanelStream`'s persona list before it is known).
  */
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { AdvisorCard } from "@/components/advisor-panel/AdvisorCard";
 import { usePanelStream } from "@/components/advisor-panel/usePanelStream";
+import type { RoundOutcome } from "@/lib/session-flow";
 
 interface RoundTwoPanelProps {
   sessionId: string;
   personas: { id: string; label: string }[];
-  available: boolean;
-  hasRoundTwo: boolean;
+  started: boolean;
+  participantsReady: boolean;
+  onOutcome: (outcome: RoundOutcome) => void;
 }
 
-function RoundTwoStream({ sessionId, personas }: { sessionId: string; personas: { id: string; label: string }[] }) {
-  const personaIds = personas.map((persona) => persona.id);
+function RoundTwoStream({
+  sessionId,
+  personas,
+  onOutcome,
+}: {
+  sessionId: string;
+  personas: { id: string; label: string }[];
+  onOutcome: (outcome: RoundOutcome) => void;
+}) {
+  const personaIds = useMemo(() => personas.map((persona) => persona.id), [personas]);
   const state = usePanelStream(sessionId, personaIds, 2);
-  const labelById = new Map(personas.map((persona) => [persona.id, persona.label]));
+  const labelById = useMemo(() => new Map(personas.map((persona) => [persona.id, persona.label])), [personas]);
+  const settled = personaIds.every((id) => state[id].status === "done" || state[id].status === "error");
+  const reportedRef = useRef(false);
+
+  useEffect(() => {
+    if (!settled || reportedRef.current) {
+      return;
+    }
+    reportedRef.current = true;
+    const scoredPersonaIds = personaIds.filter((id) => state[id].score !== undefined);
+    onOutcome({ settled: true, scoredPersonaIds });
+  }, [settled, personaIds, state, onOutcome]);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -44,28 +67,20 @@ function RoundTwoStream({ sessionId, personas }: { sessionId: string; personas: 
   );
 }
 
-export function RoundTwoPanel({ sessionId, personas, available, hasRoundTwo }: RoundTwoPanelProps) {
-  const [started, setStarted] = useState(hasRoundTwo);
-
-  if (!available) {
+export function RoundTwoPanel({ sessionId, personas, started, participantsReady, onOutcome }: RoundTwoPanelProps) {
+  if (!started) {
     return null;
   }
 
   return (
     <section className="mt-8 flex flex-col gap-4">
       <h2 className="font-pixel text-accent text-sm sm:text-base">RUNDA 2</h2>
-      {started ? (
-        <RoundTwoStream sessionId={sessionId} personas={personas} />
+      {participantsReady ? (
+        <RoundTwoStream sessionId={sessionId} personas={personas} onOutcome={onOutcome} />
       ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setStarted(true);
-          }}
-          className="pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent self-start px-6 py-4 text-xs transition-colors"
-        >
-          URUCHOM RUNDĘ 2
-        </button>
+        <div className="pixel-panel p-4 sm:p-5">
+          <span className="motion-safe:animate-blink text-muted-foreground text-xs">Przygotowywanie rundy 2…</span>
+        </div>
       )}
     </section>
   );

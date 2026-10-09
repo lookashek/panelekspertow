@@ -29,6 +29,8 @@ function isTerminal(status: SynthesisViewState["status"]): boolean {
   return status === "done" || status === "error";
 }
 
+const CONNECTION_ERROR_MESSAGE = "Połączenie zostało przerwane.";
+
 export function useSynthesisStream(sessionId: string): SynthesisViewState {
   const [state, setState] = useState<SynthesisViewState>({ status: "pending", narrative: "" });
 
@@ -59,9 +61,19 @@ export function useSynthesisStream(sessionId: string): SynthesisViewState {
 
     // "error" is a reserved EventSource event type: it fires both for our server-sent named
     // `event: error` frames (a MessageEvent with `.data`) AND for underlying connection failures
-    // (a plain Event with no `.data`). Only the former carries a parseable payload.
+    // (a plain Event with no `.data`). Only the former carries a parseable payload; a payload-less
+    // error with `readyState === CLOSED` is a fatal connection failure (CONNECTING means the
+    // browser is auto-reconnecting a transient drop, not fatal) — settle the stream as errored so
+    // it doesn't hang.
     const onError = (event: Event) => {
       if (!("data" in event) || typeof event.data !== "string") {
+        if (!closed && eventSource.readyState === EventSource.CLOSED) {
+          setState((prev) =>
+            isTerminal(prev.status) ? prev : { ...prev, status: "error", error: CONNECTION_ERROR_MESSAGE },
+          );
+          closed = true;
+          eventSource.close();
+        }
         return;
       }
       const data = JSON.parse(event.data) as ErrorEventData;

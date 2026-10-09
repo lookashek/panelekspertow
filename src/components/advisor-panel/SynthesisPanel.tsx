@@ -1,20 +1,21 @@
 /**
- * Synthesis trigger + panel (frontend.md §1/§3) — mirrors `RoundTwoPanel`'s gating pattern: the
- * streaming child that calls `useSynthesisStream` is not mounted until the user activates it, so no
- * `EventSource` opens (and no LLM cost is incurred) before then. `hasSynthesis` mounts the streaming
- * child immediately instead (page reload with an already-persisted synthesis — the replay path has
- * no LLM cost either).
+ * Synthesis panel (frontend.md §1/§3) — `SessionFlow` owns the "started" decision and the trigger
+ * button, and renders the "NOWA DECYZJA" follow-up once the session is finished
+ * (session-quality-polish Phase 1). This component keeps its own retry (`PONÓW`) for stream
+ * errors — a retry only needs to remount this panel's own stream, not the whole flow — and reports
+ * status transitions upward via `onStatus` so `deriveSessionStep` can see them.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useSynthesisStream } from "@/components/advisor-panel/useSynthesisStream";
+import type { SynthesisStreamStatus } from "@/lib/session-flow";
 import type { Risk } from "@/lib/schemas/synthesis";
 
 interface SynthesisPanelProps {
   sessionId: string;
-  available: boolean;
-  hasSynthesis: boolean;
+  started: boolean;
+  onStatus: (status: SynthesisStreamStatus) => void;
 }
 
 const RISK_WEIGHT_ORDER: Record<Risk["weight"], number> = { high: 0, medium: 1, low: 2 };
@@ -41,8 +42,25 @@ function RetryButton({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function SynthesisStream({ sessionId, onRetry }: { sessionId: string; onRetry: () => void }) {
+function SynthesisStream({
+  sessionId,
+  onRetry,
+  onStatus,
+}: {
+  sessionId: string;
+  onRetry: () => void;
+  onStatus: (status: SynthesisStreamStatus) => void;
+}) {
   const state = useSynthesisStream(sessionId);
+  const reportedStatusRef = useRef<SynthesisStreamStatus | null>(null);
+
+  useEffect(() => {
+    if (reportedStatusRef.current === state.status) {
+      return;
+    }
+    reportedStatusRef.current = state.status;
+    onStatus(state.status);
+  }, [state.status, onStatus]);
 
   if (state.status === "pending") {
     return (
@@ -141,49 +159,28 @@ function SynthesisStream({ sessionId, onRetry }: { sessionId: string; onRetry: (
           <RetryButton onRetry={onRetry} />
         </div>
       )}
-
-      {state.status === "done" && (
-        <a
-          href="/sessions/new"
-          className="pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent self-start px-6 py-4 text-xs transition-colors"
-        >
-          NOWA DECYZJA
-        </a>
-      )}
     </div>
   );
 }
 
-export function SynthesisPanel({ sessionId, available, hasSynthesis }: SynthesisPanelProps) {
-  const [started, setStarted] = useState(hasSynthesis);
+export function SynthesisPanel({ sessionId, started, onStatus }: SynthesisPanelProps) {
   const [retryKey, setRetryKey] = useState(0);
 
-  if (!available) {
+  if (!started) {
     return null;
   }
 
   return (
     <section className="mt-8 flex flex-col gap-4">
       <h2 className="font-pixel text-accent text-sm sm:text-base">SYNTEZA</h2>
-      {started ? (
-        <SynthesisStream
-          key={retryKey}
-          sessionId={sessionId}
-          onRetry={() => {
-            setRetryKey((key) => key + 1);
-          }}
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setStarted(true);
-          }}
-          className="pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent self-start px-6 py-4 text-xs transition-colors"
-        >
-          ZAKOŃCZ SESJĘ
-        </button>
-      )}
+      <SynthesisStream
+        key={retryKey}
+        sessionId={sessionId}
+        onStatus={onStatus}
+        onRetry={() => {
+          setRetryKey((key) => key + 1);
+        }}
+      />
     </section>
   );
 }

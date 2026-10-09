@@ -3,7 +3,7 @@ project: "Panel Ekspertów"
 version: 1
 status: draft
 created: 2026-09-22
-updated: 2026-09-29
+updated: 2026-10-09
 
 prd_version: 2
 main_goal: market-feedback
@@ -50,7 +50,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | in-progress |
 | S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | done |
 | S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | planning |
-| S-07  | session-quality-polish  | otrzymać zwięzłe opinie doradców i jasną akcję po zakończeniu sesji | S-03        | FR-011                            | planning |
+| S-07  | session-quality-polish  | otrzymać zwięzłe opinie doradców i jasną akcję po zakończeniu sesji | S-03        | FR-011                            | in-progress |
 | S-08  | ui-visual-refactor      | korzystać z wizualnie spójnego, odświeżonego UI na całej aplikacji | S-01          | FR-012                            | planning |
 
 ## Streams
@@ -199,7 +199,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Treść i cel przycisku po zakończeniu sesji (nowa sesja? powrót do historii? coś innego?) — Owner: user. Block: yes (planowanie).
   - Zakres "ogólnie lepsze" poza powyższymi dwoma punktami — Owner: user. Block: yes (planowanie).
 - **Risk:** Zgłoszone po pierwszym manualnym teście MVP; zależy od S-03, bo dotyka zachowania po syntezie. Nie nadaje się jeszcze do `/10x-plan` — wymaga doprecyzowania zakresu z użytkownikiem.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-08: Refaktor wizualny UI
 
