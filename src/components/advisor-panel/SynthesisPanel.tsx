@@ -1,9 +1,9 @@
 /**
- * Synthesis panel (frontend.md §1/§3) — `SessionFlow` owns the "started" decision and the trigger
- * button, and renders the "NOWA DECYZJA" follow-up once the session is finished
- * (session-quality-polish Phase 1). This component keeps its own retry (`PONÓW`) for stream
- * errors — a retry only needs to remount this panel's own stream, not the whole flow — and reports
- * status transitions upward via `onStatus` so `deriveSessionStep` can see them.
+ * Synthesis panel (frontend.md §1/§3) — `SessionFlow` owns the "started" decision, the trigger
+ * button, and the end-of-session action bar (`StepActionBar`, session-quality-polish Phase 2).
+ * This component keeps its own retry (`PONÓW`) for stream errors — a retry only needs to remount
+ * this panel's own stream, not the whole flow — and reports status transitions upward via
+ * `onStatus` so `deriveSessionStep` can see them.
  */
 
 import { useEffect, useRef, useState } from "react";

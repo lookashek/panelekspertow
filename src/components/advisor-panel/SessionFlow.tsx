@@ -1,22 +1,24 @@
 /**
- * Session page root island (frontend.md §1/§3, session-quality-polish Phase 1). Replaces the three
- * SSR-gated islands with one React root that owns step state, derives availability from the live
- * streams (never from SSR snapshots), and renders the forward actions. Round panels report their
- * outcome upward via `onOutcome`/`onStatus`; `deriveSessionStep` (src/lib/session-flow.ts) turns
- * that into the current `SessionStep`.
+ * Session page root island (frontend.md §1/§3, session-quality-polish Phase 1 + 2). Replaces the
+ * three SSR-gated islands with one React root that owns step state, derives availability from the
+ * live streams (never from SSR snapshots), and renders the forward actions. Round panels report
+ * their outcome upward via `onOutcome`/`onStatus`; `deriveSessionStep` (src/lib/session-flow.ts)
+ * turns that into the current `SessionStep`.
  *
- * This phase's action area is intentionally minimal (plain buttons reusing the existing
- * `pixel-btn` styling) — a full-width sticky `StepActionBar` is Phase 2's job. Likewise, finished
- * rounds stay mounted but are not visually folded yet (Phase 3).
+ * Phase 2 replaces the minimal inline action area with `StepActionBar` (full-width status + up to
+ * two actions) and auto-scrolls it into view on live transitions — see the effect below for the
+ * exact gate. Finished rounds stay mounted but are not visually folded yet (Phase 3).
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AdvisorPanel } from "@/components/advisor-panel/AdvisorPanel";
 import { RoundTwoPanel } from "@/components/advisor-panel/RoundTwoPanel";
+import { StepActionBar } from "@/components/advisor-panel/StepActionBar";
 import { SynthesisPanel } from "@/components/advisor-panel/SynthesisPanel";
 import { deriveSessionStep } from "@/lib/session-flow";
-import type { RoundOutcome, SynthesisStreamStatus } from "@/lib/session-flow";
+import type { Action } from "@/components/advisor-panel/StepActionBar";
+import type { RoundOutcome, SessionStep, SynthesisStreamStatus } from "@/lib/session-flow";
 
 interface SessionFlowProps {
   sessionId: string;
@@ -28,19 +30,77 @@ interface SessionFlowProps {
   initialThreads: Record<string, { role: "user" | "advisor"; content: string }[]>;
 }
 
+interface ActionBarContent {
+  status: string;
+  primary?: Action;
+  secondary?: Action;
+}
+
+interface ActionBarHandlers {
+  onRetryRoundOne: () => void;
+  onStartRoundTwo: () => void;
+  onStartSynthesis: () => void;
+}
+
 const EMPTY_OUTCOME: RoundOutcome = { settled: false, scoredPersonaIds: [] };
 
-const ACTION_BUTTON_CLASS =
-  "pixel-btn font-pixel bg-primary text-primary-foreground hover:border-accent hover:bg-accent self-start px-6 py-4 text-xs transition-colors";
+/** Maps the derived step to the status text + actions `StepActionBar` renders — kept out of
+ * `session-flow.ts` so that module stays free of UI/Polish-string concerns. */
+function deriveActionBarContent(step: SessionStep, handlers: ActionBarHandlers): ActionBarContent {
+  switch (step.kind) {
+    case "round-one-running":
+      return { status: "Runda 1 w toku…" };
+
+    case "round-one-failed":
+      return {
+        status: "Runda 1 nie powiodła się.",
+        primary: { label: "PONÓW", onClick: handlers.onRetryRoundOne },
+      };
+
+    case "round-one-settled":
+      if (step.canRunRoundTwo) {
+        return {
+          status: "Runda 1 zakończona.",
+          primary: { label: "URUCHOM RUNDĘ 2", onClick: handlers.onStartRoundTwo },
+          secondary: { label: "ZAKOŃCZ SESJĘ", onClick: handlers.onStartSynthesis },
+        };
+      }
+      return {
+        status: "Runda 1 zakończona.",
+        primary: { label: "ZAKOŃCZ SESJĘ", onClick: handlers.onStartSynthesis },
+      };
+
+    case "round-two-running":
+      return { status: "Runda 2 w toku… synteza zablokowana." };
+
+    case "round-two-settled":
+      return {
+        status: "Runda 2 zakończona.",
+        primary: { label: "ZAKOŃCZ SESJĘ", onClick: handlers.onStartSynthesis },
+      };
+
+    case "synthesis-running":
+      return { status: "Synteza w toku…" };
+
+    case "synthesis-failed":
+      return { status: "Synteza nie powiodła się." };
+
+    case "finished":
+      return {
+        status: "Sesja zakończona.",
+        primary: { label: "NOWA DECYZJA", href: "/sessions/new" },
+        secondary: { label: "HISTORIA SESJI", href: "/sessions" },
+      };
+  }
+}
+
+const RUNNING_STEP_KINDS = new Set<SessionStep["kind"]>(["round-one-running", "round-two-running", "synthesis-running"]);
 
 export function SessionFlow({
   sessionId,
   personas,
   minRoundTwoParticipants,
-  // Accepted for prop-shape parity with the SSR page (and future phases); round one's live
-  // stream (replayed on reload) is the sole source of truth for `roundOneOutcome`, so this flag
-  // is not consulted directly — AdvisorPanel mounts unconditionally either way.
-  hasRoundOne: _hasRoundOne,
+  hasRoundOne,
   hasRoundTwo,
   hasSynthesis,
   initialThreads,
@@ -52,6 +112,13 @@ export function SessionFlow({
   const [roundTwoOutcome, setRoundTwoOutcome] = useState<RoundOutcome>(EMPTY_OUTCOME);
   const [synthesisStarted, setSynthesisStarted] = useState(hasSynthesis);
   const [synthesisStatus, setSynthesisStatus] = useState<SynthesisStreamStatus>(hasSynthesis ? "pending" : "idle");
+
+  // Flipped the moment the user triggers any forward action in this page load (round-1 retry,
+  // round-2 start, synthesis start). Drives the auto-scroll gate below — a ref, not state, since
+  // it never needs to cause a re-render on its own.
+  const userActedThisLoadRef = useRef(false);
+  const actionBarRef = useRef<HTMLDivElement>(null);
+  const previousStepKindRef = useRef<SessionStep["kind"] | null>(null);
 
   // Round-two participants are derived once, the moment round one settles: the persona ids that
   // received a `score` event (see AdvisorPanel/RoundOutcome) — frozen from then on, because
@@ -65,9 +132,20 @@ export function SessionFlow({
   );
 
   const handleRoundOneRetry = () => {
+    userActedThisLoadRef.current = true;
     setRoundOneRetryKey((key) => key + 1);
     setRoundOneOutcome(EMPTY_OUTCOME);
     setRoundTwoParticipants(null);
+  };
+
+  const handleStartRoundTwo = () => {
+    userActedThisLoadRef.current = true;
+    setRoundTwoStarted(true);
+  };
+
+  const handleStartSynthesis = () => {
+    userActedThisLoadRef.current = true;
+    setSynthesisStarted(true);
   };
 
   const step = deriveSessionStep({
@@ -84,6 +162,44 @@ export function SessionFlow({
   const showRoundTwo =
     roundTwoStarted || (roundOneOutcome.settled && roundOneOutcome.scoredPersonaIds.length >= minRoundTwoParticipants);
   const showSynthesis = synthesisStarted || (roundOneOutcome.settled && roundOneOutcome.scoredPersonaIds.length >= 1);
+
+  // Auto-scroll the action bar into view on a *live* transition only: either the page loaded with
+  // round one still streaming (`!hasRoundOne`), or the user triggered an action this page load.
+  // A cold revisit (hasRoundOne === true, no action yet) never auto-scrolls — it would yank an
+  // already-settled page down on load. Never moves focus; the bar's own `aria-live="polite"`
+  // status text is the announcement.
+  useEffect(() => {
+    const isNewStep = previousStepKindRef.current !== step.kind;
+    previousStepKindRef.current = step.kind;
+
+    if (!isNewStep || RUNNING_STEP_KINDS.has(step.kind)) {
+      return;
+    }
+
+    if (hasRoundOne && !userActedThisLoadRef.current) {
+      return;
+    }
+
+    const node = actionBarRef.current;
+    if (!node) {
+      return;
+    }
+
+    let reducedMotion = false;
+    try {
+      reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    } catch {
+      reducedMotion = false;
+    }
+
+    node.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
+  }, [step.kind, hasRoundOne]);
+
+  const { status, primary, secondary } = deriveActionBarContent(step, {
+    onRetryRoundOne: handleRoundOneRetry,
+    onStartRoundTwo: handleStartRoundTwo,
+    onStartSynthesis: handleStartSynthesis,
+  });
 
   return (
     <>
@@ -109,55 +225,8 @@ export function SessionFlow({
         <SynthesisPanel sessionId={sessionId} started={synthesisStarted} onStatus={setSynthesisStatus} />
       )}
 
-      <div className="mt-8 flex flex-col gap-4">
-        {step.kind === "round-one-failed" && (
-          <button type="button" onClick={handleRoundOneRetry} className={ACTION_BUTTON_CLASS}>
-            PONÓW RUNDĘ 1
-          </button>
-        )}
-
-        {step.kind === "round-one-settled" && (
-          <div className="flex flex-wrap gap-4">
-            {step.canRunRoundTwo && (
-              <button
-                type="button"
-                onClick={() => {
-                  setRoundTwoStarted(true);
-                }}
-                className={ACTION_BUTTON_CLASS}
-              >
-                URUCHOM RUNDĘ 2
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setSynthesisStarted(true);
-              }}
-              className={ACTION_BUTTON_CLASS}
-            >
-              ZAKOŃCZ SESJĘ
-            </button>
-          </div>
-        )}
-
-        {step.kind === "round-two-settled" && (
-          <button
-            type="button"
-            onClick={() => {
-              setSynthesisStarted(true);
-            }}
-            className={ACTION_BUTTON_CLASS}
-          >
-            ZAKOŃCZ SESJĘ
-          </button>
-        )}
-
-        {step.kind === "finished" && (
-          <a href="/sessions/new" className={ACTION_BUTTON_CLASS}>
-            NOWA DECYZJA
-          </a>
-        )}
+      <div ref={actionBarRef} className="mt-8">
+        <StepActionBar status={status} primary={primary} secondary={secondary} />
       </div>
     </>
   );

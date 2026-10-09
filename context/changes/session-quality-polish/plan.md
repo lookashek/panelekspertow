@@ -310,33 +310,33 @@ No schema/data migration. Existing sessions replay unchanged (persisted text is 
 
 #### Automated
 
-- [x] 1.1 deriveSessionStep unit tests cover all step transitions
-- [x] 1.2 Lint passes
-- [x] 1.3 Type check passes
-- [x] 1.4 Build passes
+- [x] 1.1 deriveSessionStep unit tests cover all step transitions — f4208c4
+- [x] 1.2 Lint passes — f4208c4
+- [x] 1.3 Type check passes — f4208c4
+- [x] 1.4 Build passes — f4208c4
 
 #### Manual
 
-- [x] 1.5 Fresh session shows round-2/synthesis actions and DOPYTAJ without reload
-- [x] 1.6 Synthesis locked while round 2 streams, completes in same page load
-- [x] 1.7 Reload at each step reconstructs state with replay only
-- [x] 1.8 Stream failure shows error with PONÓW instead of hanging
+- [x] 1.5 Fresh session shows round-2/synthesis actions and DOPYTAJ without reload — f4208c4
+- [x] 1.6 Synthesis locked while round 2 streams, completes in same page load — f4208c4
+- [x] 1.7 Reload at each step reconstructs state with replay only — f4208c4
+- [x] 1.8 Stream failure shows error with PONÓW instead of hanging — f4208c4
 
 ### Phase 2: Step action bar and end-of-session CTA
 
 #### Automated
 
-- [ ] 2.1 Lint passes
-- [ ] 2.2 Type check passes
-- [ ] 2.3 Build passes
-- [ ] 2.4 No per-panel forward buttons remain in RoundTwoPanel/SynthesisPanel
+- [x] 2.1 Lint passes
+- [x] 2.2 Type check passes
+- [x] 2.3 Build passes
+- [x] 2.4 No per-panel forward buttons remain in RoundTwoPanel/SynthesisPanel
 
 #### Manual
 
-- [ ] 2.5 Settled steps scroll the bar into view; instant under reduced motion
-- [ ] 2.6 Revisit does not auto-scroll; NOWA DECYZJA + HISTORIA SESJI work
-- [ ] 2.7 Keyboard walk-through and screen-reader status announcement
-- [ ] 2.8 Bar layout correct at 375px and 1280px
+- [x] 2.5 Settled steps scroll the bar into view; instant under reduced motion
+- [x] 2.6 Revisit does not auto-scroll; NOWA DECYZJA + HISTORIA SESJI work
+- [x] 2.7 Keyboard walk-through and screen-reader status announcement
+- [x] 2.8 Bar layout correct at 375px and 1280px
 
 ### Phase 3: Density — fold finished rounds, argument toggle
 
