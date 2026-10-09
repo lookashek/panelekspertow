@@ -796,8 +796,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 5.1 `npm run lint` and `npm run build` pass
-- [x] 5.2 Hardcoded-value scan on `new.astro` and `src/components/decision-form/**` returns 0 hits
+- [x] 5.1 `npm run lint` and `npm run build` pass — fcddc83
+- [x] 5.2 Hardcoded-value scan on `new.astro` and `src/components/decision-form/**` returns 0 hits — fcddc83
 
 #### Manual
 
@@ -809,8 +809,8 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 6.1 `npm run lint` and `npm run build` pass
-- [ ] 6.2 Hardcoded-value scan on `sessions/index.astro` and `src/components/session-history/**` returns 0 hits
+- [x] 6.1 `npm run lint` and `npm run build` pass
+- [x] 6.2 Hardcoded-value scan on `sessions/index.astro` and `src/components/session-history/**` returns 0 hits
 
 #### Manual
 

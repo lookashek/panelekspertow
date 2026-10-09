@@ -1,5 +1,8 @@
 ---
-import { formatSessionDate, cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
+import { formatSessionDate } from "@/lib/utils";
 import type { Session } from "@/types/session";
 
 interface Props {
@@ -13,20 +16,17 @@ const STATUS_LABEL: Record<Session["status"], string> = {
   completed: "ZAKOŃCZONA",
 };
 
-const STATUS_CLASS: Record<Session["status"], string> = {
-  active: "border-accent text-accent",
-  completed: "border-muted-foreground text-muted-foreground",
+const STATUS_BADGE: Record<Session["status"], "info" | "neutral"> = {
+  active: "info",
+  completed: "neutral",
 };
 ---
 
 {
   sessions.length === 0 ? (
-    <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
+    <div class={`${panelVariants({ padding: "page" })} mx-auto max-w-xl text-center`}>
       <p class="mb-6 text-sm text-muted-foreground">Nie masz jeszcze żadnych sesji.</p>
-      <a
-        href="/sessions/new"
-        class="pixel-btn font-pixel inline-flex bg-primary px-6 py-4 text-xs text-primary-foreground transition-colors hover:border-accent hover:bg-accent"
-      >
+      <a href="/sessions/new" class={buttonVariants({ variant: "default", size: "lg" })}>
         NOWA DECYZJA
       </a>
     </div>
@@ -36,20 +36,15 @@ const STATUS_CLASS: Record<Session["status"], string> = {
         <li>
           <a
             href={`/sessions/${session.id}`}
-            class="pixel-panel flex flex-col gap-3 p-4 transition-colors hover:border-accent sm:flex-row sm:items-center sm:justify-between sm:p-6"
+            class={`${panelVariants({ padding: "card", interactive: true })} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
           >
             <div class="min-w-0 flex-1">
               <p class="line-clamp-2 text-sm leading-relaxed text-foreground">{session.decision}</p>
               <p class="mt-2 text-xs text-muted-foreground">{formatSessionDate(session.createdAt)}</p>
             </div>
-            <span
-              class={cn(
-                "font-pixel inline-flex w-fit shrink-0 border-2 px-2 py-1 text-[0.6rem]",
-                STATUS_CLASS[session.status],
-              )}
-            >
+            <Badge variant={STATUS_BADGE[session.status]} className="shrink-0">
               {STATUS_LABEL[session.status]}
-            </span>
+            </Badge>
           </a>
         </li>
       ))}

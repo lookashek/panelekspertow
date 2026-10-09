@@ -1,6 +1,9 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import SessionList from "@/components/session-history/SessionList.astro";
+import { containerVariants } from "@/components/layout/container";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { headingVariants } from "@/components/ui/heading";
 import { SessionRepository } from "@/lib/repositories/session.repository";
 import { SessionService } from "@/lib/services/session.service";
 import { createClient } from "@/lib/supabase";
@@ -26,22 +29,20 @@ if (!client) {
 ---
 
 <Layout title="Historia sesji — Panel Ekspertów">
-  <div class="bg-pixel-grid flex min-h-screen w-full flex-col items-center bg-background p-4 sm:p-8">
-    <div class="mx-auto w-full max-w-3xl pt-12 sm:pt-16">
-      <h1 class="font-pixel mb-8 text-center text-lg text-accent sm:text-xl">HISTORIA SESJI</h1>
-      {
-        notConfigured ? (
-          <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
-            <p class="text-sm text-muted-foreground">Usługa nie jest skonfigurowana. Spróbuj ponownie później.</p>
-          </div>
-        ) : errorMessage ? (
-          <div class="pixel-panel mx-auto max-w-xl p-6 text-center sm:p-8">
-            <p class="text-sm text-muted-foreground">Nie udało się wczytać historii sesji: {errorMessage}</p>
-          </div>
-        ) : (
-          <SessionList sessions={sessions} />
-        )
-      }
-    </div>
+  <div class={`${containerVariants({ width: "default" })} flex flex-col pb-16 pt-12 sm:pt-16`}>
+    <h1 class={`${headingVariants({ level: "page" })} mb-8 text-center`}>HISTORIA SESJI</h1>
+    {
+      notConfigured ? (
+        <Alert variant="error" className="mx-auto max-w-xl">
+          <AlertDescription>Usługa nie jest skonfigurowana. Spróbuj ponownie później.</AlertDescription>
+        </Alert>
+      ) : errorMessage ? (
+        <Alert variant="error" className="mx-auto max-w-xl">
+          <AlertDescription>Nie udało się wczytać historii sesji: {errorMessage}</AlertDescription>
+        </Alert>
+      ) : (
+        <SessionList sessions={sessions} />
+      )
+    }
   </div>
 </Layout>
