@@ -53,6 +53,20 @@ Founderzy i osoby prowadzące działalność testujący decyzje biznesowe; PM-ow
 
 # TODO: user stories pokrywające FR-007 (dopytanie doradcy w wątku pobocznym) i FR-008 (powrót do zapisanej sesji + kolejna runda) — see Open Questions
 
+### US-02: Użytkownik otrzymuje zwięzłe odpowiedzi doradców i jasne zakończenie sesji
+
+- **Given** zalogowany użytkownik przechodzi przez sesję panelu (runda 1, runda 2, synteza)
+- **When** doradcy generują opinie w dowolnej rundzie, a sesja dochodzi do syntezy
+- **Then** odpowiedzi doradców są wyraźnie krótsze i czytelniejsze niż w obecnym MVP (dziś teksty są za długie), a po zakończeniu sesji użytkownik widzi na dole ekranu jasną akcję do podjęcia (np. nowa sesja / powrót do historii — konkretny kształt do doprecyzowania)
+
+# TODO: kształt tej poprawki nie jest jeszcze zdefiniowany (limit długości odpowiedzi, treść i cel przycisku po zakończeniu sesji, inne usprawnienia "sesja ma być ogólnie lepsza") — see Open Questions #6
+
+### US-03: Użytkownik korzysta z wizualnie odświeżonego, spójnego UI
+
+- **Given** użytkownik korzysta z całej aplikacji (formularz nowej decyzji, panel doradców, historia sesji)
+- **When** przechodzi przez pełny przepływ sesji na różnych ekranach
+- **Then** interfejs jest wizualnie spójny i czytelny na całej aplikacji — czysty refaktor wyglądu, bez zmiany funkcjonalności istniejących przepływów
+
 ## Functional Requirements
 
 - FR-001: Użytkownik może założyć konto i zalogować się (email + hasło lub OAuth); widzi wyłącznie własne sesje. Priority: must-have
@@ -100,6 +114,12 @@ Founderzy i osoby prowadzące działalność testujący decyzje biznesowe; PM-ow
   > krótsze odpowiedzi w rundach dalszych.
 - FR-009: Odpowiedzi doradców są streamowane na żywo (token po tokenie), wszyscy doradcy piszą równolegle, każdy w swoim obszarze z avatarem — sesja ma wyglądać jak naturalna, tocząca się rozmowa, nie jak oczekiwanie na gotowy raport. Priority: must-have
 - FR-010: Użytkownik może w trakcie sesji dopisać własny komentarz/nowy kontekst i uruchomić kolejną rundę, a następnie jawnie zakończyć sesję — zakończenie generuje syntezę (FR-005). Priority: must-have
+- FR-011: Odpowiedzi doradców (wszystkie rundy) są zwięźlejsze i czytelniejsze niż obecny stan MVP; po zakończeniu sesji (po syntezie) użytkownik widzi na dole ekranu wyraźną akcję do podjęcia. Priority: should-have
+  > Kontekst: zgłoszone przez użytkownika po manualnym teście MVP — teksty doradców są
+  > za długie, a sesja "urywa się" po syntezie bez dalszej akcji. Dokładny kształt
+  > (limit długości, treść przycisku, inne usprawnienia) nie jest jeszcze zdefiniowany
+  > — patrz Open Questions #6.
+- FR-012: Całość UI aplikacji (formularz nowej decyzji, panel doradców, historia sesji) przechodzi refaktor wizualny dla spójności i czytelności, bez zmiany istniejącej funkcjonalności. Priority: should-have
 
 ## Non-Functional Requirements
 
@@ -138,3 +158,4 @@ Odroczenia do v2 (z briefu, nie twarde non-goals): definiowanie własnych doradc
 3. **Zobowiązania prywatności i retencji dla historii sesji** — przechowywanie opisów decyzji biznesowych użytkowników rodzi obowiązki (prywatność, retencja, bezpieczeństwo) zadeklarowane przy FR-006, ale nie doprecyzowane jako NFR. Owner: user.
 4. **User stories dla FR-007 i FR-008** — wątek poboczny z personą oraz dopisanie kontekstu i kolejna runda nie mają scenariuszy Given/When/Then; jedyna historia (US-01) pokrywa FR-001–FR-006. Owner: user.
 5. **Zakres MVP vs budżet 3 tygodni** — użytkownik świadomie rozszerzył MVP o FR-007 i FR-008 jako must-have, znając ryzyko przekroczenia potwierdzonego budżetu (mvp_weeks: 3, praca po godzinach); decyzja odnotowana jako override miękkiej bramki. Owner: user. Block: no (świadoma decyzja, do rewizji przy planowaniu).
+6. **Kształt poprawek jakości sesji (FR-011)** — zgłoszone po manualnym teście: odpowiedzi doradców za długie, brak jasnej akcji po zakończeniu sesji, ogólne "to powinno być lepsze" bez sprecyzowanego zakresu. Owner: user. Block: przed planowaniem (`/10x-plan`) dla tego slice'a — wymaga doprecyzowania zanim da się go zaimplementować.

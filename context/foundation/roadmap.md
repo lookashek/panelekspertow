@@ -26,7 +26,7 @@ milestone_status: open
 - **Intent:** Dostarczyć MVP, w którym użytkownik opisuje decyzję, a panel predefiniowanych doradców wydaje realnie rozbieżne oceny, konfrontuje je w rundzie drugiej z atrybucją zmian zdania i kończy syntezą pokazującą oś sporu — dowodząc, że mechanika wymuszania sporu działa end-to-end.
 - **Source materials:** `context/foundation/prd.md` (v2)
 - **Done when:** każdy `F-NN` i `S-NN` poniżej jest `done`, a Kryterium Primary (średni rozrzut ocen rundy pierwszej > 2 pkt) jest zmierzone na realnych sesjach.
-- **Scope anchors:** FR-001–FR-010, US-01, oraz Kryterium Sukcesu (Primary/Secondary) i guardrail izolacji per użytkownik.
+- **Scope anchors:** FR-001–FR-012, US-01, US-02, US-03, oraz Kryterium Sukcesu (Primary/Secondary) i guardrail izolacji per użytkownik.
 
 ## Vision recap
 
@@ -50,6 +50,8 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | S-04  | advisor-side-thread     | dopytać wybraną personę w wątku pobocznym bez przerywania debaty | S-01          | FR-007                            | in-progress |
 | S-05  | session-history         | zobaczyć listę zapisanych sesji i wrócić do wybranej             | S-01          | FR-006                            | done |
 | S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | planning |
+| S-07  | session-quality-polish  | otrzymać zwięzłe opinie doradców i jasną akcję po zakończeniu sesji | S-03        | FR-011                            | planning |
+| S-08  | ui-visual-refactor      | korzystać z wizualnie spójnego, odświeżonego UI na całej aplikacji | S-01          | FR-012                            | planning |
 
 ## Streams
 
@@ -60,6 +62,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A      | Debata rdzeniowa          | `F-01` → `S-01` → `S-02` → `S-03`       | Łańcuch mechaniki LLM — niesie cel `market-feedback`: najpierw dowód rozbieżności. |
 | B      | Trwałość i powroty        | `F-02` → `S-05` → `S-06`                | `F-02` zasila też `S-01` w strumieniu A; `S-06` łączy się z `S-02`.         |
 | C      | Wątek poboczny            | `S-04`                                  | Samodzielny slice; dołącza do strumienia A w `S-01`.                        |
+| D      | Polish MVP                | `S-03` → `S-07`; `S-01` → `S-08`        | Zgłoszone po manualnym teście MVP; `S-07` i `S-08` są niezależne od siebie. |
 
 ## Baseline
 
@@ -183,6 +186,34 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Zależy od historii (S-05) i mechaniki kolejnej rundy (S-02). Sekwencjonowany na końcu, bo domyka pętlę powrotów. Ryzyko: bez limitu rund funkcja jest nieopłacalna (ryzyko wprost z briefu).
 - **Status:** planning
 
+### S-07: Poprawa jakości sesji — zwięzłość i zakończenie
+
+- **Outcome:** użytkownik otrzymuje zwięzłe, czytelne opinie doradców we wszystkich rundach (dziś teksty są za długie) i po zakończeniu sesji widzi na dole ekranu jasną akcję do podjęcia. Pozostałe usprawnienia "sesja powinna być ogólnie lepsza" — do doprecyzowania.
+- **Change ID:** session-quality-polish
+- **PRD refs:** FR-011
+- **Prerequisites:** S-03
+- **Parallel with:** S-04, S-08
+- **Blockers:** Open Question #6 (kształt poprawki niedoprecyzowany) — Owner: user.
+- **Unknowns:**
+  - Konkretny limit/sposób skrócenia odpowiedzi doradców — Owner: user. Block: yes (planowanie).
+  - Treść i cel przycisku po zakończeniu sesji (nowa sesja? powrót do historii? coś innego?) — Owner: user. Block: yes (planowanie).
+  - Zakres "ogólnie lepsze" poza powyższymi dwoma punktami — Owner: user. Block: yes (planowanie).
+- **Risk:** Zgłoszone po pierwszym manualnym teście MVP; zależy od S-03, bo dotyka zachowania po syntezie. Nie nadaje się jeszcze do `/10x-plan` — wymaga doprecyzowania zakresu z użytkownikiem.
+- **Status:** planning
+
+### S-08: Refaktor wizualny UI
+
+- **Outcome:** całość UI aplikacji (formularz nowej decyzji, panel doradców, historia sesji) jest wizualnie spójna i czytelna — czysty refaktor wyglądu, bez zmiany istniejącej funkcjonalności.
+- **Change ID:** ui-visual-refactor
+- **PRD refs:** FR-012
+- **Prerequisites:** S-01
+- **Parallel with:** S-04, S-07
+- **Blockers:** —
+- **Unknowns:**
+  - Konkretny zakres refaktoru (które ekrany, jakie elementy) — Owner: user. Block: no (doprecyzować w `/10x-plan`).
+- **Risk:** Niskie ryzyko funkcjonalne (refaktor wizualny, nie logiki); sekwencjonowany po S-01, bo potrzebuje istniejących ekranów do refaktoru.
+- **Status:** planning
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID               | Suggested issue title                                    | Ready for `/10x-plan` | Notes |
@@ -195,6 +226,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-04       | advisor-side-thread     | Wątek poboczny z wybraną personą                          | no                    | Wymaga S-01; brak US (OQ#4) |
 | S-05       | session-history         | Historia sesji: lista i powrót                            | no                    | Wymaga S-01 |
 | S-06       | resume-session-round    | Powrót do sesji + nowy kontekst + kolejna runda           | no                    | Wymaga S-05, S-02; brak US (OQ#4) |
+| S-07       | session-quality-polish  | Poprawa jakości sesji: zwięzłość odpowiedzi + zakończenie | no                    | Wymaga S-03; zakres niedoprecyzowany (OQ#6) |
+| S-08       | ui-visual-refactor      | Refaktor wizualny UI                                      | no                    | Wymaga S-01; zakres do doprecyzowania w `/10x-plan` |
 
 ## Open Roadmap Questions
 
