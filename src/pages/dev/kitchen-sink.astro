@@ -1,0 +1,189 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription, AlertAction } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { panelVariants } from "@/components/ui/panel";
+import { headingVariants } from "@/components/ui/heading";
+
+const isDev = import.meta.env.DEV;
+if (!isDev) {
+  Astro.response.status = 404;
+}
+
+const swatches: { role: string; className: string }[] = [
+  { role: "background", className: "bg-background" },
+  { role: "card", className: "bg-card" },
+  { role: "secondary / muted", className: "bg-secondary" },
+  { role: "primary (action)", className: "bg-primary" },
+  { role: "accent / info / ring", className: "bg-accent" },
+  { role: "success", className: "bg-success" },
+  { role: "warning", className: "bg-warning" },
+  { role: "destructive", className: "bg-destructive" },
+  { role: "advisor-1 (pink)", className: "bg-advisor-1" },
+  { role: "advisor-2 (lime)", className: "bg-advisor-2" },
+  { role: "advisor-3 (orange)", className: "bg-advisor-3" },
+  { role: "advisor-4 (lilac)", className: "bg-advisor-4" },
+];
+
+const typeScale: { role: string; className: string }[] = [
+  { role: "micro label", className: "text-pixel-micro" },
+  { role: "button / label", className: "text-pixel-sm" },
+  { role: "card title", className: "text-pixel-md" },
+  { role: "section heading", className: "text-pixel-lg" },
+  { role: "page heading", className: "text-pixel-xl" },
+  { role: "hero", className: "text-pixel-2xl" },
+];
+---
+
+<Layout title="Kitchen sink — Panel Ekspertów">
+  {!isDev ? (
+    <p class="p-8">Not found.</p>
+  ) : (
+    <div class="mx-auto flex w-full max-w-5xl flex-col gap-10 p-4 sm:p-8">
+      <h1 class={headingVariants({ level: "page" })}>Kitchen sink</h1>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Polskie znaki (Silkscreen)</h2>
+        <p class="font-pixel text-pixel-lg">ĄĆĘŁŃÓŚŹŻ ąćęłńóśźż</p>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Paleta</h2>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {swatches.map((swatch) => (
+            <div class="flex flex-col gap-2">
+              <div class={`h-16 w-full border-2 border-border ${swatch.className}`}></div>
+              <span class="text-pixel-micro text-muted-foreground">{swatch.role}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Skala typografii</h2>
+        <div class="flex flex-col gap-2">
+          {typeScale.map((step) => (
+            <p class={`font-pixel ${step.className}`}>{step.role} — ABCąćę 123</p>
+          ))}
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Button</h2>
+        <div class="flex flex-wrap items-center gap-4">
+          <Button variant="default">Default</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="destructive">Destructive</Button>
+          <Button variant="link">Link</Button>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <Button size="sm">Small</Button>
+          <Button size="default">Default</Button>
+          <Button size="lg">Large</Button>
+          <Button size="icon" aria-label="Ikona">★</Button>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <Button disabled>Disabled</Button>
+          <a href="#kitchen-sink" class={buttonVariants({ variant: "default" })}>Jako link (buttonVariants)</a>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Field</h2>
+        <div class="grid max-w-md gap-4">
+          <Field id="ks-field-default" label="Pole bez błędu" hint="Podpowiedź pod polem">
+            <Input placeholder="Wpisz tekst" />
+          </Field>
+          <Field id="ks-field-error" label="Pole z błędem" error="To pole jest wymagane">
+            <Input placeholder="Wpisz tekst" />
+          </Field>
+          <Field id="ks-field-disabled" label="Pole wyłączone">
+            <Input placeholder="Wpisz tekst" disabled />
+          </Field>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Badge</h2>
+        <div class="flex flex-wrap items-center gap-3">
+          <Badge variant="neutral">Neutralny</Badge>
+          <Badge variant="success">Sukces</Badge>
+          <Badge variant="warning">Ostrzeżenie</Badge>
+          <Badge variant="destructive">Błąd</Badge>
+          <Badge variant="info">Info</Badge>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Alert</h2>
+        <div class="grid gap-4">
+          <Alert variant="error">
+            <AlertTitle>Błąd</AlertTitle>
+            <AlertDescription>Coś poszło nie tak. Spróbuj ponownie.</AlertDescription>
+            <AlertAction>
+              <Button size="sm" variant="secondary">Spróbuj ponownie</Button>
+            </AlertAction>
+          </Alert>
+          <Alert variant="warning">
+            <AlertTitle>Ostrzeżenie</AlertTitle>
+            <AlertDescription>Brak kontekstu — doradcy ocenią na podstawie samej decyzji.</AlertDescription>
+          </Alert>
+          <Alert variant="info">
+            <AlertTitle>Informacja</AlertTitle>
+            <AlertDescription>To jest komunikat informacyjny.</AlertDescription>
+          </Alert>
+          <Alert variant="success">
+            <AlertTitle>Sukces</AlertTitle>
+            <AlertDescription>Operacja zakończona powodzeniem.</AlertDescription>
+          </Alert>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Skeleton</h2>
+        <div class="flex flex-col gap-2 max-w-md">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Panel</h2>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class={panelVariants({ tone: "default" })}>
+            <p class={headingVariants({ level: "panel" })}>Default</p>
+            <p class="text-sm text-muted-foreground">Statyczny panel, border neutralny.</p>
+          </div>
+          <div class={panelVariants({ tone: "info" })}>
+            <p class={headingVariants({ level: "panel" })}>Info</p>
+            <p class="text-sm text-muted-foreground">Panel z akcentem informacyjnym.</p>
+          </div>
+          <div class={panelVariants({ tone: "primary" })}>
+            <p class={headingVariants({ level: "panel" })}>Primary</p>
+            <p class="text-sm text-muted-foreground">Panel z akcentem akcji.</p>
+          </div>
+          <a href="#kitchen-sink" class={panelVariants({ tone: "default", interactive: true })}>
+            <p class={headingVariants({ level: "panel" })}>Interaktywny</p>
+            <p class="text-sm text-muted-foreground">Hover/focus unoszą panel.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class={headingVariants({ level: "section" })}>Nagłówki</h2>
+        <div class="flex flex-col gap-2">
+          <p class={headingVariants({ level: "page" })}>Page heading</p>
+          <p class={headingVariants({ level: "section" })}>Section heading</p>
+          <p class={headingVariants({ level: "panel" })}>Panel heading</p>
+          <p class={headingVariants({ level: "label" })}>Micro label</p>
+        </div>
+      </section>
+    </div>
+  )}
+</Layout>

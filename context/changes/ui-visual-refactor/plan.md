@@ -733,11 +733,11 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run build` passes
-- [x] 1.3 Built CSS contains a `motion-safe\:animate-blink` rule and utilities `shadow-pixel`, `bg-success`, `text-pixel-micro`
-- [x] 1.4 `grep -c "b388ff\|bg-pixel-grid" src/styles/global.css` returns 0
-- [x] 1.5 `context/changes/ui-visual-refactor/palette.md` exists with the contrast table
+- [x] 1.1 `npm run lint` passes — 20895e8
+- [x] 1.2 `npm run build` passes — 20895e8
+- [x] 1.3 Built CSS contains a `motion-safe\:animate-blink` rule and utilities `shadow-pixel`, `bg-success`, `text-pixel-micro` — 20895e8
+- [x] 1.4 `grep -c "b388ff\|bg-pixel-grid" src/styles/global.css` returns 0 — 20895e8
+- [x] 1.5 `context/changes/ui-visual-refactor/palette.md` exists with the contrast table — 20895e8
 
 #### Manual
 
@@ -750,12 +750,12 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` and `npm run build` pass
-- [ ] 2.2 `npm test` passes, including the new `advisor-accent` test (known ids + fallback)
-- [ ] 2.3 Hardcoded-value scan on `src/components/ui/**` returns 0 hits
-- [ ] 2.4 `grep -rn "rounded-\|shadow-xs\|dark:" src/components/ui/` returns 0 hits
-- [ ] 2.5 `src/components/ui/LibBadge.astro` no longer exists
-- [ ] 2.6 Production build: `/dev/kitchen-sink` returns 404 (`npm run preview` + request)
+- [x] 2.1 `npm run lint` and `npm run build` pass
+- [x] 2.2 `npm test` passes, including the new `advisor-accent` test (known ids + fallback)
+- [x] 2.3 Hardcoded-value scan on `src/components/ui/**` returns 0 hits
+- [x] 2.4 `grep -rn "rounded-\|shadow-xs\|dark:" src/components/ui/` returns 0 hits
+- [x] 2.5 `src/components/ui/LibBadge.astro` no longer exists
+- [x] 2.6 Production build: `/dev/kitchen-sink` returns 404 (`npm run preview` + request)
 
 #### Manual
 
