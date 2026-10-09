@@ -849,9 +849,9 @@ keep their names, only values change), so a partial revert of later phases still
 
 #### Automated
 
-- [x] 9.1 `npm run lint`, `npm run lint:ui`, `npm run build`, `npm test` pass
-- [x] 9.2 `grep -rn "pixel-panel\|pixel-btn\|bg-pixel-grid\|rounded-" src/` returns 0 hits
-- [x] 9.3 `.claude/rules/backend.md` exists; `grep -n "b388ff\|Press Start\|Migration note" .claude/rules/frontend.md` returns 0
+- [x] 9.1 `npm run lint`, `npm run lint:ui`, `npm run build`, `npm test` pass — 1b06b94
+- [x] 9.2 `grep -rn "pixel-panel\|pixel-btn\|bg-pixel-grid\|rounded-" src/` returns 0 hits — 1b06b94
+- [x] 9.3 `.claude/rules/backend.md` exists; `grep -n "b388ff\|Press Start\|Migration note" .claude/rules/frontend.md` returns 0 — 1b06b94
 
 #### Manual
 
