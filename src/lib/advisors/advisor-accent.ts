@@ -1,4 +1,8 @@
-export type AdvisorAccent = { text: string; border: string; bg: string };
+export interface AdvisorAccent {
+  text: string;
+  border: string;
+  bg: string;
+}
 
 /**
  * Maps each stable persona id to its identity token class set (frontend.md §5 — advisor-1…4,

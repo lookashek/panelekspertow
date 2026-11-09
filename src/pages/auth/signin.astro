@@ -10,13 +10,13 @@ const error = Astro.url.searchParams.get("error");
 ---
 
 <Layout title="Zaloguj się — Panel Ekspertów">
-  <div class={`${containerVariants({ width: "narrow" })} flex flex-1 flex-col items-center justify-center py-16`}>
-    <div class={`${panelVariants({ padding: "page" })} w-full`}>
-      <h1 class={`${headingVariants({ level: "page" })} mb-6 text-center`}>ZALOGUJ SIĘ</h1>
+  <div class:list={`${containerVariants({ width: "narrow" })} flex flex-1 flex-col items-center justify-center py-16`}>
+    <div class:list={`${panelVariants({ padding: "page" })} w-full`}>
+      <h1 class:list={`${headingVariants({ level: "page" })} mb-6 text-center`}>ZALOGUJ SIĘ</h1>
       <SignInForm serverError={error} client:load />
       <p class="mt-4 text-center text-sm text-muted-foreground">
         Nie masz konta?{" "}
-        <a href="/auth/signup" class={buttonVariants({ variant: "link" })}>
+        <a href="/auth/signup" class:list={buttonVariants({ variant: "link" })}>
           Zarejestruj się
         </a>
       </p>

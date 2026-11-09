@@ -34,7 +34,7 @@ describe("POST /api/sessions/[id]/side-thread — unauthenticated", () => {
 
     expect(response.status).toBe(401);
     expect(response.headers.get("Content-Type")).toBe("application/json");
-    const body = await response.json();
+    const body: unknown = await response.json();
     expect(body).toEqual({ error: { code: "UNAUTHORIZED", message: "Sign in required" } });
   });
 });

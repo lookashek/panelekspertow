@@ -7,9 +7,9 @@ import { panelVariants } from "@/components/ui/panel";
 ---
 
 <Layout title="Nowa decyzja — Panel Ekspertów">
-  <div class={`${containerVariants({ width: "narrow" })} flex flex-col pb-16 pt-12 sm:pt-20`}>
-    <h1 class={`${headingVariants({ level: "page" })} mb-8 text-center`}>NOWA DECYZJA</h1>
-    <div class={panelVariants({ padding: "page" })}>
+  <div class:list={`${containerVariants({ width: "narrow" })} flex flex-col pb-16 pt-12 sm:pt-20`}>
+    <h1 class:list={`${headingVariants({ level: "page" })} mb-8 text-center`}>NOWA DECYZJA</h1>
+    <div class:list={panelVariants({ padding: "page" })}>
       <DecisionForm client:load />
     </div>
   </div>

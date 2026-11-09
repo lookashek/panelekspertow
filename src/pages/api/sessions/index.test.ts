@@ -33,7 +33,7 @@ describe("POST /api/sessions — unauthenticated", () => {
     const response = await POST(makeUnauthenticatedContext());
 
     expect(response.status).toBe(401);
-    const body = await response.json();
+    const body: unknown = await response.json();
     expect(body).toEqual({ error: { code: "UNAUTHORIZED", message: "Sign in required" } });
   });
 });

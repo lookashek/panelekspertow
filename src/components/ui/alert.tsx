@@ -28,7 +28,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="alert-title"
-      className={cn("font-pixel text-pixel-sm col-start-2 min-h-4 uppercase tracking-wide", className)}
+      className={cn("font-pixel text-pixel-sm col-start-2 min-h-4 tracking-wide uppercase", className)}
       {...props}
     />
   );
@@ -46,7 +46,9 @@ function AlertDescription({ className, ...props }: React.ComponentProps<"div">) 
 
 /** Optional action slot (e.g. a retry button) below the description. */
 function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="alert-action" className={cn("col-start-2 mt-2 flex items-center gap-2", className)} {...props} />;
+  return (
+    <div data-slot="alert-action" className={cn("col-start-2 mt-2 flex items-center gap-2", className)} {...props} />
+  );
 }
 
 export { Alert, AlertTitle, AlertDescription, AlertAction };

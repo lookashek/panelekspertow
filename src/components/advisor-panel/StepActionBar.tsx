@@ -36,7 +36,9 @@ function ActionButton({ action, variant }: { action: Action; variant: "default" 
 
 export function StepActionBar({ status, primary, secondary }: StepActionBarProps) {
   return (
-    <div className={`${panelVariants({ padding: "card" })} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`}>
+    <div
+      className={`${panelVariants({ padding: "card" })} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between`}
+    >
       <p aria-live="polite" className="text-muted-foreground text-sm">
         {status}
       </p>

@@ -34,7 +34,7 @@ export function RoundSummary({ round, rows, expanded, onToggle, controlsId }: Ro
           const accent = advisorAccent(row.personaId);
           return (
             <li key={row.personaId} className="flex flex-col gap-0.5 text-xs sm:flex-row sm:items-baseline sm:gap-3">
-              <span className={cn("font-pixel text-pixel-micro sm:w-32 sm:flex-shrink-0 uppercase", accent.text)}>
+              <span className={cn("font-pixel text-pixel-micro uppercase sm:w-32 sm:flex-shrink-0", accent.text)}>
                 {row.label}
               </span>
               <span className="text-info flex-shrink-0">{formatScore(row.score, row.previousScore)}</span>
@@ -43,7 +43,15 @@ export function RoundSummary({ round, rows, expanded, onToggle, controlsId }: Ro
           );
         })}
       </ul>
-      <Button type="button" variant="secondary" size="sm" onClick={onToggle} aria-expanded={expanded} aria-controls={controlsId} className="self-start">
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        aria-controls={controlsId}
+        className="self-start"
+      >
         {expanded ? `ZWIŃ RUNDĘ ${round}` : `ROZWIŃ RUNDĘ ${round}`}
       </Button>
     </div>

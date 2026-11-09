@@ -44,7 +44,10 @@ export function StepIndicator({ progress }: StepIndicatorProps) {
           <li
             key={id}
             aria-current={state === "active" ? "step" : undefined}
-            className={cn("font-pixel text-pixel-sm flex items-center gap-2 uppercase tracking-wide", STATE_CLASS[state])}
+            className={cn(
+              "font-pixel text-pixel-sm flex items-center gap-2 tracking-wide uppercase",
+              STATE_CLASS[state],
+            )}
           >
             <span aria-hidden="true">{STATE_GLYPH[state]}</span>
             <span>{label}</span>

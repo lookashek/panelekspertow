@@ -23,12 +23,14 @@ const content = isAutoConfirmed
 ---
 
 <Layout title={content.heading}>
-  <div class={`${containerVariants({ width: "narrow" })} flex flex-1 flex-col items-center justify-center py-16`}>
-    <div class={`${panelVariants({ padding: "page" })} w-full text-center`}>
-      <div class="mb-4 text-5xl" aria-hidden="true">{content.emoji}</div>
-      <h1 class={headingVariants({ level: "page" })}>{content.heading}</h1>
+  <div class:list={`${containerVariants({ width: "narrow" })} flex flex-1 flex-col items-center justify-center py-16`}>
+    <div class:list={`${panelVariants({ padding: "page" })} w-full text-center`}>
+      <div class="mb-4 text-5xl" aria-hidden="true">
+        {content.emoji}
+      </div>
+      <h1 class:list={headingVariants({ level: "page" })}>{content.heading}</h1>
       <p class="mb-6 mt-4 text-muted-foreground">{content.description}</p>
-      <a href="/auth/signin" class={buttonVariants({ variant: "link" })}>
+      <a href="/auth/signin" class:list={buttonVariants({ variant: "link" })}>
         {content.linkText}
       </a>
     </div>

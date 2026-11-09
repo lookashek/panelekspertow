@@ -43,7 +43,7 @@ export function AdvisorCard({
       data-status={state.status}
     >
       <header className="flex items-center justify-between gap-2">
-        <h3 className={cn("font-pixel text-pixel-sm uppercase tracking-wide", accent.text)}>{label}</h3>
+        <h3 className={cn("font-pixel text-pixel-sm tracking-wide uppercase", accent.text)}>{label}</h3>
         {state.status === "pending" && (
           <span className="motion-safe:animate-blink text-muted-foreground text-pixel-micro">Oczekiwanie…</span>
         )}

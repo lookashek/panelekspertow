@@ -22,32 +22,30 @@ const STATUS_BADGE: Record<Session["status"], "info" | "neutral"> = {
 };
 ---
 
-{
-  sessions.length === 0 ? (
-    <div class={`${panelVariants({ padding: "page" })} mx-auto max-w-xl text-center`}>
-      <p class="mb-6 text-sm text-muted-foreground">Nie masz jeszcze żadnych sesji.</p>
-      <a href="/sessions/new" class={buttonVariants({ variant: "default", size: "lg" })}>
-        NOWA DECYZJA
-      </a>
-    </div>
-  ) : (
-    <ul class="flex flex-col gap-4">
-      {sessions.map((session) => (
-        <li>
-          <a
-            href={`/sessions/${session.id}`}
-            class={`${panelVariants({ padding: "card", interactive: true })} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
-          >
-            <div class="min-w-0 flex-1">
-              <p class="line-clamp-2 text-sm leading-relaxed text-foreground">{session.decision}</p>
-              <p class="mt-2 text-xs text-muted-foreground">{formatSessionDate(session.createdAt)}</p>
-            </div>
-            <Badge variant={STATUS_BADGE[session.status]} className="shrink-0">
-              {STATUS_LABEL[session.status]}
-            </Badge>
-          </a>
-        </li>
-      ))}
-    </ul>
-  )
-}
+{sessions.length === 0 ? (
+  <div class:list={`${panelVariants({ padding: "page" })} mx-auto max-w-xl text-center`}>
+    <p class="mb-6 text-sm text-muted-foreground">Nie masz jeszcze żadnych sesji.</p>
+    <a href="/sessions/new" class:list={buttonVariants({ variant: "default", size: "lg" })}>
+      NOWA DECYZJA
+    </a>
+  </div>
+) : (
+  <ul class="flex flex-col gap-4">
+    {sessions.map((session) => (
+      <li>
+        <a
+          href={`/sessions/${session.id}`}
+          class:list={`${panelVariants({ padding: "card", interactive: true })} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+        >
+          <div class="min-w-0 flex-1">
+            <p class="line-clamp-2 text-sm leading-relaxed text-foreground">{session.decision}</p>
+            <p class="mt-2 text-xs text-muted-foreground">{formatSessionDate(session.createdAt)}</p>
+          </div>
+          <Badge variant={STATUS_BADGE[session.status]} className="shrink-0">
+            {STATUS_LABEL[session.status]}
+          </Badge>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}

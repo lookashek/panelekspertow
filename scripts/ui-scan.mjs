@@ -53,7 +53,9 @@ if (hits.length > 0) {
   for (const hit of hits) {
     console.error(`${hit.filePath}:${hit.line} — ${hit.matches.join(", ")}`);
   }
-  console.error(`\n${hits.length} hardcoded-value hit(s). Use a design token or a src/components/ui/** recipe instead.`);
+  console.error(
+    `\n${hits.length} hardcoded-value hit(s). Use a design token or a src/components/ui/** recipe instead.`,
+  );
   process.exit(1);
 }
 

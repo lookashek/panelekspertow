@@ -59,19 +59,19 @@ const typeScale: { role: string; className: string }[] = [
     <p class="p-8">Not found.</p>
   ) : (
     <div class="mx-auto flex w-full max-w-5xl flex-col gap-10 p-4 sm:p-8">
-      <h1 class={headingVariants({ level: "page" })}>Kitchen sink</h1>
+      <h1 class:list={headingVariants({ level: "page" })}>Kitchen sink</h1>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Polskie znaki (Silkscreen)</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Polskie znaki (Silkscreen)</h2>
         <p class="font-pixel text-pixel-lg">ĄĆĘŁŃÓŚŹŻ ąćęłńóśźż</p>
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Paleta</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Paleta</h2>
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {swatches.map((swatch) => (
             <div class="flex flex-col gap-2">
-              <div class={`h-16 w-full border-2 border-border ${swatch.className}`}></div>
+              <div class:list={`h-16 w-full border-2 border-border ${swatch.className}`}></div>
               <span class="text-pixel-micro text-muted-foreground">{swatch.role}</span>
             </div>
           ))}
@@ -79,16 +79,16 @@ const typeScale: { role: string; className: string }[] = [
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Skala typografii</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Skala typografii</h2>
         <div class="flex flex-col gap-2">
           {typeScale.map((step) => (
-            <p class={`font-pixel ${step.className}`}>{step.role} — ABCąćę 123</p>
+            <p class:list={`font-pixel ${step.className}`}>{step.role} — ABCąćę 123</p>
           ))}
         </div>
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Button</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Button</h2>
         <div class="flex flex-wrap items-center gap-4">
           <Button variant="default">Default</Button>
           <Button variant="secondary">Secondary</Button>
@@ -100,16 +100,20 @@ const typeScale: { role: string; className: string }[] = [
           <Button size="sm">Small</Button>
           <Button size="default">Default</Button>
           <Button size="lg">Large</Button>
-          <Button size="icon" aria-label="Ikona">★</Button>
+          <Button size="icon" aria-label="Ikona">
+            ★
+          </Button>
         </div>
         <div class="flex flex-wrap items-center gap-4">
           <Button disabled>Disabled</Button>
-          <a href="#kitchen-sink" class={buttonVariants({ variant: "default" })}>Jako link (buttonVariants)</a>
+          <a href="#kitchen-sink" class:list={buttonVariants({ variant: "default" })}>
+            Jako link (buttonVariants)
+          </a>
         </div>
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Field</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Field</h2>
         <div class="grid max-w-md gap-4">
           <Field id="ks-field-default" label="Pole bez błędu" hint="Podpowiedź pod polem">
             <Input placeholder="Wpisz tekst" />
@@ -124,7 +128,7 @@ const typeScale: { role: string; className: string }[] = [
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Badge</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Badge</h2>
         <div class="flex flex-wrap items-center gap-3">
           <Badge variant="neutral">Neutralny</Badge>
           <Badge variant="success">Sukces</Badge>
@@ -135,13 +139,15 @@ const typeScale: { role: string; className: string }[] = [
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Alert</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Alert</h2>
         <div class="grid gap-4">
           <Alert variant="error">
             <AlertTitle>Błąd</AlertTitle>
             <AlertDescription>Coś poszło nie tak. Spróbuj ponownie.</AlertDescription>
             <AlertAction>
-              <Button size="sm" variant="secondary">Spróbuj ponownie</Button>
+              <Button size="sm" variant="secondary">
+                Spróbuj ponownie
+              </Button>
             </AlertAction>
           </Alert>
           <Alert variant="warning">
@@ -160,7 +166,7 @@ const typeScale: { role: string; className: string }[] = [
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Skeleton</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Skeleton</h2>
         <div class="flex flex-col gap-2 max-w-md">
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
@@ -169,153 +175,314 @@ const typeScale: { role: string; className: string }[] = [
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Panel</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Panel</h2>
         <div class="grid gap-4 sm:grid-cols-2">
-          <div class={panelVariants({ tone: "default" })}>
-            <p class={headingVariants({ level: "panel" })}>Default</p>
+          <div class:list={panelVariants({ tone: "default" })}>
+            <p class:list={headingVariants({ level: "panel" })}>Default</p>
             <p class="text-sm text-muted-foreground">Statyczny panel, border neutralny.</p>
           </div>
-          <div class={panelVariants({ tone: "info" })}>
-            <p class={headingVariants({ level: "panel" })}>Info</p>
+          <div class:list={panelVariants({ tone: "info" })}>
+            <p class:list={headingVariants({ level: "panel" })}>Info</p>
             <p class="text-sm text-muted-foreground">Panel z akcentem informacyjnym.</p>
           </div>
-          <div class={panelVariants({ tone: "primary" })}>
-            <p class={headingVariants({ level: "panel" })}>Primary</p>
+          <div class:list={panelVariants({ tone: "primary" })}>
+            <p class:list={headingVariants({ level: "panel" })}>Primary</p>
             <p class="text-sm text-muted-foreground">Panel z akcentem akcji.</p>
           </div>
-          <a href="#kitchen-sink" class={panelVariants({ tone: "default", interactive: true })}>
-            <p class={headingVariants({ level: "panel" })}>Interaktywny</p>
+          <a href="#kitchen-sink" class:list={panelVariants({ tone: "default", interactive: true })}>
+            <p class:list={headingVariants({ level: "panel" })}>Interaktywny</p>
             <p class="text-sm text-muted-foreground">Hover/focus unoszą panel.</p>
           </a>
         </div>
       </section>
 
       <section class="flex flex-col gap-4">
-        <h2 class={headingVariants({ level: "section" })}>Nagłówki</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Nagłówki</h2>
         <div class="flex flex-col gap-2">
-          <p class={headingVariants({ level: "page" })}>Page heading</p>
-          <p class={headingVariants({ level: "section" })}>Section heading</p>
-          <p class={headingVariants({ level: "panel" })}>Panel heading</p>
-          <p class={headingVariants({ level: "label" })}>Micro label</p>
+          <p class:list={headingVariants({ level: "page" })}>Page heading</p>
+          <p class:list={headingVariants({ level: "section" })}>Section heading</p>
+          <p class:list={headingVariants({ level: "panel" })}>Panel heading</p>
+          <p class:list={headingVariants({ level: "label" })}>Micro label</p>
         </div>
       </section>
 
       <section class="flex flex-col gap-6">
-        <h2 class={headingVariants({ level: "section" })}>Matryca 7 stanów</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Matryca 7 stanów</h2>
         <p class="text-sm text-muted-foreground">
           Default / Hover / Focus-visible / Disabled / Error / Empty / Loading — każda komórka pokazana albo oznaczona
           N/A z powodem. Hover/focus: najedź kursorem lub przejdź Tab, aby zobaczyć stan na żywo.
         </p>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>Button</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Button</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Button>Default</Button></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1"><Button>Najedź</Button></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1"><Button>Tab</Button></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1"><Button disabled>Disabled</Button></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Button aria-invalid="true">Invalid</Button></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — przycisk zawsze ma treść</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — zob. SubmitButton poniżej (pending)</dd></div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt>
+              <dd class="mt-1">
+                <Button>Default</Button>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">HOVER</dt>
+              <dd class="mt-1">
+                <Button>Najedź</Button>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt>
+              <dd class="mt-1">
+                <Button>Tab</Button>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DISABLED</dt>
+              <dd class="mt-1">
+                <Button disabled>Disabled</Button>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">ERROR</dt>
+              <dd class="mt-1">
+                <Button aria-invalid="true">Invalid</Button>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — przycisk zawsze ma treść</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">LOADING</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — zob. SubmitButton poniżej (pending)</dd>
+            </div>
           </dl>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>Field / Input</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Field / Input</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Input placeholder="Tekst" /></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1"><Input placeholder="Najedź" /></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1"><Input placeholder="Tab" /></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1"><Input placeholder="Wyłączone" disabled /></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Input placeholder="Błąd" aria-invalid="true" /></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — puste pole = stan domyślny</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — pole nie ma własnego stanu ładowania</dd></div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt>
+              <dd class="mt-1">
+                <Input placeholder="Tekst" />
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">HOVER</dt>
+              <dd class="mt-1">
+                <Input placeholder="Najedź" />
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt>
+              <dd class="mt-1">
+                <Input placeholder="Tab" />
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DISABLED</dt>
+              <dd class="mt-1">
+                <Input placeholder="Wyłączone" disabled />
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">ERROR</dt>
+              <dd class="mt-1">
+                <Input placeholder="Błąd" aria-invalid="true" />
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — puste pole = stan domyślny</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">LOADING</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — pole nie ma własnego stanu ładowania</dd>
+            </div>
           </dl>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>Badge</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Badge</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Badge variant="neutral">Neutralny</Badge></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1 text-muted-foreground">N/A — Badge nie jest interaktywny</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1 text-muted-foreground">N/A — Badge nie jest interaktywny</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1 text-muted-foreground">N/A — Badge nie ma stanu wyłączonego</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Badge variant="destructive">Błąd</Badge></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — treść jest zawsze wymagana (kolor nigdy nie jest jedynym sygnałem)</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — zob. Skeleton</dd></div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt>
+              <dd class="mt-1">
+                <Badge variant="neutral">Neutralny</Badge>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">HOVER</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Badge nie jest interaktywny</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Badge nie jest interaktywny</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DISABLED</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Badge nie ma stanu wyłączonego</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">ERROR</dt>
+              <dd class="mt-1">
+                <Badge variant="destructive">Błąd</Badge>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
+              <dd class="mt-1 text-muted-foreground">
+                N/A — treść jest zawsze wymagana (kolor nigdy nie jest jedynym sygnałem)
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">LOADING</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — zob. Skeleton</dd>
+            </div>
           </dl>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>Alert</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Alert</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><Alert variant="info"><AlertDescription>Info</AlertDescription></Alert></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">HOVER</dt><dd class="mt-1 text-muted-foreground">N/A — interaktywność jest na przycisku akcji, nie na Alert</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt><dd class="mt-1 text-muted-foreground">N/A — jak wyżej</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1 text-muted-foreground">N/A — Alert nie ma stanu wyłączonego</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1"><Alert variant="error"><AlertDescription>Błąd</AlertDescription></Alert></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — Alert zawsze renderuje treść</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — stan ładowania pokazuje Skeleton, nie Alert</dd></div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt>
+              <dd class="mt-1">
+                <Alert variant="info">
+                  <AlertDescription>Info</AlertDescription>
+                </Alert>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">HOVER</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — interaktywność jest na przycisku akcji, nie na Alert</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">FOCUS-VISIBLE</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — jak wyżej</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DISABLED</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Alert nie ma stanu wyłączonego</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">ERROR</dt>
+              <dd class="mt-1">
+                <Alert variant="error">
+                  <AlertDescription>Błąd</AlertDescription>
+                </Alert>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Alert zawsze renderuje treść</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">LOADING</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — stan ładowania pokazuje Skeleton, nie Alert</dd>
+            </div>
           </dl>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>Skeleton</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Skeleton</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT / LOADING</dt><dd class="mt-1"><Skeleton className="h-4 w-24" /></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">HOVER / FOCUS-VISIBLE / DISABLED / ERROR / EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — Skeleton ma tylko jeden stan (placeholder ładowania)</dd></div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT / LOADING</dt>
+              <dd class="mt-1">
+                <Skeleton className="h-4 w-24" />
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">HOVER / FOCUS-VISIBLE / DISABLED / ERROR / EMPTY</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Skeleton ma tylko jeden stan (placeholder ładowania)</dd>
+            </div>
           </dl>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>Panel</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Panel</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            <div><dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt><dd class="mt-1"><div class={panelVariants({ padding: "card" })}>Treść</div></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">HOVER / FOCUS-VISIBLE</dt><dd class="mt-1"><a href="#kitchen-sink" class={panelVariants({ padding: "card", interactive: true })}>Najedź / Tab</a></dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">DISABLED</dt><dd class="mt-1 text-muted-foreground">N/A — Panel to kontener, nie kontrolka</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">ERROR</dt><dd class="mt-1 text-muted-foreground">N/A — brak dedykowanego tonu błędu; użyj Alert w panelu</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">EMPTY</dt><dd class="mt-1 text-muted-foreground">N/A — stan pusty komponuje wywołujący (zob. SessionList)</dd></div>
-            <div><dt class="text-pixel-micro text-muted-foreground">LOADING</dt><dd class="mt-1 text-muted-foreground">N/A — stan ładowania komponuje wywołujący przez Skeleton (zob. RoundTwoPanel)</dd></div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DEFAULT</dt>
+              <dd class="mt-1">
+                <div class:list={panelVariants({ padding: "card" })}>Treść</div>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">HOVER / FOCUS-VISIBLE</dt>
+              <dd class="mt-1">
+                <a href="#kitchen-sink" class:list={panelVariants({ padding: "card", interactive: true })}>
+                  Najedź / Tab
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">DISABLED</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — Panel to kontener, nie kontrolka</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">ERROR</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — brak dedykowanego tonu błędu; użyj Alert w panelu</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
+              <dd class="mt-1 text-muted-foreground">N/A — stan pusty komponuje wywołujący (zob. SessionList)</dd>
+            </div>
+            <div>
+              <dt class="text-pixel-micro text-muted-foreground">LOADING</dt>
+              <dd class="mt-1 text-muted-foreground">
+                N/A — stan ładowania komponuje wywołujący przez Skeleton (zob. RoundTwoPanel)
+              </dd>
+            </div>
           </dl>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>AdvisorCard</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>AdvisorCard</h3>
           <p class="mt-2 text-sm text-muted-foreground">
-            N/A dla wszystkich 7 komórek — AdvisorCard zależy od żywego strumienia EventSource
-            (<code>usePanelStream</code>) i nie da się go sensownie zamontować statycznie bez aktywnej sesji. Zweryfikuj
+            N/A dla wszystkich 7 komórek — AdvisorCard zależy od żywego strumienia EventSource (
+            <code>usePanelStream</code>) i nie da się go sensownie zamontować statycznie bez aktywnej sesji. Zweryfikuj
             wszystkie stany (pending/streaming/done/error, z i bez poprzedniego wyniku) na żywo na
             <code>/sessions/[id]</code>.
           </p>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>StepIndicator</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>StepIndicator</h3>
           <dl class="mt-3 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
             <div>
               <dt class="text-pixel-micro text-muted-foreground">DEFAULT (w toku) / LOADING (active)</dt>
-              <dd class="mt-1"><StepIndicator progress={{ roundOne: "active", roundTwo: "pending", synthesis: "pending" }} /></dd>
+              <dd class="mt-1">
+                <StepIndicator progress={{ roundOne: "active", roundTwo: "pending", synthesis: "pending" }} />
+              </dd>
             </div>
             <div>
               <dt class="text-pixel-micro text-muted-foreground">ERROR (failed) / DONE + SKIPPED</dt>
-              <dd class="mt-1"><StepIndicator progress={{ roundOne: "failed", roundTwo: "skipped", synthesis: "pending" }} /></dd>
+              <dd class="mt-1">
+                <StepIndicator progress={{ roundOne: "failed", roundTwo: "skipped", synthesis: "pending" }} />
+              </dd>
             </div>
           </dl>
           <p class="mt-3 text-sm text-muted-foreground">
-            HOVER / FOCUS-VISIBLE / DISABLED / EMPTY: N/A — czysto prezentacyjny, nieinteraktywny; zawsze pokazuje 3 kroki.
+            HOVER / FOCUS-VISIBLE / DISABLED / EMPTY: N/A — czysto prezentacyjny, nieinteraktywny; zawsze pokazuje 3
+            kroki.
           </p>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>SessionList — pozycja listy</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>SessionList — pozycja listy</h3>
           <dl class="mt-3 grid grid-cols-1 gap-4 text-sm">
             <div>
               <dt class="text-pixel-micro text-muted-foreground">DEFAULT / HOVER / FOCUS-VISIBLE (najedź / Tab)</dt>
-              <dd class="mt-1 max-w-md"><SessionList sessions={[mockSession]} /></dd>
+              <dd class="mt-1 max-w-md">
+                <SessionList sessions={[mockSession]} />
+              </dd>
             </div>
             <div>
               <dt class="text-pixel-micro text-muted-foreground">EMPTY</dt>
-              <dd class="mt-1 max-w-md"><SessionList sessions={[]} /></dd>
+              <dd class="mt-1 max-w-md">
+                <SessionList sessions={[]} />
+              </dd>
             </div>
           </dl>
           <p class="mt-3 text-sm text-muted-foreground">
@@ -324,8 +491,8 @@ const typeScale: { role: string; className: string }[] = [
           </p>
         </div>
 
-        <div class={panelVariants({ padding: "card" })}>
-          <h3 class={headingVariants({ level: "panel" })}>SubmitButton (formularz auth)</h3>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>SubmitButton (formularz auth)</h3>
           <dl class="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt class="text-pixel-micro text-muted-foreground">DEFAULT / HOVER / FOCUS-VISIBLE</dt>
@@ -345,8 +512,8 @@ const typeScale: { role: string; className: string }[] = [
             </div>
           </dl>
           <p class="mt-3 text-sm text-muted-foreground">
-            ERROR: N/A — błędy pojawiają się przez ServerError/Alert nad przyciskiem, nie na przycisku samym. EMPTY:
-            N/A — przycisk zawsze ma treść.
+            ERROR: N/A — błędy pojawiają się przez ServerError/Alert nad przyciskiem, nie na przycisku samym. EMPTY: N/A
+            — przycisk zawsze ma treść.
           </p>
         </div>
       </section>

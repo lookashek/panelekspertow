@@ -29,20 +29,18 @@ if (!client) {
 ---
 
 <Layout title="Historia sesji — Panel Ekspertów">
-  <div class={`${containerVariants({ width: "default" })} flex flex-col pb-16 pt-12 sm:pt-16`}>
-    <h1 class={`${headingVariants({ level: "page" })} mb-8 text-center`}>HISTORIA SESJI</h1>
-    {
-      notConfigured ? (
-        <Alert variant="error" className="mx-auto max-w-xl">
-          <AlertDescription>Usługa nie jest skonfigurowana. Spróbuj ponownie później.</AlertDescription>
-        </Alert>
-      ) : errorMessage ? (
-        <Alert variant="error" className="mx-auto max-w-xl">
-          <AlertDescription>Nie udało się wczytać historii sesji: {errorMessage}</AlertDescription>
-        </Alert>
-      ) : (
-        <SessionList sessions={sessions} />
-      )
-    }
+  <div class:list={`${containerVariants({ width: "default" })} flex flex-col pb-16 pt-12 sm:pt-16`}>
+    <h1 class:list={`${headingVariants({ level: "page" })} mb-8 text-center`}>HISTORIA SESJI</h1>
+    {notConfigured ? (
+      <Alert variant="error" className="mx-auto max-w-xl">
+        <AlertDescription>Usługa nie jest skonfigurowana. Spróbuj ponownie później.</AlertDescription>
+      </Alert>
+    ) : errorMessage ? (
+      <Alert variant="error" className="mx-auto max-w-xl">
+        <AlertDescription>Nie udało się wczytać historii sesji: {errorMessage}</AlertDescription>
+      </Alert>
+    ) : (
+      <SessionList sessions={sessions} />
+    )}
   </div>
 </Layout>

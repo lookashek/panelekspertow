@@ -11,13 +11,15 @@ function isActive(href: string): boolean {
 }
 
 const linkClass = (href: string) =>
-  cn(
-    "text-primary transition-colors hover:text-accent hover:underline",
-    isActive(href) && "underline text-accent",
-  );
+  cn("text-primary transition-colors hover:text-accent hover:underline", isActive(href) && "underline text-accent");
 ---
 
-<div class={cn(panelVariants({ padding: "none" }), "mb-4 flex flex-wrap items-center justify-between gap-3 px-4 py-2 text-sm")}>
+<div
+  class:list={cn(
+    panelVariants({ padding: "none" }),
+    "mb-4 flex flex-wrap items-center justify-between gap-3 px-4 py-2 text-sm",
+  )}
+>
   <a href="/" class="font-pixel text-pixel-sm shrink-0 uppercase tracking-wide text-foreground hover:text-primary">
     Panel Ekspertów
   </a>
@@ -26,26 +28,44 @@ const linkClass = (href: string) =>
       <span class="text-muted-foreground block max-w-40 truncate sm:max-w-60" title={user.email}>
         {user.email}
       </span>
-      <a href="/dashboard" class={linkClass("/dashboard")} aria-current={isActive("/dashboard") ? "page" : undefined}>
+      <a
+        href="/dashboard"
+        class:list={linkClass("/dashboard")}
+        aria-current={isActive("/dashboard") ? "page" : undefined}
+      >
         Panel
       </a>
-      <a href="/sessions/new" class={linkClass("/sessions/new")} aria-current={isActive("/sessions/new") ? "page" : undefined}>
+      <a
+        href="/sessions/new"
+        class:list={linkClass("/sessions/new")}
+        aria-current={isActive("/sessions/new") ? "page" : undefined}
+      >
         Nowa decyzja
       </a>
-      <a href="/sessions" class={linkClass("/sessions")} aria-current={isActive("/sessions") ? "page" : undefined}>
+      <a href="/sessions" class:list={linkClass("/sessions")} aria-current={isActive("/sessions") ? "page" : undefined}>
         Historia
       </a>
       <form method="POST" action="/api/auth/signout">
-        <button type="submit" class={cn(buttonVariants({ variant: "link" }), "text-primary")}>Wyloguj</button>
+        <button type="submit" class:list={cn(buttonVariants({ variant: "link" }), "text-primary")}>
+          Wyloguj
+        </button>
       </form>
     </div>
   ) : (
     <div class="flex flex-wrap items-center gap-4">
       <span class="text-muted-foreground">Niezalogowany</span>
-      <a href="/auth/signin" class={linkClass("/auth/signin")} aria-current={isActive("/auth/signin") ? "page" : undefined}>
+      <a
+        href="/auth/signin"
+        class:list={linkClass("/auth/signin")}
+        aria-current={isActive("/auth/signin") ? "page" : undefined}
+      >
         Zaloguj
       </a>
-      <a href="/auth/signup" class={linkClass("/auth/signup")} aria-current={isActive("/auth/signup") ? "page" : undefined}>
+      <a
+        href="/auth/signup"
+        class:list={linkClass("/auth/signup")}
+        aria-current={isActive("/auth/signup") ? "page" : undefined}
+      >
         Rejestracja
       </a>
     </div>

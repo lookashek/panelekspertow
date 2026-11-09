@@ -118,7 +118,7 @@ export function RoundTwoPanel({
         <RoundTwoStream sessionId={sessionId} personas={personas} onOutcome={onOutcome} folded={folded} />
       ) : (
         <div className={panelVariants({ padding: "card" })}>
-          <span className="motion-safe:animate-blink text-muted-foreground text-sm mb-2 block">
+          <span className="motion-safe:animate-blink text-muted-foreground mb-2 block text-sm">
             Przygotowywanie rundy 2…
           </span>
           <Skeleton className="h-4 w-3/4" />

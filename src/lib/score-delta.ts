@@ -4,7 +4,11 @@
  * two did not change the score (see session.service.ts `resolveRoundTwo`) — callers render no
  * delta glyph and no screen-reader change announcement in that case.
  */
-export type ScoreDelta = { text: string; glyph: string; direction: "up" | "down" | "none" };
+export interface ScoreDelta {
+  text: string;
+  glyph: string;
+  direction: "up" | "down" | "none";
+}
 
 export function scoreDelta(score: number, previousScore: number | undefined): ScoreDelta {
   if (previousScore === undefined || previousScore === score) {

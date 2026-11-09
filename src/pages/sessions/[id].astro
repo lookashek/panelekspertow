@@ -65,19 +65,19 @@ const personas = ADVISOR_REGISTRY.map((persona) => ({ id: persona.id, label: per
 ---
 
 <Layout title="Panel doradców — Panel Ekspertów">
-  <div class={`${containerVariants({ width: "wide" })} flex flex-col pb-16 pt-8 sm:pt-12`}>
+  <div class:list={`${containerVariants({ width: "wide" })} flex flex-col pb-16 pt-8 sm:pt-12`}>
     {notFound ? (
-      <div class={`${panelVariants({ padding: "page" })} mx-auto max-w-xl text-center`}>
-        <h1 class={headingVariants({ level: "page" })}>NIE ZNALEZIONO SESJI</h1>
+      <div class:list={`${panelVariants({ padding: "page" })} mx-auto max-w-xl text-center`}>
+        <h1 class:list={headingVariants({ level: "page" })}>NIE ZNALEZIONO SESJI</h1>
         <p class="mb-6 mt-4 text-sm text-muted-foreground">Ta sesja nie istnieje albo nie masz do niej dostępu.</p>
-        <a href="/sessions/new" class={buttonVariants({ variant: "default", size: "lg" })}>
+        <a href="/sessions/new" class:list={buttonVariants({ variant: "default", size: "lg" })}>
           NOWA DECYZJA
         </a>
       </div>
     ) : (
       <>
-        <div class={`${panelVariants({ padding: "page" })} mb-8`}>
-          <h1 class={headingVariants({ level: "page" })}>TWOJA DECYZJA</h1>
+        <div class:list={`${panelVariants({ padding: "page" })} mb-8`}>
+          <h1 class:list={headingVariants({ level: "page" })}>TWOJA DECYZJA</h1>
           <p class="mt-4 text-sm leading-relaxed text-foreground">{decision}</p>
           {context && <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{context}</p>}
         </div>

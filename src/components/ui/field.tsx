@@ -3,7 +3,7 @@ import * as React from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-type FieldProps = {
+interface FieldProps {
   id: string;
   label: string;
   hint?: React.ReactNode;
@@ -16,7 +16,7 @@ type FieldProps = {
    * real control itself. Defaults to true (DecisionForm's plain-Input case).
    */
   wireAria?: boolean;
-};
+}
 
 /** Label + control slot + hint + error, wiring `aria-describedby`/`aria-invalid` onto the control. */
 function Field({ id, label, hint, error, className, children, wireAria = true }: FieldProps) {

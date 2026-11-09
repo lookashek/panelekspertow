@@ -64,9 +64,7 @@ export function SideThread({ sessionId, personaId, label, initialMessages }: Sid
 
       {status === "error" && (
         <Alert variant="error">
-          <AlertDescription>
-            {error ?? "Nie udało się dopytać doradcy."} Możesz spróbować ponownie.
-          </AlertDescription>
+          <AlertDescription>{error ?? "Nie udało się dopytać doradcy."} Możesz spróbować ponownie.</AlertDescription>
         </Alert>
       )}
 
