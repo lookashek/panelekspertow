@@ -1,6 +1,16 @@
 {
   "permissions": {
-    "allow": ["Bash(git:*)", "Bash(npm run:*)"],
+    "allow": [
+      "Bash(git:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx astro:*)",
+      "Bash(npx prettier:*)",
+      "Bash(node .claude/skills/10x-research/scripts/metadata-guard.mjs:*)",
+      "Bash(node .claude/skills/10x-plan/scripts/metadata-guard.mjs:*)"
+    ],
     "deny": ["Bash(ls:*)", "Bash(cat:*)", "Bash(grep:*)", "Bash(find:*)", "Bash(sed:*)", "Bash(for:*)"]
   },
   "hooks": {
