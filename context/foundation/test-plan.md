@@ -121,12 +121,16 @@ evidence already cited in §2, not invented from nothing.
 Filled in by each rollout phase as it ships. Placeholders name the future pattern by
 behavior/failure mode, not by file.
 
-- **Ownership/authorization tests** — in progress, Phase 1 (`testing-critical-path-coverage`) —
-  unauthenticated-request coverage shipped for all 4 session-scoped routes (commit `59ec674`);
-  the real-Supabase cross-user-denial tests are written but not yet verified against a live
-  instance (local Supabase failed to start in-session) — see that change's `plan.md` Phase 2/3.
-- **SSE/streaming lifecycle tests** — in progress, same change/phase as above — abort/finally
-  test written, not yet verified against a live instance.
+- **Ownership/authorization tests** — closed partial, by explicit user decision (2026-11-09),
+  Phase 1 (`testing-critical-path-coverage`) — unauthenticated-request coverage shipped and
+  verified for all 4 session-scoped routes (commit `59ec674`); the real-Supabase
+  cross-user-denial tests are written and committed (`7773060`) but their assertions were
+  never executed — local Supabase would not start reliably in-session, and the user chose to
+  close the change rather than keep retrying. Resume by running `npm test` against a working
+  local Supabase (or the `smoke` CI job) — see that change's `plan.md` Phase 2, and
+  `change.md` for the full closure note.
+- **SSE/streaming lifecycle tests** — closed partial, same change/phase/reason as above —
+  abort/finally test written and committed (`c324964`), never executed against a live instance.
 - **Attribution referential-integrity tests** — shipped, Phase 2 (`testing-round-two-attribution`,
   commit `4909439`). Pattern: extend the existing mocked-repository/mocked-provider test family
   around the service-layer invariant function (here, `resolveRoundTwo` in
