@@ -257,15 +257,15 @@ skill's own rules).
 
 #### Automated
 
-- [ ] 1.1 `npm test` passes including the new non-participant-id case
-- [ ] 1.2 `npm run lint` passes on the changed file
+- [x] 1.1 `npm test` passes including the new non-participant-id case — 4909439
+- [x] 1.2 `npm run lint` passes on the changed file — 4909439
 
 ### Phase 2: Quote-fidelity tripwire test
 
 #### Automated
 
-- [ ] 2.1 `npm test` passes including the new tripwire case
-- [ ] 2.2 `npm run lint` passes on the changed file
+- [x] 2.1 `npm test` passes including the new tripwire case — 4909439
+- [x] 2.2 `npm run lint` passes on the changed file — 4909439
 
 ### Phase 3: Close out the rollout phase
 
