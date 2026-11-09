@@ -1,7 +1,7 @@
 ---
 change_id: testing-round-two-attribution
 title: Round-two attribution integrity
-status: implementing
+status: implemented
 created: 2026-11-09
 updated: 2026-11-09
 archived_at: null

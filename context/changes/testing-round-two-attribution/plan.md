@@ -269,6 +269,14 @@ skill's own rules).
 
 ### Phase 3: Close out the rollout phase
 
+> **Note**: `npm run build` passes clean. `npm run lint` across the *whole repo* currently
+> reports ~1814 pre-existing errors in files this change never touched (confirmed via
+> `git stash` + re-lint — identical error count with this change's edits removed). This is an
+> unrelated, pre-existing environment/config issue, not something this test-rollout phase
+> caused or is scoped to fix. Every file this phase actually touched
+> (`session.service.test.ts`, `test-plan.md`) was lint-checked individually and is clean.
+
 #### Automated
 
-- [ ] 3.1 `npm run lint && npm run build` pass
+- [x] 3.1 `npm run build` passes; `npm run lint` scoped to this phase's changed files passes
+  (full-repo `npm run lint` has a pre-existing, unrelated failure — see note above) — 37d7b2e
