@@ -673,6 +673,126 @@ describe("SessionService.runSecondRound", () => {
       spread: 3,
     });
   });
+
+  it("live: rejects attribution naming a real, valid persona who did not participate in round one (not self-attribution)", async () => {
+    // Only two of the four registry personas produced a round-one opinion — pragmatyk and
+    // analityk are absent from `priorHeads` entirely, distinct from the self-attribution case
+    // already covered above. Round two must still reject citing either of them, via the same
+    // `priorHeads.has(...)` membership check — research.md flagged this specific branch as
+    // implemented but untested.
+    const session = makeSession();
+    const roundOneRecords = [
+      makeOpinionRecord(ADVISOR_REGISTRY[0].id, { score: 5 }),
+      makeOpinionRecord(ADVISOR_REGISTRY[1].id, { score: 5 }),
+    ];
+
+    let call = 0;
+    const completeMock = vi.fn().mockImplementation(() => {
+      const index = call;
+      call += 1;
+      if (index === 0) {
+        // score changes, names a real registry persona who never produced a round-one opinion
+        // this session -> must fail, same as self-attribution
+        return Promise.resolve(
+          ok<AdvisorRoundTwoOpinion>({
+            score: 8,
+            thesis: "t",
+            arguments: ["a"],
+            attribution: { convincedByPersonaId: ADVISOR_REGISTRY[2].id, quotedPeerArgument: "never said this" },
+          }),
+        );
+      }
+      // score unchanged -> attribution dropped, not a failure
+      return Promise.resolve(
+        ok<AdvisorRoundTwoOpinion>({ score: 5, thesis: "t", arguments: ["a"], attribution: null }),
+      );
+    });
+    const provider = makeRoundTwoProvider({ complete: completeMock });
+    const { repository, mock } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: [] }),
+    });
+    const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+    const result = await service.runSecondRound("session-1", "user-1");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const events = await collect(result.value.events);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const errorEvent = events.find((e) => e.personaId === ADVISOR_REGISTRY[0].id && e.kind === "error");
+    expect(errorEvent).toMatchObject({ code: ErrorCode.LLM_INVALID_OUTPUT });
+
+    expect(mock.saveOpinions).toHaveBeenCalledTimes(1);
+    const [, , saved] = mock.saveOpinions.mock.calls[0] as [string, number, SaveOpinionInput[]];
+    expect(saved.find((s) => s.personaId === ADVISOR_REGISTRY[0].id)).toBeUndefined();
+  });
+
+  it(
+    "live: TRIPWIRE — a fabricated quote attributed to a real round-one peer is currently accepted " +
+      "unchanged (PRD Open Question #2, 'attribution theater' — Owner: user, not resolved by this test). " +
+      "If a future change adds quote-fidelity enforcement, update this test deliberately; do not let it " +
+      "fail by accident.",
+    async () => {
+      const session = makeSession();
+      // sceptyk's real round-one argument is a concrete, checkable string — the fabricated quote
+      // below does not match it, and nothing in resolveRoundTwo checks that today.
+      const roundOneRecords = [
+        makeOpinionRecord(ADVISOR_REGISTRY[0].id, { score: 5 }),
+        makeOpinionRecord(ADVISOR_REGISTRY[1].id, {
+          score: 5,
+          arguments: ["Rynek może się pogorszyć w ciągu kwartału"],
+        }),
+      ];
+      const fabricatedQuote = "Coś, czego Sceptyk nigdy nie powiedział w rundzie pierwszej";
+
+      let call = 0;
+      const completeMock = vi.fn().mockImplementation(() => {
+        const index = call;
+        call += 1;
+        if (index === 0) {
+          return Promise.resolve(
+            ok<AdvisorRoundTwoOpinion>({
+              score: 8,
+              thesis: "t",
+              arguments: ["a"],
+              attribution: { convincedByPersonaId: ADVISOR_REGISTRY[1].id, quotedPeerArgument: fabricatedQuote },
+            }),
+          );
+        }
+        return Promise.resolve(
+          ok<AdvisorRoundTwoOpinion>({ score: 5, thesis: "t", arguments: ["a"], attribution: null }),
+        );
+      });
+      const provider = makeRoundTwoProvider({ complete: completeMock });
+      const { repository, mock } = makeRepository({
+        getSession: vi.fn().mockResolvedValue(ok(session)),
+        getOpinions: makeGetOpinionsByRound({ 1: roundOneRecords, 2: [] }),
+      });
+      const service = new SessionService({ repository, provider, logger: makeLogger() });
+
+      const result = await service.runSecondRound("session-1", "user-1");
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      const events = await collect(result.value.events);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Current, accepted behavior: the fabricated quote passes straight through — no rejection,
+      // no sanitization, no comparison against sceptyk's actual round-one arguments.
+      const scoreEvent = events.find((e) => e.personaId === ADVISOR_REGISTRY[0].id && e.kind === "score");
+      expect(scoreEvent).toMatchObject({
+        attributedPersonaId: ADVISOR_REGISTRY[1].id,
+        attributionQuote: fabricatedQuote,
+      });
+
+      expect(mock.saveOpinions).toHaveBeenCalledTimes(1);
+      const [, , saved] = mock.saveOpinions.mock.calls[0] as [string, number, SaveOpinionInput[]];
+      expect(saved.find((s) => s.personaId === ADVISOR_REGISTRY[0].id)).toMatchObject({
+        attributedPersonaId: ADVISOR_REGISTRY[1].id,
+        attributionQuote: fabricatedQuote,
+      });
+    },
+  );
 });
 
 describe("SessionService.runSynthesis", () => {
