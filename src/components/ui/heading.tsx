@@ -27,7 +27,9 @@ const TAG_BY_LEVEL = {
 
 type HeadingProps = React.ComponentProps<"h1"> & VariantProps<typeof headingVariants>;
 
-function Heading({ className, level, as, ...props }: HeadingProps & { as?: keyof typeof TAG_BY_LEVEL }) {
+type HeadingTag = (typeof TAG_BY_LEVEL)[keyof typeof TAG_BY_LEVEL];
+
+function Heading({ className, level, as, ...props }: HeadingProps & { as?: HeadingTag }) {
   const Tag = as ?? TAG_BY_LEVEL[level ?? "section"];
   return <Tag className={cn(headingVariants({ level }), className)} {...props} />;
 }
