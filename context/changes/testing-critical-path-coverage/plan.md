@@ -413,8 +413,8 @@ test-plan skill's own rules).
 
 - [ ] 2.1 Repository-level cross-user denial test passes against local Supabase
 - [ ] 2.2 Route-handler-level ownership denial test passes against local Supabase
-- [x] 2.3 `npm test` still passes with `SUPABASE_URL` unset (new files no-op)
-- [x] 2.4 `npm run lint` passes on the new files
+- [x] 2.3 `npm test` still passes with `SUPABASE_URL` unset (new files no-op) — 7773060
+- [x] 2.4 `npm run lint` passes on the new files — 7773060
 
 ### Phase 3: SSE lifecycle determinism
 
@@ -424,7 +424,7 @@ test-plan skill's own rules).
 #### Automated
 
 - [ ] 3.1 Abort-triggers-close test passes against local Supabase
-- [x] 3.2 `npm run lint` passes on the new/changed files
+- [x] 3.2 `npm run lint` passes on the new/changed files — 7773060
 
 ### Phase 4: Wire tests into CI; close out the rollout phase
 
