@@ -396,25 +396,35 @@ test-plan skill's own rules).
 
 #### Automated
 
-- [x] 1.1 `npm test` passes for the four new route unauthenticated-request test files
-- [x] 1.2 `npm run lint` passes on the new files
-- [x] 1.3 `npx astro check` passes
+- [x] 1.1 `npm test` passes for the four new route unauthenticated-request test files — 59ec674
+- [x] 1.2 `npm run lint` passes on the new files — 59ec674
+- [x] 1.3 `npx astro check` passes — 59ec674
 
 ### Phase 2: Cross-user ownership integration coverage (real Supabase, two users)
+
+> **Blocked in this session**: local Supabase (`supabase start`) failed to come up reliably
+> on this machine (CLI connect race against the DB container's health check). Code for 2.1/2.2
+> is written, type-checks, lints clean, and collects/skips correctly under plain `npm test`
+> without `SUPABASE_URL` set (2.3/2.4 below) — but the actual DB-backed assertions in 2.1/2.2
+> have **not** been executed against a real instance in this session. Run them against a
+> working local Supabase (or let the `smoke` CI job run them) before checking 2.1/2.2 done.
 
 #### Automated
 
 - [ ] 2.1 Repository-level cross-user denial test passes against local Supabase
 - [ ] 2.2 Route-handler-level ownership denial test passes against local Supabase
-- [ ] 2.3 `npm test` still passes with `SUPABASE_URL` unset (new files no-op)
-- [ ] 2.4 `npm run lint` passes on the new files
+- [x] 2.3 `npm test` still passes with `SUPABASE_URL` unset (new files no-op)
+- [x] 2.4 `npm run lint` passes on the new files
 
 ### Phase 3: SSE lifecycle determinism
+
+> **Blocked in this session** for the same reason as Phase 2 — see note above. The abort test
+> is written and type-checks/lints clean but has not run against a real local Supabase.
 
 #### Automated
 
 - [ ] 3.1 Abort-triggers-close test passes against local Supabase
-- [ ] 3.2 `npm run lint` passes on the new/changed files
+- [x] 3.2 `npm run lint` passes on the new/changed files
 
 ### Phase 4: Wire tests into CI; close out the rollout phase
 
