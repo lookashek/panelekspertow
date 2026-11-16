@@ -23,6 +23,27 @@
             "command": "node .claude/hooks/roadmap-sync-reminder.mjs"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/lint-edited-file.mjs",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/end-of-turn.mjs",
+            "timeout": 120
+          }
+        ]
       }
     ]
   }
