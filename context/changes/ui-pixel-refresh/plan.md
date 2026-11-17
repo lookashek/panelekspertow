@@ -376,9 +376,9 @@ inherited open item.
 
 ### Phase 3: AdvisorCard avatar + score-pop reveal
 #### Automated
-- [x] 3.1 `npm run lint:ui` passes
-- [x] 3.2 `npm run lint` passes
-- [x] 3.3 `npm run build` succeeds
+- [x] 3.1 `npm run lint:ui` passes — 180772c
+- [x] 3.2 `npm run lint` passes — 180772c
+- [x] 3.3 `npm run build` succeeds — 180772c
 #### Manual
 - [ ] 3.4 Each of the 4 advisor cards shows a distinct avatar (PENDING — needs your live check on a real session at `/sessions/[id]`; dev server doesn't start in this environment)
 - [ ] 3.5 Score-pop fires once per round, not on every re-render (PENDING — same live-session blocker; by code inspection it's applied unconditionally on an element that only mounts once per round per the existing `state.score !== undefined && delta` guard, so it should not re-trigger on unrelated re-renders, but this needs live confirmation)
@@ -387,13 +387,13 @@ inherited open item.
 
 ### Phase 4: Synthesis completion moment + mascot
 #### Automated
-- [ ] 4.1 `npm run lint:ui` passes
-- [ ] 4.2 `npm run lint` passes
-- [ ] 4.3 `npm run build` succeeds
+- [x] 4.1 `npm run lint:ui` passes
+- [x] 4.2 `npm run lint` passes
+- [x] 4.3 `npm run build` succeeds
 #### Manual
-- [ ] 4.4 Completion pop + mascot appear exactly once on synthesis done
-- [ ] 4.5 Reduced-motion disables the pop/fade; mascot still appears (static)
-- [ ] 4.6 Mascot sprite reads as deliberate, not visual noise
+- [ ] 4.4 Completion pop + mascot appear exactly once on synthesis done (PENDING — needs your live check; by code inspection `justCompleted` is set only on the `!== "done" -> "done"` transition inside the existing once-per-status-change effect, so it should not re-fire on re-renders)
+- [ ] 4.5 Reduced-motion disables the pop/fade; mascot still appears (static) (PENDING — same live-session blocker; both animations are `motion-safe:`-gated by code, mascot render itself isn't gated)
+- [ ] 4.6 Mascot sprite reads as deliberate, not visual noise (PENDING — subjective call, needs your eyes on the actual pixel art)
 
 ### Phase 5: States, visual gate, and guard
 #### Automated

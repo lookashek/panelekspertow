@@ -13,6 +13,7 @@ import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { headingVariants } from "@/components/ui/heading";
+import { Mascot } from "@/components/ui/mascot";
 import { panelVariants } from "@/components/ui/panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -56,10 +57,14 @@ function SynthesisStream({
 }) {
   const state = useSynthesisStream(sessionId);
   const reportedStatusRef = useRef<SynthesisStreamStatus | null>(null);
+  const [justCompleted, setJustCompleted] = useState(false);
 
   useEffect(() => {
     if (reportedStatusRef.current === state.status) {
       return;
+    }
+    if (reportedStatusRef.current !== "done" && state.status === "done") {
+      setJustCompleted(true);
     }
     reportedStatusRef.current = state.status;
     onStatus(state.status);
@@ -95,7 +100,7 @@ function SynthesisStream({
   const synthesis = state.synthesis;
 
   return (
-    <div className="animate-fade-up flex flex-col gap-4">
+    <div className="motion-safe:animate-fade-up flex flex-col gap-4">
       {synthesis && (
         <>
           <div className={panelVariants({ padding: "card" })}>
@@ -145,8 +150,16 @@ function SynthesisStream({
             )}
           </div>
 
-          <div className={panelVariants({ padding: "card", tone: "primary" })}>
-            <h3 className={headingVariants({ level: "panel" })}>Rekomendowany następny krok</h3>
+          <div
+            className={cn(
+              panelVariants({ padding: "card", tone: "primary" }),
+              justCompleted && "motion-safe:animate-synthesis-complete",
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <h3 className={headingVariants({ level: "panel" })}>Rekomendowany następny krok</h3>
+              {justCompleted && <Mascot className="h-8 w-8" />}
+            </div>
             <p className="text-foreground mt-2 text-sm font-bold">{synthesis.recommendedNextStep}</p>
           </div>
         </>
