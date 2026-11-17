@@ -397,12 +397,12 @@ inherited open item.
 
 ### Phase 5: States, visual gate, and guard
 #### Automated
-- [x] 5.1 `npm run lint:ui` clean
-- [x] 5.2 `npm run lint` clean
-- [x] 5.3 `npm run build` succeeds
-- [x] 5.4 Hardcoded-value re-scan: 0 hits across touched + new files
+- [x] 5.1 `npm run lint:ui` clean — cc6c480
+- [x] 5.2 `npm run lint` clean — cc6c480
+- [x] 5.3 `npm run build` succeeds — cc6c480
+- [x] 5.4 Hardcoded-value re-scan: 0 hits across touched + new files — cc6c480
 #### Manual
 - [ ] 5.5 Full flow walkthrough confirms all new visuals, correct "once" behavior (PENDING — needs your live check; no dev server available in this environment)
 - [ ] 5.6 Kitchen-sink 7-state matrix: every cell shown or N/A-with-reason (PENDING — new pixel-art section added with explicit N/A reasoning for all 7 cells; needs your visual confirmation)
 - [ ] 5.7 Desktop (1280px) + mobile (375px) pass, no layout breaks (PENDING — same live-render blocker)
-- [x] 5.8 `frontend.md` fully reconciled (no Silkscreen mentions, token table matches) — confirmed by grep: only historical change-folder docs mention Silkscreen, no live code/rules reference remains
+- [x] 5.8 `frontend.md` fully reconciled (no Silkscreen mentions, token table matches) — confirmed by grep: only historical change-folder docs mention Silkscreen, no live code/rules reference remains — cc6c480
