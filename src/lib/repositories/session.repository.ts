@@ -246,6 +246,16 @@ export class SessionRepository {
     return ok(undefined);
   }
 
+  async deleteSession(id: string): Promise<Result<void, DbError>> {
+    const { error } = (await this.client.from("sessions").delete().eq("id", id)) as DbResponse<unknown>;
+
+    if (error) {
+      return err(new DbError("Failed to delete session", error));
+    }
+
+    return ok(undefined);
+  }
+
   async saveSideThreadMessage(
     sessionId: string,
     input: SaveSideThreadMessageInput,

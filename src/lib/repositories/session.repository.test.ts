@@ -20,6 +20,7 @@ function makeQueryBuilder(response: QueryResponse) {
   const builder: Record<string, unknown> = {
     insert: vi.fn(() => builder),
     update: vi.fn(() => builder),
+    delete: vi.fn(() => builder),
     select: vi.fn(() => builder),
     order: vi.fn(() => builder),
     limit: vi.fn(() => builder),
@@ -408,6 +409,32 @@ describe("SessionRepository.completeSession", () => {
     const repo = new SessionRepository(client);
 
     const result = await repo.completeSession("session-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(DbError);
+    }
+  });
+});
+
+describe("SessionRepository.deleteSession", () => {
+  it("deletes the session by id", async () => {
+    const { client, from, builder } = makeClient({ data: null, error: null });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.deleteSession("session-1");
+
+    expect(from).toHaveBeenCalledWith("sessions");
+    expect(builder.delete).toHaveBeenCalled();
+    expect(builder.eq).toHaveBeenCalledWith("id", "session-1");
+    expect(result).toEqual({ ok: true, value: undefined });
+  });
+
+  it("maps a Supabase error to Result.err(DbError)", async () => {
+    const { client } = makeClient({ data: null, error: { message: "delete failed" } });
+    const repo = new SessionRepository(client);
+
+    const result = await repo.deleteSession("session-1");
 
     expect(result.ok).toBe(false);
     if (!result.ok) {

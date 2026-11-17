@@ -488,6 +488,8 @@ const typeScale: { role: string; className: string }[] = [
           <p class="mt-3 text-sm text-muted-foreground">
             DISABLED: N/A — pozycje to zwykłe linki. ERROR: N/A — stan błędu wczytywania żyje w stronie nadrzędnej
             (sessions/index.astro), nie w SessionList. LOADING: N/A — lista jest renderowana po stronie serwera.
+            Przycisk USUŃ (DeleteSessionButton) ma własne stany DEFAULT/HOVER/FOCUS-VISIBLE/DISABLED (pending) widoczne
+            powyżej po kliknięciu i potwierdzeniu; ERROR renderuje się inline pod przyciskiem przy nieudanym żądaniu.
           </p>
         </div>
 

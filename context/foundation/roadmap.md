@@ -52,6 +52,7 @@ Ludzie podejmują decyzje średniej wagi bez dostępu do bezstronnej kontry: kon
 | S-06  | resume-session-round    | wrócić do sesji, dorzucić kontekst i uruchomić kolejną rundę      | S-05, S-02    | FR-008                            | planning |
 | S-07  | session-quality-polish  | otrzymać zwięzłe opinie doradców i jasną akcję po zakończeniu sesji | S-03        | FR-011                            | in-progress |
 | S-08  | ui-visual-refactor      | korzystać z wizualnie spójnego, odświeżonego UI na całej aplikacji | S-01          | FR-012                            | in-progress |
+| S-09  | session-history-delete  | usunąć wybraną sesję z historii                                   | S-05          | FR-006 (zarządzanie zapisanymi sesjami) | done |
 
 ## Streams
 
@@ -214,6 +215,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Niskie ryzyko funkcjonalne (refaktor wizualny, nie logiki); sekwencjonowany po S-01, bo potrzebuje istniejących ekranów do refaktoru.
 - **Status:** planning
 
+### S-09: Usunięcie sesji z historii
+
+- **Outcome:** użytkownik usuwa wybraną sesję ze swojej historii (lista, API, trwałość) — operacja nieodwracalna, dostępna tylko dla właściciela sesji.
+- **Change ID:** session-history-delete
+- **PRD refs:** FR-006 (zarządzanie zapisaną sesją na koncie); zidentyfikowane jako brakująca operacja CRUD podczas audytu MVP (2026-11-17) — PRD nie definiowało usuwania wprost, ale RLS `sessions_delete_own`/`advisor_opinions_delete_own` (F-02) już to przewidywały na poziomie bazy.
+- **Prerequisites:** S-05 (lista historii, do której dopina się akcja usuwania)
+- **Parallel with:** S-06, S-07, S-08
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Niskie ryzyko funkcjonalne — reużywa wzorca RLS + jawnej kontroli właściciela w serwisie (ten sam wzorzec co `runFirstRound`/`runSecondRound`/`askSideThread`). Operacja nieodwracalna, więc frontend wymaga jawnego potwierdzenia przed wywołaniem.
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID               | Suggested issue title                                    | Ready for `/10x-plan` | Notes |
@@ -228,6 +241,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-06       | resume-session-round    | Powrót do sesji + nowy kontekst + kolejna runda           | no                    | Wymaga S-05, S-02; brak US (OQ#4) |
 | S-07       | session-quality-polish  | Poprawa jakości sesji: zwięzłość odpowiedzi + zakończenie | no                    | Wymaga S-03; zakres niedoprecyzowany (OQ#6) |
 | S-08       | ui-visual-refactor      | Refaktor wizualny UI                                      | no                    | Wymaga S-01; zakres do doprecyzowania w `/10x-plan` |
+| S-09       | session-history-delete  | Usunięcie sesji z historii                                | n/a (shipped directly) | Wymaga S-05; dostarczone bez przejścia przez `/10x-plan` |
 
 ## Open Roadmap Questions
 
@@ -261,3 +275,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-02: użytkownik uruchamia rundę drugą, w której persony odnoszą się do stanowisk pozostałych, a każda zmiana oceny wymaga wskazania autora przekonującego argumentu.** — Archived 2026-09-29 → `context/archive/2026-09-25-round-two-attribution/`. Lesson: —.
 - **S-03: zakończyć sesję i otrzymać syntezę z co najmniej jedną osią sporu** — Archived 2026-09-29 → `context/archive/2026-09-25-session-synthesis/`. Lesson: —.
 - **S-05: zobaczyć listę zapisanych sesji i wrócić do wybranej** — Archived 2026-09-29 → `context/archive/2026-09-25-session-history/`. Lesson: —.
+- **S-09: użytkownik usuwa wybraną sesję ze swojej historii** — 2026-11-17, not yet archived (shipped directly, no `/10x-new`/`/10x-plan` change folder). Lesson: the MVP-readiness audit found Delete missing from the app layer despite RLS already having `sessions_delete_own`/`advisor_opinions_delete_own` policies since F-02 — a DB-level policy is not the same as an exposed operation; closing a CRUD gap belongs on the roadmap, not just in a PR.

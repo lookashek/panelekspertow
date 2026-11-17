@@ -57,6 +57,31 @@ docs:
   Tests that wait for time are inherently flaky").
 - `storageState` is the standard pattern for authenticated tests.
 
+## Project conventions (Panel Ekspertów)
+
+Appended for this project — see `context/foundation/test-plan.md` and
+`context/foundation/test-stack.md` for the source facts.
+
+- **UI is Polish.** Accessible names/roles are the Polish copy (`getByRole('button', { name: 'Zaloguj się' })`,
+  `getByRole('textbox', { name: 'E-mail' })`). Don't translate labels in the test — match the rendered string exactly.
+- **Astro islands hydration.** Every form is a `client:load` React island; fill+submit inside
+  `expect(async () => { ... }).toPass()` as the seed and `auth.setup.ts` do, clearing each field before
+  re-filling. Never type into a form immediately after `page.goto()` without this retry.
+- **Auth backend is real and hosted**, not a local Supabase (local `supabase start` does not reliably
+  come up in this environment/session — see `test-plan.md` §6 Cookbook). The E2E test user
+  (`E2E_USERNAME`/`E2E_PASSWORD` in `.env`) lives on the hosted project and was confirmed via a one-off
+  Admin API call, not email delivery. Never create additional throwaway users against this backend
+  without the same deliberate, user-approved path.
+- **Auth routes use the redirect-with-`?error=` convention** (`backend.md` §3) — a failed sign-in/sign-up
+  round-trips through a URL query param, not a JSON error. Assert on the rendered `ServerError` message
+  and/or the URL, not a fetch response body.
+- **`astro preview` auto-backgrounds** when it detects an AI agent in the environment (undocumented,
+  verified on Astro 7) — `playwright.config.ts`'s `webServer.env.ASTRO_PREVIEW_BACKGROUND=1` handles this,
+  but when starting it by hand for exploration always confirm with `astro preview status` / `curl`, not
+  `netstat`/`findstr` alone — they have been unreliable for confirming the bound port in this environment.
+- **Protected routes**: `src/middleware.ts` → `PROTECTED_ROUTES = ["/dashboard", "/sessions"]`. An
+  auth-gate test targets one of these, not a page outside that list.
+
 ## Other stacks
 
 The rules above are Playwright syntax; the principles are tool-agnostic. Map

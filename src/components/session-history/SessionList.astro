@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { panelVariants } from "@/components/ui/panel";
+import { DeleteSessionButton } from "@/components/session-history/DeleteSessionButton";
 import { formatSessionDate } from "@/lib/utils";
 import type { Session } from "@/types/session";
 
@@ -32,19 +33,17 @@ const STATUS_BADGE: Record<Session["status"], "info" | "neutral"> = {
 ) : (
   <ul class="flex flex-col gap-4">
     {sessions.map((session) => (
-      <li>
-        <a
-          href={`/sessions/${session.id}`}
-          class:list={`${panelVariants({ padding: "card", interactive: true })} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
-        >
-          <div class="min-w-0 flex-1">
-            <p class="line-clamp-2 text-sm leading-relaxed text-foreground">{session.decision}</p>
-            <p class="mt-2 text-xs text-muted-foreground">{formatSessionDate(session.createdAt)}</p>
-          </div>
-          <Badge variant={STATUS_BADGE[session.status]} className="shrink-0">
-            {STATUS_LABEL[session.status]}
-          </Badge>
+      <li
+        class:list={`${panelVariants({ padding: "card" })} flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+      >
+        <a href={`/sessions/${session.id}`} class="min-w-0 flex-1">
+          <p class="line-clamp-2 text-sm leading-relaxed text-foreground">{session.decision}</p>
+          <p class="mt-2 text-xs text-muted-foreground">{formatSessionDate(session.createdAt)}</p>
         </a>
+        <div class="flex shrink-0 items-center gap-3">
+          <Badge variant={STATUS_BADGE[session.status]}>{STATUS_LABEL[session.status]}</Badge>
+          <DeleteSessionButton sessionId={session.id} decisionPreview={session.decision} client:idle />
+        </div>
       </li>
     ))}
   </ul>

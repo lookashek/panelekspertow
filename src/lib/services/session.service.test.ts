@@ -146,6 +146,7 @@ interface RepoMock {
   getSynthesis: ReturnType<typeof vi.fn>;
   saveSynthesis: ReturnType<typeof vi.fn>;
   completeSession: ReturnType<typeof vi.fn>;
+  deleteSession: ReturnType<typeof vi.fn>;
   saveSideThreadMessage: ReturnType<typeof vi.fn>;
   getSideThreadMessagesForSession: ReturnType<typeof vi.fn>;
   getSideThreadMessages: ReturnType<typeof vi.fn>;
@@ -176,6 +177,7 @@ function makeRepository(overrides: Partial<RepoMock> = {}): { repository: Sessio
     getSynthesis: vi.fn().mockResolvedValue(ok(null)),
     saveSynthesis: vi.fn().mockResolvedValue(ok(makeSessionSynthesis())),
     completeSession: vi.fn().mockResolvedValue(ok(undefined)),
+    deleteSession: vi.fn().mockResolvedValue(ok(undefined)),
     saveSideThreadMessage: vi.fn().mockResolvedValue(ok(makeSideThreadMessage())),
     getSideThreadMessagesForSession: vi.fn().mockResolvedValue(ok([])),
     getSideThreadMessages: vi.fn().mockResolvedValue(ok([])),
@@ -256,6 +258,63 @@ describe("SessionService.listSessions", () => {
     const result = await service.listSessions();
 
     expect(mock.listSessions).toHaveBeenCalledWith(undefined);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe(dbError);
+    }
+  });
+});
+
+describe("SessionService.deleteSession", () => {
+  it("deletes the session when the caller owns it", async () => {
+    const session = makeSession({ userId: "user-1" });
+    const { repository, mock } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(session)) });
+    const service = new SessionService({ repository });
+
+    const result = await service.deleteSession("session-1", "user-1");
+
+    expect(mock.deleteSession).toHaveBeenCalledWith("session-1");
+    expect(result).toEqual(ok(undefined));
+  });
+
+  it("returns NotFoundError when the session belongs to another user, without deleting it", async () => {
+    const session = makeSession({ userId: "someone-else" });
+    const { repository, mock } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(session)) });
+    const service = new SessionService({ repository });
+
+    const result = await service.deleteSession("session-1", "user-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NotFoundError);
+    }
+    expect(mock.deleteSession).not.toHaveBeenCalled();
+  });
+
+  it("returns NotFoundError when the session does not exist", async () => {
+    const { repository, mock } = makeRepository({ getSession: vi.fn().mockResolvedValue(ok(null)) });
+    const service = new SessionService({ repository });
+
+    const result = await service.deleteSession("session-1", "user-1");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NotFoundError);
+    }
+    expect(mock.deleteSession).not.toHaveBeenCalled();
+  });
+
+  it("propagates a repository error Result unchanged", async () => {
+    const session = makeSession({ userId: "user-1" });
+    const dbError = new DbError("Failed to delete session", new Error("boom"));
+    const { repository } = makeRepository({
+      getSession: vi.fn().mockResolvedValue(ok(session)),
+      deleteSession: vi.fn().mockResolvedValue(err(dbError)),
+    });
+    const service = new SessionService({ repository });
+
+    const result = await service.deleteSession("session-1", "user-1");
+
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toBe(dbError);

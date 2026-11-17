@@ -415,6 +415,25 @@ export class SessionService {
     return this.repository.listSessions(opts);
   }
 
+  /**
+   * Defense in depth (`backend.md` §7): RLS's `sessions_delete_own` policy already scopes the
+   * delete to the caller's own row, but the explicit ownership check below keeps this use case
+   * consistent with every other per-session method here and turns a cross-user attempt into the
+   * same `NotFoundError` those return, instead of a silent RLS-filtered no-op.
+   */
+  async deleteSession(sessionId: string, userId: string): Promise<Result<void>> {
+    const sessionResult = await this.repository.getSession(sessionId);
+    if (!sessionResult.ok) {
+      return sessionResult;
+    }
+    const session = sessionResult.value;
+    if (session?.userId !== userId) {
+      return err(new NotFoundError("Session not found"));
+    }
+
+    return this.repository.deleteSession(sessionId);
+  }
+
   async runFirstRound(sessionId: string, userId: string): Promise<Result<PanelRunView>> {
     if (!this.provider) {
       return err(new AppError("Service not configured", ErrorCode.NOT_CONFIGURED, 503));
