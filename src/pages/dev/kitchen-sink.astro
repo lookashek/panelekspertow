@@ -11,8 +11,13 @@ import { Alert, AlertTitle, AlertDescription, AlertAction } from "@/components/u
 import { Skeleton } from "@/components/ui/skeleton";
 import { panelVariants } from "@/components/ui/panel";
 import { headingVariants } from "@/components/ui/heading";
+import { Mascot } from "@/components/ui/mascot";
+import { PixelSprite } from "@/components/ui/pixel-sprite";
+import { ADVISOR_SPRITE_FILLS, advisorSprite } from "@/lib/advisors/advisor-sprites";
 import { LogIn } from "lucide-react";
 import type { Session } from "@/types/session";
+
+const advisorIds = ["optymista", "sceptyk", "pragmatyk", "analityk"] as const;
 
 const isDev = import.meta.env.DEV;
 if (!isDev) {
@@ -28,9 +33,9 @@ const swatches: { role: string; className: string }[] = [
   { role: "success", className: "bg-success" },
   { role: "warning", className: "bg-warning" },
   { role: "destructive", className: "bg-destructive" },
-  { role: "advisor-1 (pink)", className: "bg-advisor-1" },
-  { role: "advisor-2 (lime)", className: "bg-advisor-2" },
-  { role: "advisor-3 (orange)", className: "bg-advisor-3" },
+  { role: "advisor-1 (rose)", className: "bg-advisor-1" },
+  { role: "advisor-2 (sky blue)", className: "bg-advisor-2" },
+  { role: "advisor-3 (mustard-gold)", className: "bg-advisor-3" },
   { role: "advisor-4 (lilac)", className: "bg-advisor-4" },
 ];
 
@@ -62,7 +67,7 @@ const typeScale: { role: string; className: string }[] = [
       <h1 class:list={headingVariants({ level: "page" })}>Kitchen sink</h1>
 
       <section class="flex flex-col gap-4">
-        <h2 class:list={headingVariants({ level: "section" })}>Polskie znaki (Silkscreen)</h2>
+        <h2 class:list={headingVariants({ level: "section" })}>Polskie znaki (Pixelify Sans)</h2>
         <p class="font-pixel text-pixel-lg">ĄĆĘŁŃÓŚŹŻ ąćęłńóśźż</p>
       </section>
 
@@ -203,6 +208,54 @@ const typeScale: { role: string; className: string }[] = [
           <p class:list={headingVariants({ level: "section" })}>Section heading</p>
           <p class:list={headingVariants({ level: "panel" })}>Panel heading</p>
           <p class:list={headingVariants({ level: "label" })}>Micro label</p>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <h2 class:list={headingVariants({ level: "section" })}>Pixel-art: awatary, maskotka, animacje</h2>
+        <p class="text-sm text-muted-foreground">
+          Statyczna, nieinteraktywna grafika (SVG, wypełnienia przez tokeny) — stany HOVER/FOCUS-VISIBLE/DISABLED/
+          ERROR/EMPTY/LOADING są N/A dla wszystkich elementów na tej karcie: to czysta dekoracja, bez własnego stanu
+          interakcji. Żywe zachowanie `score-pop` (reveal wyniku) i `synthesis-complete` (zakończenie syntezy) weryfikuj
+          na <code>/sessions/[id]</code> — tu pokazane jako statyczny podgląd animacji.
+        </p>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Awatary doradców (AdvisorCard, pełny rozmiar)</h3>
+          <div class="mt-3 flex flex-wrap gap-6">
+            {advisorIds.map((id) => (
+              <div class="flex flex-col items-center gap-2">
+                <PixelSprite grid={advisorSprite(id).grid} fills={ADVISOR_SPRITE_FILLS} size="h-10 w-10" />
+                <span class="text-pixel-micro text-muted-foreground">{id}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Awatary doradców (RoundSummary, zwinięty rząd)</h3>
+          <div class="mt-3 flex flex-wrap gap-6">
+            {advisorIds.map((id) => (
+              <PixelSprite grid={advisorSprite(id).grid} fills={ADVISOR_SPRITE_FILLS} size="h-4 w-4" />
+            ))}
+          </div>
+        </div>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>Maskotka (moment zakończenia syntezy)</h3>
+          <div class="mt-3 flex items-center gap-4">
+            <Mascot className="h-10 w-10" />
+            <span class="text-sm text-muted-foreground">Jedna poza — pojawia się tylko gdy status syntezy = done.</span>
+          </div>
+        </div>
+        <div class:list={panelVariants({ padding: "card" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>score-pop (statyczny podgląd)</h3>
+          <p class:list={`motion-safe:animate-score-pop text-info text-pixel-md mt-2`} aria-hidden="true">
+            ★★★★★★★★☆☆
+          </p>
+        </div>
+        <div class:list={panelVariants({ padding: "card", tone: "primary" })}>
+          <h3 class:list={headingVariants({ level: "panel" })}>synthesis-complete (statyczny podgląd)</h3>
+          <p class="mt-2 motion-safe:animate-synthesis-complete text-sm text-foreground">
+            Panel z animowanym "pop" cienia pikselowego przy pierwszym renderze tej karty.
+          </p>
         </div>
       </section>
 

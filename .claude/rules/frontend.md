@@ -60,23 +60,23 @@ src/components/
 
 ## 5. Design language — "neon arcade on graphite" (single dark theme)
 
-- The app has ONE visual style: modern 8-bit arcade — neutral graphite surfaces, multicolour neon accents. No light mode, no theme toggle. Final values and contrast table: `context/changes/ui-visual-refactor/palette.md` (archived with the change).
+- The app has ONE visual style: lighter pixel-art arcade — desaturated graphite surfaces, multicolour accents. No light mode, no theme toggle. Final values and contrast table: `context/changes/ui-pixel-refresh/palette.md`.
 - Palette roles (tokens in `global.css`, never hardcoded) and their fixed meaning:
 
   | Role | Token(s) | Value | Meaning — use only for |
   |---|---|---|---|
-  | Surfaces | `background`, `card`, `secondary`/`muted` | graphite `#12141c` / `#1b1e2a` / `#252a3a` | page, panels, insets |
-  | Text | `foreground`, `muted-foreground` | `#eef0f6` / `#9aa3b8` | body, secondary text |
+  | Surfaces | `background`, `card`, `secondary`/`muted` | graphite `#1f2230` / `#2a2e40` / `#363b52` | page, panels, insets |
+  | Text | `foreground`, `muted-foreground` | `#f3f1e8` / `#aab0c9` | body, secondary text |
   | Structure | `border` | neutral (foreground, low mix) | static panel borders, dividers |
-  | Action | `primary` | arcade yellow `#ffcc33` | buttons, links, other interactive elements — **never** static structure |
-  | Info / scores | `accent`, `info`, `ring` | cyan `#33d6ff` | scores, informational emphasis, focus ring |
-  | Status | `success`, `warning`, `destructive` | lime `#5cf28a`, orange `#ff9f43`, red `#ff4f6d` | badges, alerts, risk levels — always with text |
-  | Advisor identity | `advisor-1…4` | pink `#ff5fa2`, lime `#5cf28a`, orange `#ff9f43`, lilac `#a78bfa` | advisor name/marker only — never buttons or status |
+  | Action | `primary` | arcade amber `#f2b84f` | buttons, links, other interactive elements — **never** static structure |
+  | Info / scores | `accent`, `info`, `ring` | cyan `#5cc9e0` | scores, informational emphasis, focus ring |
+  | Status | `success`, `warning`, `destructive` | green `#7fd99a`, orange `#e8a05a`, red `#ef7a90` | badges, alerts, risk levels — always with text |
+  | Advisor identity | `advisor-1…4` | rose `#e37aa8`, sky blue `#6fb8e8`, mustard-gold `#c9a227`, lilac `#a894da` | advisor name/marker only — never buttons or status |
 
 - Gradients only on accents (hero/headings, primary buttons), never on body text or backgrounds — page backgrounds are flat `background`.
 - Pixel aesthetic: sharp corners everywhere — `--radius` and `--radius-*` are `0`, never add `rounded-*`. Shadows are hard-edged offsets via `shadow-pixel`, never blurred (`shadow-xs`/`shadow-md`, `backdrop-blur-*` are banned). Borders `2px` solid.
 - Pixel-art graphics (advisor avatars, icons, decorations): sprites rendered with `image-rendering: pixelated`, scaled only by integer multiples so pixels stay crisp.
-- Typography: pixel font **Silkscreen** (self-hosted in `src/assets/fonts/`) for headings, buttons, badges, and short labels ONLY, sized only from the pixel type scale (`text-pixel-micro` / `-sm` / `-md` / `-lg` / `-xl` / `-2xl`). Body text and advisor output use **JetBrains Mono**. Never set long-form text in the pixel font.
+- Typography: pixel font **Pixelify Sans** (self-hosted in `src/assets/fonts/`) for headings, buttons, badges, and short labels ONLY, sized only from the pixel type scale (`text-pixel-micro` / `-sm` / `-md` / `-lg` / `-xl` / `-2xl`). Body text and advisor output use **JetBrains Mono**. Never set long-form text in the pixel font.
 - Animations — subtle and purposeful: hover/focus transitions on interactive elements, typewriter reveal for streamed advisor text (pairs with `useStreamedResponse`), short entrance transition when a panel or opinion appears. No permanent full-viewport effects (scanlines, flicker, CRT filters). Every animation respects `prefers-reduced-motion: reduce` — use the `motion-safe:` variant on the theme animations (`motion-safe:animate-blink`, `motion-safe:animate-fade-up`).
 - Restyle shadcn components through tokens and `cva` variants; do not fork component internals to force the style.
 
