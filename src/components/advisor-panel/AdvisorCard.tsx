@@ -3,8 +3,10 @@ import { useState } from "react";
 import { SideThread } from "@/components/advisor-panel/SideThread";
 import { Button } from "@/components/ui/button";
 import { panelVariants } from "@/components/ui/panel";
+import { PixelSprite } from "@/components/ui/pixel-sprite";
 import { Skeleton } from "@/components/ui/skeleton";
 import { advisorAccent } from "@/lib/advisors/advisor-accent";
+import { ADVISOR_SPRITE_FILLS, advisorSprite } from "@/lib/advisors/advisor-sprites";
 import { scoreDelta, scoreGlyph } from "@/lib/score-delta";
 import { cn } from "@/lib/utils";
 import type { PersonaViewState } from "@/components/advisor-panel/usePanelStream";
@@ -43,15 +45,18 @@ export function AdvisorCard({
       data-status={state.status}
     >
       <header className="flex items-center justify-between gap-2">
-        <h3 className={cn("font-pixel text-pixel-sm tracking-wide uppercase", accent.text)}>{label}</h3>
+        <span className="flex items-center gap-2">
+          <PixelSprite grid={advisorSprite(personaId).grid} fills={ADVISOR_SPRITE_FILLS} size="h-6 w-6" />
+          <h3 className={cn("font-pixel text-pixel-sm tracking-wide uppercase", accent.text)}>{label}</h3>
+        </span>
         {state.status === "pending" && (
           <span className="motion-safe:animate-blink text-muted-foreground text-pixel-micro">Oczekiwanie…</span>
         )}
       </header>
 
       {state.score !== undefined && delta && (
-        <div className="animate-fade-up flex flex-col gap-1">
-          <p className="text-info text-pixel-md" aria-hidden="true">
+        <div className="motion-safe:animate-fade-up flex flex-col gap-1">
+          <p className="motion-safe:animate-score-pop text-info text-pixel-md" aria-hidden="true">
             {scoreGlyph(state.score)}
           </p>
           <p className="text-info text-pixel-sm">

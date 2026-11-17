@@ -367,23 +367,23 @@ inherited open item.
 
 ### Phase 2: Shared pixel-sprite primitive + advisor sprite data
 #### Automated
-- [x] 2.1 `npm run lint:ui` passes
-- [x] 2.2 `npm run lint` passes
-- [x] 2.3 `npm run build` succeeds
+- [x] 2.1 `npm run lint:ui` passes — 21c9e67
+- [x] 2.2 `npm run lint` passes — 21c9e67
+- [x] 2.3 `npm run build` succeeds — 21c9e67
 #### Manual
-- [x] 2.4 `/` renders identically to before the `Welcome.astro` refactor (PixelSprite output is byte-identical to the prior inline SVG for the same grid/fills — same viewBox, same rect-per-cell, same fill values; verified by code inspection, no dev server available in this environment)
-- [x] 2.5 `Mascot` component renders a recognizable token-colored sprite (verified by code inspection — same PixelSprite primitive, token-driven fills)
+- [x] 2.4 `/` renders identically to before the `Welcome.astro` refactor (PixelSprite output is byte-identical to the prior inline SVG for the same grid/fills — same viewBox, same rect-per-cell, same fill values; verified by code inspection, no dev server available in this environment) — 21c9e67
+- [x] 2.5 `Mascot` component renders a recognizable token-colored sprite (verified by code inspection — same PixelSprite primitive, token-driven fills) — 21c9e67
 
 ### Phase 3: AdvisorCard avatar + score-pop reveal
 #### Automated
-- [ ] 3.1 `npm run lint:ui` passes
-- [ ] 3.2 `npm run lint` passes
-- [ ] 3.3 `npm run build` succeeds
+- [x] 3.1 `npm run lint:ui` passes
+- [x] 3.2 `npm run lint` passes
+- [x] 3.3 `npm run build` succeeds
 #### Manual
-- [ ] 3.4 Each of the 4 advisor cards shows a distinct avatar
-- [ ] 3.5 Score-pop fires once per round, not on every re-render
-- [ ] 3.6 Reduced-motion disables score-pop and card entrance fade
-- [ ] 3.7 Folded round-2 summary rows show matching avatars
+- [ ] 3.4 Each of the 4 advisor cards shows a distinct avatar (PENDING — needs your live check on a real session at `/sessions/[id]`; dev server doesn't start in this environment)
+- [ ] 3.5 Score-pop fires once per round, not on every re-render (PENDING — same live-session blocker; by code inspection it's applied unconditionally on an element that only mounts once per round per the existing `state.score !== undefined && delta` guard, so it should not re-trigger on unrelated re-renders, but this needs live confirmation)
+- [ ] 3.6 Reduced-motion disables score-pop and card entrance fade (PENDING — same blocker; both are `motion-safe:`-gated by code)
+- [ ] 3.7 Folded round-2 summary rows show matching avatars (PENDING — same blocker)
 
 ### Phase 4: Synthesis completion moment + mascot
 #### Automated

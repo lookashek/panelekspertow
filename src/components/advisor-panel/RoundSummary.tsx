@@ -6,7 +6,9 @@
  */
 import { Button } from "@/components/ui/button";
 import { panelVariants } from "@/components/ui/panel";
+import { PixelSprite } from "@/components/ui/pixel-sprite";
 import { advisorAccent } from "@/lib/advisors/advisor-accent";
+import { ADVISOR_SPRITE_FILLS, advisorSprite } from "@/lib/advisors/advisor-sprites";
 import { formatScore } from "@/lib/score-delta";
 import { cn } from "@/lib/utils";
 
@@ -34,8 +36,9 @@ export function RoundSummary({ round, rows, expanded, onToggle, controlsId }: Ro
           const accent = advisorAccent(row.personaId);
           return (
             <li key={row.personaId} className="flex flex-col gap-0.5 text-xs sm:flex-row sm:items-baseline sm:gap-3">
-              <span className={cn("font-pixel text-pixel-micro uppercase sm:w-32 sm:flex-shrink-0", accent.text)}>
-                {row.label}
+              <span className="flex items-center gap-1.5 sm:w-32 sm:flex-shrink-0">
+                <PixelSprite grid={advisorSprite(row.personaId).grid} fills={ADVISOR_SPRITE_FILLS} size="h-4 w-4" />
+                <span className={cn("font-pixel text-pixel-micro uppercase", accent.text)}>{row.label}</span>
               </span>
               <span className="text-info flex-shrink-0">{formatScore(row.score, row.previousScore)}</span>
               {row.thesis && <span className="text-muted-foreground truncate">{row.thesis}</span>}
