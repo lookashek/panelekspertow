@@ -1,8 +1,22 @@
-# 10x Astro Starter
+# Panel Ekspertów
 
-![](./public/template.png)
+Panel Ekspertów to aplikacja webowa, w której użytkownik opisuje decyzję lub problem (od błahego
+zakupu do decyzji biznesowej), a panel person-doradców LLM debatuje nad nim z wymuszoną
+rozbieżnością: runda pierwsza to izolowane, niezależne opinie każdego doradcy (ocena 1–10 przed
+uzasadnieniem), runda druga pozwala zmienić ocenę tylko ze wskazaniem autora argumentu, który
+przekonał, a sesję zamyka synteza z co najmniej jedną osią sporu. Cel: skrócić czas między
+pojawieniem się pomysłu a wykryciem jego najpoważniejszej wady — zamiast dostawać kilka wariantów
+tej samej, zgodnej opinii. Każdy użytkownik ma konto i widzi wyłącznie własne sesje (historia zapisana
+per użytkownik).
 
-A modern, opinionated starter template for building fast, accessible web applications.
+Pełny opis problemu, person, kryteriów sukcesu i wymagań funkcjonalnych:
+[`context/foundation/prd.md`](./context/foundation/prd.md). Decyzje dot. stacku technologicznego:
+[`context/foundation/tech-stack.md`](./context/foundation/tech-stack.md). Reguły dla agentów/AI
+pracujących w tym repo: [`CLAUDE.md`](./CLAUDE.md).
+
+Zbudowana na bazie `10x-astro-starter` (patrz sekcje poniżej dla setupu, Supabase, deploymentu) —
+scaffold frameworka/auth/Cloudflare pochodzi ze starter kitu, logika produktu (panel doradców,
+rundy, synteza, historia sesji) jest własna.
 
 ## Tech Stack
 
@@ -23,8 +37,8 @@ A modern, opinionated starter template for building fast, accessible web applica
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+git clone <this-repo-url>
+cd panelekspertow
 ```
 
 2. Install dependencies:
@@ -62,13 +76,26 @@ npm run dev
 ```md
 .
 ├── src/
-│ ├── layouts/ # Astro layouts
-│ ├── pages/ # Astro pages
-│ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
-├── public/ # Public assets
-├── wrangler.jsonc # Cloudflare Workers config
+│ ├── layouts/           # Astro layouts
+│ ├── pages/              # Astro pages (sessions, auth, dashboard)
+│ │ └── api/              # API endpoints (auth, sessions CRUD, streaming)
+│ ├── components/         # UI components (Astro & React)
+│ ├── hooks/               # React hooks (panel/synthesis/side-thread streaming)
+│ ├── lib/
+│ │ ├── services/         # Use-case orchestration (SessionService)
+│ │ ├── repositories/      # Supabase data access (SessionRepository)
+│ │ ├── adapters/          # LLM provider adapters (OpenRouter, …)
+│ │ ├── advisors/          # Advisor persona registry + panel/synthesis runners
+│ │ ├── prompts/           # Versioned advisor/synthesis prompts
+│ │ └── schemas/           # Zod schemas shared frontend/backend
+│ ├── middleware.ts        # Auth resolution + protected-route redirects
+│ └── assets/              # Static assets
+├── context/
+│ ├── foundation/          # PRD, tech-stack, roadmap, test-plan (10xDevs workflow)
+│ └── changes/              # In-flight change docs
+├── supabase/migrations/   # Forward-only SQL migrations, RLS per table
+├── public/                 # Public assets
+├── wrangler.jsonc          # Cloudflare Workers config
 ```
 
 ## Supabase Configuration
