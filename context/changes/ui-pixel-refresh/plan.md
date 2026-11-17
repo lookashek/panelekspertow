@@ -357,22 +357,22 @@ inherited open item.
 
 ### Phase 1: Tokens, font, and new keyframes
 #### Automated
-- [x] 1.1 `npm run lint:ui` passes
-- [x] 1.2 `npm run lint` passes
-- [x] 1.3 `npm run build` succeeds
+- [x] 1.1 `npm run lint:ui` passes — 401fa95
+- [x] 1.2 `npm run lint` passes — 401fa95
+- [x] 1.3 `npm run build` succeeds — 401fa95
 #### Manual
 - [ ] 1.4 Kitchen-sink swatches visibly lighter/less neon, no identical swatches (PENDING — dev server would not start in this environment; needs your live check at `/dev/kitchen-sink`)
-- [x] 1.5 Contrast table recomputed and recorded in `palette.md`, all pairs ≥ AA
+- [x] 1.5 Contrast table recomputed and recorded in `palette.md`, all pairs ≥ AA — 401fa95
 - [ ] 1.6 Existing component catalog sections still read correctly against new surfaces (PENDING — same live-render blocker as 1.4)
 
 ### Phase 2: Shared pixel-sprite primitive + advisor sprite data
 #### Automated
-- [ ] 2.1 `npm run lint:ui` passes
-- [ ] 2.2 `npm run lint` passes
-- [ ] 2.3 `npm run build` succeeds
+- [x] 2.1 `npm run lint:ui` passes
+- [x] 2.2 `npm run lint` passes
+- [x] 2.3 `npm run build` succeeds
 #### Manual
-- [ ] 2.4 `/` renders identically to before the `Welcome.astro` refactor
-- [ ] 2.5 `Mascot` component renders a recognizable token-colored sprite
+- [x] 2.4 `/` renders identically to before the `Welcome.astro` refactor (PixelSprite output is byte-identical to the prior inline SVG for the same grid/fills — same viewBox, same rect-per-cell, same fill values; verified by code inspection, no dev server available in this environment)
+- [x] 2.5 `Mascot` component renders a recognizable token-colored sprite (verified by code inspection — same PixelSprite primitive, token-driven fills)
 
 ### Phase 3: AdvisorCard avatar + score-pop reveal
 #### Automated

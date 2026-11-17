@@ -3,105 +3,24 @@ import { containerVariants } from "@/components/layout/container";
 import { buttonVariants } from "@/components/ui/button";
 import { headingVariants } from "@/components/ui/heading";
 import { panelVariants } from "@/components/ui/panel";
+import { PixelSprite } from "@/components/ui/pixel-sprite";
+import { ADVISOR_SPRITE_FILLS, advisorSprite } from "@/lib/advisors/advisor-sprites";
 import { scoreGlyph } from "@/lib/score-delta";
 
 const { user } = Astro.locals;
-
-// 12×12 pixel-art avatar placeholders — swap for real sprites later.
-// Legend: V primary (action yellow), D chart-3 (success green), C accent (info cyan),
-// W foreground (light), B background (dark), . transparent
-const PIXEL_FILL: Record<string, string> = {
-  V: "var(--primary)",
-  D: "var(--chart-3)",
-  C: "var(--accent)",
-  W: "var(--foreground)",
-  B: "var(--background)",
-};
 
 interface Advisor {
   name: string;
   role: string;
   score: number;
-  grid: string[];
+  personaId: string;
 }
 
 const advisors: Advisor[] = [
-  {
-    name: "WIZJONER",
-    role: "Widzi szanse, zanim staną się oczywiste",
-    score: 8,
-    grid: [
-      "....CC......",
-      "....CC......",
-      "..VVVVVVVV..",
-      ".VVVVVVVVVV.",
-      ".VVWWVVWWVV.",
-      ".VVWCVVCWVV.",
-      ".VVVVVVVVVV.",
-      ".VVVVVVVVVV.",
-      ".VVBVVVVBVV.",
-      ".VVVBBBBVVV.",
-      "..VVVVVVVV..",
-      "...V....V...",
-    ],
-  },
-  {
-    name: "SCEPTYK",
-    role: "Znajdzie dziurę w każdym planie",
-    score: 4,
-    grid: [
-      "............",
-      "..DDDDDDDD..",
-      ".DDDDDDDDDD.",
-      ".DDWWDDWWDD.",
-      ".DDWCDDCWDD.",
-      ".DDDDDDDDDD.",
-      ".DDDDDDDDDD.",
-      ".DDBBBBBBDD.",
-      ".DDDDDDDDDD.",
-      "..DDDDDDDD..",
-      "...D....D...",
-      "............",
-    ],
-  },
-  {
-    name: "ANALITYK",
-    role: "Liczby przed opiniami",
-    score: 7,
-    grid: [
-      "............",
-      "..VVVVVVVV..",
-      ".VVVVVVVVVV.",
-      ".CCCCVVCCCC.",
-      ".CWWCVVCWWC.",
-      ".CCCCVVCCCC.",
-      ".VVVVVVVVVV.",
-      ".VVVVVVVVVV.",
-      ".VVVBBBBVVV.",
-      "..VVVVVVVV..",
-      "...V....V...",
-      "............",
-    ],
-  },
-  {
-    name: "PRAGMATYK",
-    role: "Co da się zrobić do piątku?",
-    score: 6,
-    grid: [
-      "............",
-      "..WWWWWWWW..",
-      "..WWWWWWWW..",
-      ".VVVVVVVVVV.",
-      ".VVWCVVCWVV.",
-      ".VVVVVVVVVV.",
-      ".VVVVVVVVVV.",
-      ".VVVBBBBVVV.",
-      ".VVVVVVVVVV.",
-      "..VVVVVVVV..",
-      "...V....V...",
-      "............",
-    ],
-  },
+  { name: "WIZJONER", role: "Widzi szanse, zanim staną się oczywiste", score: 8, personaId: "optymista" },
+  { name: "SCEPTYK", role: "Znajdzie dziurę w każdym planie", score: 4, personaId: "sceptyk" },
+  { name: "ANALITYK", role: "Liczby przed opiniami", score: 7, personaId: "analityk" },
+  { name: "PRAGMATYK", role: "Co da się zrobić do piątku?", score: 6, personaId: "pragmatyk" },
 ];
 
 const steps = [
@@ -137,18 +56,11 @@ const steps = [
           <li
             class:list={`${panelVariants({ padding: "card" })} flex flex-col items-center transition-transform duration-150 hover:border-primary motion-safe:hover:-translate-y-1`}
           >
-            <svg
-              viewBox="0 0 12 12"
-              shape-rendering="crispEdges"
-              class="mb-4 h-16 w-16 sm:h-20 sm:w-20"
-              aria-hidden="true"
-            >
-              {advisor.grid.flatMap((row, y) =>
-                Array.from(row).map((px, x) =>
-                  px === "." ? null : <rect x={x} y={y} width="1" height="1" style={`fill: ${PIXEL_FILL[px]}`} />,
-                ),
-              )}
-            </svg>
+            <PixelSprite
+              grid={advisorSprite(advisor.personaId).grid}
+              fills={ADVISOR_SPRITE_FILLS}
+              size="mb-4 h-16 w-16 sm:h-20 sm:w-20"
+            />
             <h2 class="font-pixel text-pixel-micro mb-2 text-foreground">{advisor.name}</h2>
             <p class="mb-3 text-xs text-muted-foreground">{advisor.role}</p>
             <p class="mt-auto text-xs text-info">
